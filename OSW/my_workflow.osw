@@ -1,0 +1,8 @@
+{
+   "created_at" : "20230301T094550Z",
+   "hash" : "1039C8CF",
+   "seed_file" : "../BoxModel.osm",
+   "steps" : [],
+   "updated_at" : "20230301T094550Z",
+   "weather_file" : "CHN_Beijing.Beijing.545110_IWEC.epw"
+}

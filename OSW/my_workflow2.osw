@@ -1,0 +1,8 @@
+{
+   "created_at" : "20230307T053127Z",
+   "hash" : "17A5DDF4",
+   "seed_file" : "D:/Projects/OpenStudioDev/OpenStudio_py/OSW/BoxModel.osm",
+   "steps" : [],
+   "updated_at" : "20230307T053127Z",
+   "weather_file" : "D:/Projects/OpenStudioDev/OpenStudio_py/OSW/CHN_Beijing.Beijing.545110_IWEC.epw"
+}
