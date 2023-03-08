@@ -1,7 +1,11 @@
-from openstudio.openstudiomodel import Space, SpaceType, ThermalZone
+import openstudio
+from openstudio.openstudiomodel import Space, SpaceType, ThermalZone, BuildingStory
 from openstudio.openstudiomodel import Lights, ElectricEquipment, People
+from openstudio.openstudiomodel import GasEquipment, InternalMass
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
+from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
+from Schedules.Templates.Office import Office
 
 
 class ZoneTool:
@@ -14,9 +18,9 @@ class ZoneTool:
 
         return zone
 
-    # Create a space:
+    # Create a space with full set of information:
     @staticmethod
-    def space(
+    def space_simplified(
             model,
             name,
             program,
@@ -25,13 +29,17 @@ class ZoneTool:
             lighting_power=0,
             equipment_power=0,
             people_density=0,
+            gas_power=0,
             outdoor_air_per_floor_area=0,
             outdoor_air_per_person=0,
+            internal_mass: InternalMass = None,
             lighting_schedule=None,
             equipment_schedule=None,
             occupancy_schedule=None,
             activity_schedule=None,
-            infiltration_schedule=None):
+            infiltration_schedule=None,
+            gas_schedule=None):
+
         space = Space(model)
         space.setName(name)
         if thermal_zone is not None: space.setThermalZone(thermal_zone)
@@ -60,6 +68,13 @@ class ZoneTool:
         if activity_schedule is not None: people.setActivityLevelSchedule(activity_schedule)
         people.setSpace(space)
 
+        # Gas Equipment:
+        gas_def = GasEquipmentDefinition(model)
+        gas_def.setWattsperSpaceFloorArea(gas_power)
+        gas = GasEquipment(gas_def)
+        if gas_schedule is not None: gas.setSchedule(gas_schedule)
+        gas.setSpace(space)
+
         # Space Type:
         space_type = SpaceType(model)
         space_type.setName(program + ":" + name)
@@ -85,5 +100,36 @@ class ZoneTool:
 
         return space
 
+    @staticmethod
+    def space(
+            model: openstudio.openstudiomodel.Model,
+            name: str,
+            program: str,
+            thermal_zone: ThermalZone = None,
+            story: BuildingStory = None,
+            lights: Lights = None,
+            people: People = None,
+            electric_equipment: ElectricEquipment = None,
+            gas_equipment: GasEquipment = None,
+            internal_mass: InternalMass = None,
+            outdoor_air: DesignSpecificationOutdoorAir = None,
+            infiltration:SpaceInfiltrationDesignFlowRate = None):
 
+        space = Space(model)
+        space.setName(name)
+        if thermal_zone is not None: space.setThermalZone(thermal_zone)
+        if story is not None: space.setBuildingStory(story)
 
+        # Space Type:
+        space_type = SpaceType(model)
+        space_type.setName(program + ":" + name)
+
+        if lights is not None: lights.setSpace(space)
+        if people is not None: people.setSpace(space)
+        if electric_equipment is not None: electric_equipment.setSpace(space)
+        if gas_equipment is not None: gas_equipment.setSpace(space)
+        if internal_mass is not None: internal_mass.setSpace(space)
+        if outdoor_air is not None:
+            space_type.setDesignSpecificationOutdoorAir(outdoor_air)
+        if infiltration is not None:
+            infiltration.setSpaceType(space_type)

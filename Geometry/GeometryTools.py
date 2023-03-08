@@ -1,15 +1,29 @@
 import math
+import openstudio
 from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurface
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
 
 
 class GeometryTool:
-
     roof_threshold = math.pi / 4
     tolerance = 0.0001
 
     # def __init__(self, roof_threshold = math.pi/4):
     #     self._roof_threshold = roof_threshold
+
+    # Set up building:
+    @staticmethod
+    def building(model, name=None, northAxis=0):
+        bldg = model.getBuilding()
+        if name is not None: bldg.setNmae(name)
+        if northAxis != 0: bldg.setNorthAxis(northAxis)
+
+    # Make a Building Story
+    @staticmethod
+    def building_story(model, name=None):
+        story = openstudio.openstudiomodel.BuildingStory(model)
+        if name is not None: story.setName(name)
+        return story
 
     # Make Vector3d
     @staticmethod
@@ -49,7 +63,7 @@ class GeometryTool:
                 # normal = Vector3d(1.0, 0.0, 0.0)
             z_axis = Vector3d(0.0, 0.0, 1.0)
 
-            angle_rad = math.acos(z_axis.dot(normal)/(z_axis.length()*normal.length()))
+            angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
 
             if surface_type is None:
                 if angle_rad < GeometryTool.roof_threshold:
@@ -114,7 +128,7 @@ class GeometryTool:
         vertices = surface.vertices()
         for i in range(len(vertices)):
             p0 = vertices[i]
-            p1 = vertices[(i+1) % len(vertices)]
+            p1 = vertices[(i + 1) % len(vertices)]
 
             nx += (p0.y() - p1.y()) * (p0.z() + p1.z())
             ny += (p0.z() - p1.z()) * (p0.x() + p1.x())
@@ -163,7 +177,7 @@ class GeometryTool:
                 for srf_rest in srfs_remain:
                     normal_rest = GeometryTool.newell_method(srf_rest)
                     centroid_rest = GeometryTool.centroid(srf_rest)
-                    angle = math.acos(normal_curr.dot(normal_rest)/(normal_curr.length()*normal_rest.length()))
+                    angle = math.acos(normal_curr.dot(normal_rest) / (normal_curr.length() * normal_rest.length()))
                     dist = GeometryTool.distance(centroid_curr, centroid_rest)
 
                     if math.fabs(angle - math.pi) < GeometryTool.tolerance and dist < GeometryTool.tolerance:

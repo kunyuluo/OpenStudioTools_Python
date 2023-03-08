@@ -9,7 +9,7 @@ class ScheduleTool:
 
     # Schedule Type Limits
     @staticmethod
-    def scheduleTypeLimits(model, unit_type, lower_limit=-9999, upper_limit=-9999, numeric_type=None, name=None):
+    def schedule_type_limits(model, unit_type, lower_limit=-9999, upper_limit=-9999, numeric_type=None, name=None):
         type_limits = osModel.ScheduleTypeLimits(model)
         type_limits.setUnitType(unit_type)
         if name is not None: type_limits.setName(name)
@@ -21,7 +21,7 @@ class ScheduleTool:
 
     # Day Schedule
     @staticmethod
-    def scheduleDay(model, values=None, constant=-9999, type_limits=None, name=None):
+    def schedule_day(model, values=None, constant=-9999, type_limits=None, name=None):
         schedule = osModel.ScheduleDay(model)
 
         if constant != -9999:
@@ -45,7 +45,7 @@ class ScheduleTool:
 
     # Schedule Rule
     @staticmethod
-    def scheduleRule(
+    def schedule_rule(
             schedule_ruleset,
             schedule_day,
             start_m=1,
@@ -81,7 +81,7 @@ class ScheduleTool:
 
     # Schedule Ruleset
     @staticmethod
-    def scheduleRuleset(model, value=-9999, type_limits=None, name=None):
+    def schedule_ruleset(model, value=-9999, type_limits=None, name=None):
         if value != -9999:
             schedule_ruleset = osModel.ScheduleRuleset(model, value)
         else:
