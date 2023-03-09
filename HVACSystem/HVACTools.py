@@ -1,29 +1,9 @@
 import openstudio
+from PlantLoopComponents import PlantLoopComponent
+from SetpointManagers import SetpointManager
 
 
 class HVACTool:
-
-    @staticmethod
-    def plant_loop(
-            model: openstudio.openstudiomodel.Model,
-            name: str = None):
-
-        plant = openstudio.openstudiomodel.PlantLoop(model)
-        if name is not None: plant.setName(name)
-
-        node_supply_out = plant.supplyOutletNode()
-        node_supply_in = plant.supplyInletNode()
-
-        return plant
-
-    @staticmethod
-    def chiller_electric(
-            model: openstudio.openstudiomodel.Model,
-            cop=5.5):
-        chiller = openstudio.openstudiomodel.ChillerElectricEIR(model)
-        chiller.setReferenceCOP(cop)
-        
-        return chiller
 
     @staticmethod
     def make_chilled_water_loop(
