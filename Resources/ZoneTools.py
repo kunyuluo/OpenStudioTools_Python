@@ -5,7 +5,7 @@ from openstudio.openstudiomodel import GasEquipment, InternalMass
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
 from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
-from Schedules.Templates.Office import Office
+from Schedules.Templates.Template import Office
 
 
 class ZoneTool:

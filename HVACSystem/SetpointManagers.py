@@ -1,4 +1,5 @@
 import openstudio
+from Schedules.ScheduleTools import ScheduleTool
 
 
 class SetpointManager:
@@ -7,6 +8,7 @@ class SetpointManager:
     def scheduled(
             model: openstudio.openstudiomodel.Model,
             control_variable="Temperature",
+            constant_value=None,
             schedule: openstudio.openstudiomodel.Schedule = None):
         # Alternatives of control variable:
         # *******************************************************************
@@ -20,6 +22,13 @@ class SetpointManager:
         # MaximumMassFlowRate
         # MinimumMassFlowRate
         # *******************************************************************
+        type_limits = ScheduleTool.schedule_type_limits(model, "Temperature", 0, 100, "Continuous")
+        if constant_value is not None:
+            schedule = ScheduleTool.schedule_ruleset(model, constant_value, type_limits)
+        else:
+            if schedule is None:
+                schedule = ScheduleTool.schedule_ruleset(model, 6.67, type_limits)
+
         manager = openstudio.openstudiomodel.SetpointManagerScheduled(model, control_variable, schedule)
         return manager
 
@@ -30,7 +39,7 @@ class SetpointManager:
             setpoint_at_outdoor_low=None,
             setpoint_at_outdoor_high=None,
             outdoor_low=None,
-            outdoor_high=None,):
+            outdoor_high=None, ):
         # Alternatives of control variable:
         # *******************************************************************
         # Temperature

@@ -121,6 +121,95 @@ class GeometryTool:
 
             return shading
 
+    # Create a room from extrusion
+    @staticmethod
+    def space_from_extrusion(model, floor_plan, room_height: float = 3.0, wwr=None, space=None):
+        room_surfaces = []
+        if len(floor_plan) != 0 and len(floor_plan) > 2:
+            # upward_normal = None
+            # Floor surface:
+            # *********************************************************
+            # First check normal vector (cross product):
+            vector_12 = Vector3d(floor_plan[1][0] - floor_plan[0][0],
+                                 floor_plan[1][1] - floor_plan[0][1],
+                                 floor_plan[1][2] - floor_plan[0][2])
+            vector_23 = Vector3d(floor_plan[2][0] - floor_plan[1][0],
+                                 floor_plan[2][1] - floor_plan[1][1],
+                                 floor_plan[2][2] - floor_plan[1][2])
+            normal = vector_12.cross(vector_23)
+            normal.normalize()
+            z_axis = Vector3d(0.0, 0.0, -1.0)
+
+            # Calculate angle between minus z-axis and floor surface normal:
+            angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
+
+            floor_pts = []
+            for i in range(len(floor_plan)):
+                if len(floor_plan[i]) != 0:
+                    floor_pt = Point3d(floor_plan[i][0], floor_plan[i][1], floor_plan[i][2])
+                    floor_pts.append(floor_pt)
+            if angle_rad > math.pi/4:
+                floor_pts.reverse()
+                upward_normal = normal
+            else:
+                upward_normal = normal.reverseVector()
+
+            floor_pt_vec = Point3dVector(floor_pts)
+            floor_surface = Surface(floor_pt_vec, model)
+            room_surfaces.append(floor_surface)
+            upward_normal.normalize()
+
+            # roof surface:
+            # *********************************************************
+            roof_pts = []
+            for i in range(len(floor_plan)):
+                if len(floor_plan[i]) != 0:
+                    roof_pt = Point3d(floor_plan[i][0] + room_height * upward_normal.x(),
+                                      floor_plan[i][1] + room_height * upward_normal.y(),
+                                      floor_plan[i][2] + room_height * upward_normal.z())
+                    roof_pts.append(roof_pt)
+            if angle_rad <= math.pi/4:
+                roof_pts.reverse()
+
+            roof_pt_vec = Point3dVector(roof_pts)
+            roof_surface = Surface(roof_pt_vec, model)
+            room_surfaces.append(roof_surface)
+
+            # Wall surfaces:
+            # *********************************************************
+            for i in range(len(floor_plan)):
+                wall_pts = []
+                index_1 = i
+                index_2 = (i + 1) % len(floor_plan)
+                if len(floor_plan[index_1]) != 0 and len(floor_plan[index_2]) != 0:
+                    wall_pt1 = Point3d(floor_plan[index_1][0], floor_plan[index_1][1], floor_plan[index_1][2])
+                    wall_pt2 = Point3d(floor_plan[index_2][0], floor_plan[index_2][1], floor_plan[index_2][2])
+                    wall_pt3 = Point3d(floor_plan[index_2][0] + room_height * upward_normal.x(),
+                                       floor_plan[index_2][1] + room_height * upward_normal.y(),
+                                       floor_plan[index_2][2] + room_height * upward_normal.z())
+                    wall_pt4 = Point3d(floor_plan[index_1][0] + room_height * upward_normal.x(),
+                                       floor_plan[index_1][1] + room_height * upward_normal.y(),
+                                       floor_plan[index_1][2] + room_height * upward_normal.z())
+                    wall_pts.append(wall_pt1)
+                    wall_pts.append(wall_pt2)
+                    wall_pts.append(wall_pt3)
+                    wall_pts.append(wall_pt4)
+
+                    if angle_rad <= math.pi/4:
+                        wall_pts.reverse()
+
+                    wall_pt_vec = Point3dVector(wall_pts)
+                    wall_surface = Surface(wall_pt_vec, model)
+                    if wwr is not None:
+                        wall_surface.setWindowToWallRatio(wwr)
+                    room_surfaces.append(wall_surface)
+
+        if space is not None:
+            for surface in room_surfaces:
+                surface.setSpace(space)
+
+        return room_surfaces
+
     # Newell's Algorithm (find normal vector from an arbitrary polygon)
     @staticmethod
     def newell_method(surface):

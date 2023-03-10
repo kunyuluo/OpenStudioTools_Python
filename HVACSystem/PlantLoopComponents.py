@@ -7,14 +7,18 @@ class PlantLoopComponent:
     def plant_loop(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
-            fluid_type: str = None,
+            fluid_type: str = None,  # Water, Steam, PropyleneGlycol, EthyleneGlycol
             max_loop_temp=None,
             min_loop_temp=None,
             max_loop_flow_rate=None,
             min_loop_flow_rate=None,
             plant_loop_volume=None,
-            load_distribution_scheme=None,  # Optimal, SequentialLoad, UniformLoad, UniformPLR, SequentialUniformPLR
-            common_pipe_simulation=None):  # None, CommonPipe, TwoWayCommonPipe
+            load_distribution_scheme: str = None,  # Optimal, SequentialLoad, UniformLoad, UniformPLR, SequentialUniformPLR
+            common_pipe_simulation: str = None,  # None, CommonPipe, TwoWayCommonPipe
+            supply_branches=None,
+            demand_branches=None,
+            setpoint_manager: openstudio.openstudiomodel.SetpointManager = None,
+            setpoint_manager_secondary: openstudio.openstudiomodel.SetpointManager = None):
 
         plant = openstudio.openstudiomodel.PlantLoop(model)
         if name is not None: plant.setName(name)
@@ -29,8 +33,8 @@ class PlantLoopComponent:
 
         if min_loop_flow_rate is not None:
             plant.setMinimumLoopFlowRate(min_loop_flow_rate)
-        else:
-            plant.autosizeMinimumLoopFlowRate()
+        # else:
+        #     plant.autosizeMinimumLoopFlowRate()
 
         if plant_loop_volume is not None:
             plant.setPlantLoopVolume(plant_loop_volume)
@@ -42,6 +46,35 @@ class PlantLoopComponent:
 
         if common_pipe_simulation is not None:
             plant.setCommonPipeSimulation(common_pipe_simulation)
+
+        # Add branches to the loop:
+        if supply_branches is not None and len(supply_branches) != 0:
+            for branch in supply_branches:
+                plant.addSupplyBranchForComponent(branch.pop(-1))
+                node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
+                for item in branch:
+                    item.addToNode(node)
+
+        if demand_branches is not None and len(demand_branches) != 0:
+            for branch in demand_branches:
+                plant.addSupplyBranchForComponent(branch.pop(-1))
+                node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
+                for item in branch:
+                    item.addToNode(node)
+
+        node_supply_out = plant.supplyOutletNode()
+        node_demand_inlet = plant.demandInletNode()
+
+        if setpoint_manager is not None:
+            setpoint_manager.addToNode(node_supply_out)
+
+        if common_pipe_simulation == "CommonPipe":
+            pump = PlantLoopComponent.pump_variable_speed(model)
+            pump.addToNode(node_demand_inlet)
+        elif common_pipe_simulation == "TwoWayCommonPipe":
+            pump = PlantLoopComponent.pump_variable_speed(model)
+            pump.addToNode(node_demand_inlet)
+            setpoint_manager_secondary.addToNode(node_demand_inlet)
 
         return plant
 
@@ -64,6 +97,7 @@ class PlantLoopComponent:
     @staticmethod
     def chiller_electric(
             model: openstudio.openstudiomodel.Model,
+            name: str = None,
             condenser_type="WaterCooled",  # WaterCooled, AirCooled, EvaporativelyCooled
             capacity=None,
             cop=5.5,
@@ -87,6 +121,8 @@ class PlantLoopComponent:
 
         chiller = openstudio.openstudiomodel.ChillerElectricEIR(model)
         chiller.setReferenceCOP(cop)
+        if name is not None:
+            chiller.setName(name)
         if condenser_type is not None:
             chiller.setCondenserType(condenser_type)
         if leaving_chilled_water_temp is not None:

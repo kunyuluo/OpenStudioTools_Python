@@ -3,25 +3,23 @@ from PlantLoopComponents import PlantLoopComponent
 from SetpointManagers import SetpointManager
 
 
-class HVACTool:
+class ChilledWaterLoop:
 
-    @staticmethod
-    def make_chilled_water_loop(
-            model: openstudio.openstudiomodel.Model,
-            name: str = None,
-            chillers_electric: openstudio.openstudiomodel.ChillerElectricEIR = None,
-            chillers_absorption: openstudio.openstudiomodel.ChillerAbsorption = None):
+    def __init__(self, model, name=None, condenser_type="WaterCooled", number_of_chillers=1, secondary_pump_system=False):
+        self._model = model
+        self._name = name
+        self._condenser_type = condenser_type
+        self._number_of_chillers = number_of_chillers
+        self._secondary_pump_system = secondary_pump_system
 
-        plant = openstudio.openstudiomodel.PlantLoop(model)
-        if name is not None: plant.setName(name)
+    def make_loop(self):
 
-        if chillers_electric is not None and len(chillers_electric) != 0:
-            for chiller_electric in chillers_electric:
-                plant.addSupplyBranchForComponent(chiller_electric)
+        plant = openstudio.openstudiomodel.PlantLoop(self._model)
+        if self._name is not None: plant.setName(self._name)
 
-        if chillers_absorption is not None and len(chillers_absorption) != 0:
-            for chiller_absorption in chillers_absorption:
-                plant.addSupplyBranchForComponent(chiller_absorption)
+        for i in range(self._number_of_chillers):
+            if self._condenser_type == "WaterCooled":
+                chiller = PlantLoopComponent.chiller_electric(self._model,condenser_type=self._condenser_type)
 
         node_supply_out = plant.supplyOutletNode()
         node_supply_in = plant.supplyInletNode()

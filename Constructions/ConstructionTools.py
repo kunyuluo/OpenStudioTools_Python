@@ -6,7 +6,7 @@ from openstudio.openstudiomodel import MasslessOpaqueMaterial, SimpleGlazing
 class ConstructionTool:
 
     @staticmethod
-    def opaque_standard(
+    def opaque_standard_mat(
             model: openstudio.openstudiomodel.Model,
             name,
             thickness=None,
@@ -27,7 +27,7 @@ class ConstructionTool:
 
     # Opaque construction
     @staticmethod
-    def opaque_no_mass(model, name, thermal_resistance, roughness="MediumRough"):
+    def opaque_no_mass_cons(model, name, thermal_resistance, roughness="MediumRough"):
         mat = MasslessOpaqueMaterial(model, roughness, thermal_resistance)
         mat.setName(name)
 
@@ -42,7 +42,7 @@ class ConstructionTool:
 
     # Simple Glazing
     @staticmethod
-    def simple_glazing(model, name, u_factor, shgc, tv):
+    def simple_glazing_cons(model, name, u_factor, shgc, tv):
         mat = SimpleGlazing(model, u_factor, shgc)
         mat.setName(name)
         mat.setVisibleTransmittance(tv)
