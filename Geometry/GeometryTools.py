@@ -13,17 +13,26 @@ class GeometryTool:
 
     # Set up building:
     @staticmethod
-    def building(model, name=None, northAxis=0):
+    def building(model: openstudio.openstudiomodel.Model, name=None, north_axis=0):
         bldg = model.getBuilding()
-        if name is not None: bldg.setNmae(name)
-        if northAxis != 0: bldg.setNorthAxis(northAxis)
+        if name is not None: bldg.setName(name)
+        if north_axis != 0: bldg.setNorthAxis(north_axis)
+        return bldg
 
     # Make a Building Story
     @staticmethod
-    def building_story(model, name=None):
-        story = openstudio.openstudiomodel.BuildingStory(model)
-        if name is not None: story.setName(name)
-        return story
+    def building_story(model, name=None, number_of_story: int = None):
+        if number_of_story is not None:
+            stories = []
+            for i in range(number_of_story):
+                story = openstudio.openstudiomodel.BuildingStory(model)
+                story.setName("Building Story " + str(i+1))
+                stories.append(story)
+            return stories
+        else:
+            story = openstudio.openstudiomodel.BuildingStory(model)
+            if name is not None: story.setName(name)
+            return story
 
     # Make Vector3d
     @staticmethod
@@ -38,15 +47,15 @@ class GeometryTool:
     # Make Surface
     @staticmethod
     def make_surface(
-            model,
+            model: openstudio.openstudiomodel.Model,
             vertices,
             normal=None,
             surface_type=None,
             outside_boundary_condition="Surface",
             sun_exposure="Sunexposed",
             wind_exposure="Windexposed",
-            construction_base=None,
-            space=None):
+            construction: openstudio.openstudiomodel.Construction = None,
+            space: openstudio.openstudiomodel.Space = None):
 
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
@@ -76,7 +85,7 @@ class GeometryTool:
             surface.setOutsideBoundaryCondition(outside_boundary_condition)
             surface.setSunExposure(sun_exposure)
             surface.setWindExposure(wind_exposure)
-            if construction_base is not None: surface.setConstruction(construction_base)
+            if construction is not None: surface.setConstruction(construction)
             if space is not None: surface.setSpace(space)
 
         else:
@@ -86,7 +95,7 @@ class GeometryTool:
 
     # Make Subsurface:
     @staticmethod
-    def make_fenestration(model, vertices, surface_type="FixedWindow", construction_base=None, surface=None):
+    def make_fenestration(model, vertices, surface_type="FixedWindow", construction=None, surface=None):
 
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
@@ -98,7 +107,7 @@ class GeometryTool:
             subsurface = SubSurface(pt_vec, model)
 
             subsurface.setSubSurfaceType(surface_type)
-            if construction_base is not None: subsurface.setConstruction(construction_base)
+            if construction is not None: subsurface.setConstruction(construction)
             if surface is not None: subsurface.setSurface(surface)
         else:
             raise ValueError("Not Enough Vertices to Create a Surface")
@@ -123,7 +132,11 @@ class GeometryTool:
 
     # Create a room from extrusion
     @staticmethod
-    def space_from_extrusion(model, floor_plan, room_height: float = 3.0, wwr=None, space=None):
+    def space_from_extrusion(model, floor_plan, room_height: float = 3.0, wwr=None,
+                             space: openstudio.openstudiomodel.Space = None,
+                             construction_set: openstudio.openstudiomodel.DefaultConstructionSet = None,
+                             building_story: openstudio.openstudiomodel.BuildingStory = None):
+
         room_surfaces = []
         if len(floor_plan) != 0 and len(floor_plan) > 2:
             # upward_normal = None
@@ -204,9 +217,18 @@ class GeometryTool:
                         wall_surface.setWindowToWallRatio(wwr)
                     room_surfaces.append(wall_surface)
 
+        # Assign surface to a space
         if space is not None:
             for surface in room_surfaces:
                 surface.setSpace(space)
+
+        # Assign default construction set to the space
+        if construction_set is not None:
+            space.setDefaultConstructionSet(construction_set)
+
+        # Assign building story
+        if building_story is not None:
+            space.setBuildingStory(building_story)
 
         return room_surfaces
 

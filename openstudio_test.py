@@ -1,8 +1,7 @@
-from openstudio import *
-import openstudio
 import math
+import openstudio
+from openstudio import *
 from openstudio.openstudiomodel import Model
-from openstudio.openstudiomodelgeometry import Surface
 from openstudio.openstudioutilitiesgeometry import Point3d, Vector3d, Plane
 from Geometry.GeometryTools import GeometryTool
 from SiteAndLocation.SiteTools import SiteLocationTool
@@ -12,8 +11,10 @@ from Resources.ExteriorEquipments import ExteriorEquipments
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
 from Schedules.Templates.Template import Office, Residential
+from Constructions.ConstructionSets import ConstructionSet
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
+from HVACSystem.AirLoopComponents import AirLoopComponent
 
 
 # vertices = []
@@ -31,9 +32,9 @@ ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 # Get the model:
 # **************************************************************************************
 model = Model.load(path).get()
-building = model.getBuilding()
-building.setName("Kunyu's House")
-print(building.name())
+building = GeometryTool.building(model, "Kunyu's Tower", 34)
+stories = GeometryTool.building_story(model, number_of_story=3)
+
 # openstudio.gbxml.GbXMLForwardTranslator().modelToGbXML(model, newPath)
 
 # Weather file:
@@ -107,37 +108,40 @@ InternalLoad.add_people(
 
 # Geometry tool testing:
 # **************************************************************************************
-vertices_1 = [[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [5.0, 0.0, 3.0], [0.0, 0.0, 3.0]]
-wall_1 = GeometryTool.make_surface(model, vertices_1)
-
-vertices_2 = [[0.0, 0.0, 0.0], [0.0, 0.0, 3.0], [5.0, 0.0, 3.0], [5.0, 0.0, 0.0]]
-wall_2 = GeometryTool.make_surface(model, vertices_2)
-
-vertices_3 = [[0.0, 4.0, 0.0], [0.0, 4.0, 3.0], [5.0, 4.0, 3.0], [5.0, 4.0, 0.0]]
-wall_3 = GeometryTool.make_surface(model, vertices_3)
-
-vertices_4 = [[0.0, 9.0, 0.0], [0.0, 9.0, 3.0], [5.0, 9.0, 3.0], [5.0, 9.0, 0.0]]
-wall_4 = GeometryTool.make_surface(model, vertices_4)
-
-walls = [wall_1, wall_2, wall_3, wall_4]
-GeometryTool.solve_adjacency(walls, True)
-
-wall_show = wall_4
-print(wall_show.surfaceType() + "," + wall_show.outsideBoundaryCondition())
-print(wall_show.outwardNormal())
+# vertices_1 = [[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [5.0, 0.0, 3.0], [0.0, 0.0, 3.0]]
+# wall_1 = GeometryTool.make_surface(model, vertices_1)
+#
+# vertices_2 = [[0.0, 0.0, 0.0], [0.0, 0.0, 3.0], [5.0, 0.0, 3.0], [5.0, 0.0, 0.0]]
+# wall_2 = GeometryTool.make_surface(model, vertices_2)
+#
+# vertices_3 = [[0.0, 4.0, 0.0], [0.0, 4.0, 3.0], [5.0, 4.0, 3.0], [5.0, 4.0, 0.0]]
+# wall_3 = GeometryTool.make_surface(model, vertices_3)
+#
+# vertices_4 = [[0.0, 9.0, 0.0], [0.0, 9.0, 3.0], [5.0, 9.0, 3.0], [5.0, 9.0, 0.0]]
+# wall_4 = GeometryTool.make_surface(model, vertices_4)
+#
+# walls = [wall_1, wall_2, wall_3, wall_4]
+# GeometryTool.solve_adjacency(walls, True)
+#
+# wall_show = wall_4
+# print(wall_show.surfaceType() + "," + wall_show.outsideBoundaryCondition())
+# print(wall_show.outwardNormal())
 
 # **************************************************************************************
+cons_set = ConstructionSet(model, "OMG").get()
 floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
 floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
-srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1)
-srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2)
-GeometryTool.solve_adjacency(srfs1+srfs2, True)
+srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
+                                          building_story=stories[0])
+srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2, construction_set=cons_set,
+                                          building_story=stories[0])
+GeometryTool.solve_adjacency(srfs1 + srfs2)
 
 # Plane Testing:
 # **************************************************************************************
-origin = Point3d(0,0,0)
-normal = Vector3d(0,0,1)
-plane = Plane(origin,normal)
+origin = Point3d(0, 0, 0)
+normal = Vector3d(0, 0, 1)
+plane = Plane(origin, normal)
 # print(plane.outwardNormal())
 
 # Plant loop:
@@ -165,9 +169,10 @@ plant_loop = PlantLoopComponent.plant_loop(
     setpoint_manager_secondary=spm2)
 
 PlantLoopComponent.plant_sizing(model, plant_loop, "Cooling")
-# **************************************************************************************
 
+# Air loop:
+# **************************************************************************************
+air_loop = AirLoopComponent.air_loop(model, "My Air Loop")
 
 # **************************************************************************************
-# print("result = " + str(sch.scheduleRules()))
 model.save(newPath, True)
