@@ -1,5 +1,6 @@
 import openstudio
 from PlantLoopComponents import PlantLoopComponent
+from AirLoopComponents import AirLoopComponent
 from SetpointManagers import SetpointManager
 
 

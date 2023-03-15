@@ -106,6 +106,10 @@ InternalLoad.add_people(
     mrt_calc_type="SurfaceWeighted",
     thermal_comfort_model_type=["AdaptiveASH55", "KSU"])
 
+# Thermal zones:
+# **************************************************************************************
+thermal_zones = ZoneTool.thermal_zone_from_space(model, [space_1, space_2])
+
 # Geometry tool testing:
 # **************************************************************************************
 # vertices_1 = [[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [5.0, 0.0, 3.0], [0.0, 0.0, 3.0]]
@@ -168,11 +172,11 @@ plant_loop = PlantLoopComponent.plant_loop(
     setpoint_manager=spm1,
     setpoint_manager_secondary=spm2)
 
-PlantLoopComponent.plant_sizing(model, plant_loop, "Cooling")
+PlantLoopComponent.sizing(model, plant_loop, "Cooling")
 
 # Air loop:
 # **************************************************************************************
-air_loop = AirLoopComponent.air_loop(model, "My Air Loop")
+air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
 
 # **************************************************************************************
 model.save(newPath, True)

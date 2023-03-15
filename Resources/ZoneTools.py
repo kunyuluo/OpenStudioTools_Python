@@ -18,6 +18,155 @@ class ZoneTool:
 
         return zone
 
+    @staticmethod
+    def thermal_zone_from_space(model, spaces=[]):
+        thermal_zones = []
+        if spaces is not None and len(spaces) != 0:
+            for space in spaces:
+                zone = ThermalZone(model)
+                zone.setName(space.nameString())
+                thermal_zones.append(zone)
+
+        return thermal_zones
+
+    @staticmethod
+    def sizing(
+            model,
+            thermal_zone,
+            cooling_design_supply_air_temp_input_method=None,
+            cooling_design_supply_air_temp=None,
+            cooling_design_supply_air_temp_diff=None,
+            heating_design_supply_air_temp_input_method=None,
+            heating_design_supply_air_temp=None,
+            heating_design_supply_air_temp_diff=None,
+            cooling_design_supply_air_humidity_ratio=None,
+            heating_design_supply_air_humidity_ratio=None,
+            cooling_sizing_factor=None,
+            heating_sizing_factor=None,
+            cooling_design_air_flow_method=None,
+            cooling_design_air_flow=None,
+            cooling_min_air_flow=None,
+            cooling_min_air_flow_per_floor_area=None,
+            cooling_min_air_flow_fraction=None,
+            heating_design_air_flow_method=None,
+            heating_design_air_flow=None,
+            heating_max_air_flow=None,
+            heating_max_air_flow_per_floor_area=None,
+            heating_max_air_flow_fraction=None,
+            account_for_doas: bool = False,
+            doas_control_strategy: str = "NeutralSupplyAir",
+            doas_low_setpoint=None,
+            doas_high_setpoint=None,
+            zone_load_sizing_method: str = "Sensible And Latent Load",
+            latent_cooling_design_supply_air_humidity_ratio_input_method: str = None,
+            dehumidification_design_supply_air_humidity_ratio=None,
+            cooling_design_supply_air_humidity_ratio_diff=None,
+            latent_heating_design_supply_air_humidity_ratio_input_method: str = None,
+            humidification_design_supply_air_humidity_ratio=None,
+            humidification_design_supply_air_humidity_ratio_diff=None,
+            dehumidification_setpoint_schedule=None,
+            humidification_setpoint_schedule=None,
+            air_distribution_effectiveness_cooling=None,
+            air_distribution_effectiveness_heating=None,
+            secondary_recirculation_fraction=None,
+            min_ventilation_efficiency=None):
+
+        sizing = openstudio.openstudiomodel.SizingZone(model, thermal_zone)
+
+        if cooling_design_supply_air_temp_input_method is not None:
+            sizing.setZoneCoolingDesignSupplyAirTemperatureInputMethod(cooling_design_supply_air_temp_input_method)
+        if cooling_design_supply_air_temp is not None:
+            sizing.setZoneCoolingDesignSupplyAirTemperature(cooling_design_supply_air_temp)
+        if cooling_design_supply_air_temp_diff is not None:
+            sizing.setZoneCoolingDesignSupplyAirTemperatureDifference(cooling_design_supply_air_temp_diff)
+
+        if heating_design_supply_air_temp_input_method is not None:
+            sizing.setZoneHeatingDesignSupplyAirTemperatureInputMethod(heating_design_supply_air_temp_input_method)
+        if heating_design_supply_air_temp is not None:
+            sizing.setZoneHeatingDesignSupplyAirTemperature(heating_design_supply_air_temp)
+        if heating_design_supply_air_temp_diff is not None:
+            sizing.setZoneHeatingDesignSupplyAirTemperatureDifference(heating_design_supply_air_temp_diff)
+
+        if cooling_design_supply_air_humidity_ratio is not None:
+            sizing.setZoneCoolingDesignSupplyAirHumidityRatio(cooling_design_supply_air_humidity_ratio)
+        if heating_design_supply_air_humidity_ratio is not None:
+            sizing.setZoneHeatingDesignSupplyAirHumidityRatio(heating_design_supply_air_humidity_ratio)
+
+        if cooling_sizing_factor is not None:
+            sizing.setZoneCoolingSizingFactor(cooling_sizing_factor)
+        if heating_sizing_factor is not None:
+            sizing.setZoneHeatingSizingFactor(heating_sizing_factor)
+
+        if cooling_design_air_flow_method is not None:
+            sizing.setCoolingDesignAirFlowMethod(cooling_design_air_flow_method)
+        if cooling_design_air_flow is not None:
+            sizing.setCoolingDesignAirFlowRate(cooling_design_air_flow)
+        if cooling_min_air_flow is not None:
+            sizing.setCoolingMinimumAirFlow(cooling_min_air_flow)
+        if cooling_min_air_flow_per_floor_area is not None:
+            sizing.setCoolingMinimumAirFlowperZoneFloorArea(cooling_min_air_flow_per_floor_area)
+        if cooling_min_air_flow_fraction is not None:
+            sizing.setCoolingMinimumAirFlowFraction(cooling_min_air_flow_fraction)
+
+        if heating_design_air_flow_method is not None:
+            sizing.setHeatingDesignAirFlowMethod(heating_design_air_flow_method)
+        if heating_design_air_flow is not None:
+            sizing.setHeatingDesignAirFlowRate(heating_design_air_flow)
+        if heating_max_air_flow is not None:
+            sizing.setHeatingMaximumAirFlow(heating_max_air_flow)
+        if heating_max_air_flow_per_floor_area is not None:
+            sizing.setHeatingMaximumAirFlowperZoneFloorArea(heating_max_air_flow_per_floor_area)
+        if heating_max_air_flow_fraction is not None:
+            sizing.setHeatingMaximumAirFlowFraction(heating_max_air_flow_fraction)
+
+        if account_for_doas is not None:
+            sizing.setAccountforDedicatedOutdoorAirSystem(account_for_doas)
+        if doas_control_strategy is not None:
+            sizing.setDedicatedOutdoorAirSystemControlStrategy(doas_control_strategy)
+        if doas_low_setpoint is not None:
+            sizing.setDedicatedOutdoorAirLowSetpointTemperatureforDesign(doas_low_setpoint)
+        if doas_high_setpoint is not None:
+            sizing.setDedicatedOutdoorAirHighSetpointTemperatureforDesign(doas_high_setpoint)
+
+        sizing.setZoneLoadSizingMethod(zone_load_sizing_method)
+
+        if latent_cooling_design_supply_air_humidity_ratio_input_method is not None:
+            sizing.setZoneLatentCoolingDesignSupplyAirHumidityRatioInputMethod(
+                latent_cooling_design_supply_air_humidity_ratio_input_method)
+        if dehumidification_design_supply_air_humidity_ratio is not None:
+            sizing.setZoneDehumidificationDesignSupplyAirHumidityRatio(
+                dehumidification_design_supply_air_humidity_ratio)
+        if cooling_design_supply_air_humidity_ratio_diff is not None:
+            sizing.setZoneCoolingDesignSupplyAirHumidityRatioDifference(
+                cooling_design_supply_air_humidity_ratio_diff)
+
+        if latent_heating_design_supply_air_humidity_ratio_input_method is not None:
+            sizing.setZoneLatentHeatingDesignSupplyAirHumidityRatioInputMethod(
+                latent_heating_design_supply_air_humidity_ratio_input_method)
+        if humidification_design_supply_air_humidity_ratio is not None:
+            sizing.setZoneHumidificationDesignSupplyAirHumidityRatio(
+                humidification_design_supply_air_humidity_ratio)
+        if humidification_design_supply_air_humidity_ratio_diff is not None:
+            sizing.setZoneHumidificationDesignSupplyAirHumidityRatioDifference(
+                humidification_design_supply_air_humidity_ratio_diff)
+
+        if dehumidification_setpoint_schedule is not None:
+            sizing.setZoneHumidistatDehumidificationSetPointSchedule(dehumidification_setpoint_schedule)
+        if humidification_setpoint_schedule is not None:
+            sizing.setZoneHumidistatHumidificationSetPointSchedule(humidification_setpoint_schedule)
+
+        if air_distribution_effectiveness_cooling is not None:
+            sizing.setDesignZoneAirDistributionEffectivenessinCoolingMode(air_distribution_effectiveness_cooling)
+        if air_distribution_effectiveness_heating is not None:
+            sizing.setDesignZoneAirDistributionEffectivenessinHeatingMode(air_distribution_effectiveness_heating)
+
+        if secondary_recirculation_fraction is not None:
+            sizing.setDesignZoneSecondaryRecirculationFraction(secondary_recirculation_fraction)
+        if min_ventilation_efficiency is not None:
+            sizing.setDesignMinimumZoneVentilationEfficiency(min_ventilation_efficiency)
+
+        return sizing
+
     # Create a space with full set of information:
     @staticmethod
     def space_simplified(

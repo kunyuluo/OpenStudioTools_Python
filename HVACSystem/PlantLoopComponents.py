@@ -79,7 +79,7 @@ class PlantLoopComponent:
         return plant
 
     @staticmethod
-    def plant_sizing(
+    def sizing(
             model: openstudio.openstudiomodel.Model,
             plant_loop: openstudio.openstudiomodel.PlantLoop,
             loop_type,  # Cooling, Heating, Condenser, Steam
