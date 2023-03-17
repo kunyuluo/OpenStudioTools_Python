@@ -15,6 +15,7 @@ from Constructions.ConstructionSets import ConstructionSet
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
 from HVACSystem.AirLoopComponents import AirLoopComponent
+from HVACSystem.Template.ASHRAE import ASHRAEBaseline
 
 
 # vertices = []
@@ -24,7 +25,7 @@ newPath_str = "D:\Projects\OpenStudioDev\Model_2.osm"
 path = openstudioutilitiescore.toPath(path_str)
 newPath = openstudioutilitiescore.toPath(newPath_str)
 
-epw_path_str = "D:\Projects\OpenStudioDev\OpenStudio_Tools\OpenStudioTools_Python\OSW\CHN_Beijing.Beijing.545110_IWEC.epw"
+epw_path_str = "D:\Projects\OpenStudioDev\CHN_Shanghai.Shanghai.583670_IWEC.epw"
 
 ddy_path_str = "D:\Projects\OpenStudioDev\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
 ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
@@ -69,7 +70,7 @@ space_1 = ZoneTool.space_simplified(
     program="Office",
     lighting_power=0.7,
     equipment_power=1.5,
-    people_density=10,
+    people_density=0.5,
     outdoor_air_per_person=0.05,
     outdoor_air_per_floor_area=0.15,
     lighting_schedule=office_sch.lighting(),
@@ -84,7 +85,7 @@ space_2 = ZoneTool.space_simplified(
     program="Office",
     lighting_power=1.4,
     equipment_power=2.8,
-    people_density=8,
+    people_density=0.2,
     outdoor_air_per_person=0.05,
     outdoor_air_per_floor_area=0.15,
     lighting_schedule=resid_sch.lighting(),
@@ -96,19 +97,24 @@ space_2 = ZoneTool.space_simplified(
 # Load Definition:
 # **************************************************************************************
 InternalLoad.add_lights(model, space_1, lighting_power=3.75, lighting_schedule=office_sch.lighting())
-InternalLoad.add_people(
-    model,
-    space_1,
-    amount=2.3,
-    schedule=office_sch.occupancy(),
-    activity_schedule=office_sch.activity_level(),
-    enable_ashrae55_warning=True,
-    mrt_calc_type="SurfaceWeighted",
-    thermal_comfort_model_type=["AdaptiveASH55", "KSU"])
+# InternalLoad.add_people(
+#     model,
+#     space_1,
+#     amount=2.3,
+#     schedule=office_sch.occupancy(),
+#     activity_schedule=office_sch.activity_level(),
+#     enable_ashrae55_warning=True,
+#     mrt_calc_type="SurfaceWeighted",
+#     thermal_comfort_model_type=["AdaptiveASH55", "KSU"])
 
 # Thermal zones:
 # **************************************************************************************
-thermal_zones = ZoneTool.thermal_zone_from_space(model, [space_1, space_2])
+thermal_zones = ZoneTool.thermal_zone_from_space(
+    model,
+    spaces=[space_1, space_2],
+    cooling_setpoint_schedules=[office_sch.cooling_setpoint(), resid_sch.cooling_setpoint()],
+    heating_setpoint_schedules=[office_sch.heating_setpoint(), resid_sch.heating_setpoint()],
+    use_ideal_air_load=True)
 
 # Geometry tool testing:
 # **************************************************************************************
@@ -178,5 +184,16 @@ PlantLoopComponent.sizing(model, plant_loop, "Cooling")
 # **************************************************************************************
 air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
 
+coil1 = openstudio.openstudiomodel.CoilHeatingWater(model)
+fan1 = openstudio.openstudiomodel.CoilCoolingDXVariableSpeed(model)
+print(str(type(fan1)).split('.')[-1].split("'")[0])
+# coil2 = openstudio.openstudiomodel.CoilHeatingGas(model)
+# print(type(coil2))
+# if type(coil1) == type(coil2):
+#     print("yes")
+# else:
+#     print("no")
+
+# ASHRAEBaseline.system_list()
 # **************************************************************************************
-model.save(newPath, True)
+# model.save(newPath, True)

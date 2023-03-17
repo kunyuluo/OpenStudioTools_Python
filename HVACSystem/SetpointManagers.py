@@ -22,7 +22,7 @@ class SetpointManager:
         # MaximumMassFlowRate
         # MinimumMassFlowRate
         # *******************************************************************
-        type_limits = ScheduleTool.schedule_type_limits(model, "Temperature", 0, 100, "Continuous")
+        type_limits = ScheduleTool.schedule_type_limits(model, "Temperature", "Continuous", 0, 100)
         if constant_value is not None:
             schedule = ScheduleTool.schedule_ruleset(model, constant_value, type_limits)
         else:

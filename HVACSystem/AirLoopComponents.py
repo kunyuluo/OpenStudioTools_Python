@@ -1,5 +1,6 @@
 import openstudio
 from HVACSystem.SetpointManagers import SetpointManager
+from HVACSystem.PerformanceCurves import Curve
 from Schedules.ScheduleTools import ScheduleTool
 
 
@@ -60,10 +61,8 @@ class AirLoopComponent:
 
         # Demand branch
         if thermal_zones is not None and len(thermal_zones) != 0:
-            type_limit = ScheduleTool.schedule_type_limits(model, "Availability", 0, 1)
-            schedule = ScheduleTool.schedule_ruleset(model, 1, type_limits=type_limit, name="AlwaysOn")
             for zone in thermal_zones:
-                diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(model, schedule)
+                diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(model, ScheduleTool.always_on(model))
                 loop.addBranchForZone(zone, diffuser)
 
         return loop
@@ -242,6 +241,7 @@ class AirLoopComponent:
             coil.setHeatExchangerConfiguration(heat_exchanger_config)
 
         # controller = coil.controllerWaterCoil().get()
+
 
         return coil
 
@@ -635,6 +635,238 @@ class AirLoopComponent:
 
         if motor_in_airstream_fraction is not None:
             fan.setMotorInAirstreamFraction(motor_in_airstream_fraction)
+
+        return fan
+
+    @staticmethod
+    def fan_on_off(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            pressure_rise=None,
+            max_flow_rate=None,
+            fan_total_efficiency=None,
+            fan_efficiency=None,
+            motor_efficiency=None,
+            motor_in_airstream_fraction=None,
+            power_ratio_function_speed_ratio_curve=None,
+            efficiency_ratio_function_speed_ratio_curve=None):
+
+        fan = openstudio.openstudiomodel.FanOnOff(model)
+        if name is not None:
+            fan.setName(name)
+
+        if fan_total_efficiency is not None:
+            fan.setFanTotalEfficiency(fan_total_efficiency)
+
+        if pressure_rise is not None:
+            fan.setPressureRise(pressure_rise)
+
+        if max_flow_rate is not None:
+            fan.setMaximumFlowRate(max_flow_rate)
+        else:
+            fan.autosizeMaximumFlowRate()
+
+        if fan_total_efficiency is not None:
+            fan.setFanTotalEfficiency(fan_total_efficiency)
+
+        if fan_efficiency is not None:
+            fan.setFanEfficiency(fan_efficiency)
+
+        if motor_efficiency is not None:
+            fan.setMotorEfficiency(motor_efficiency)
+
+        if motor_in_airstream_fraction is not None:
+            fan.setMotorInAirstreamFraction(motor_in_airstream_fraction)
+
+        if power_ratio_function_speed_ratio_curve is not None:
+            try:
+                fan.setFanPowerRatioFunctionofSpeedRatioCurve(power_ratio_function_speed_ratio_curve)
+            except TypeError:
+                print("Curve type can only be exponent curve")
+
+        if efficiency_ratio_function_speed_ratio_curve is not None:
+            try:
+                fan.setFanEfficiencyRatioFunctionofSpeedRatioCurve(efficiency_ratio_function_speed_ratio_curve)
+            except TypeError:
+                print("Curve type can only be quadratic or cubic")
+
+        return fan
+
+    @staticmethod
+    def fan_system_model_variable(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            speed_control_method="Continuous",  # Continuous, Discrete
+            electric_power_min_flow_rate_fraction=None,
+            fan_total_efficiency=None,
+            pressure_rise=None,
+            max_flow_rate=None,
+            design_electric_power=None,
+            design_power_sizing_method: str = None,
+            electric_power_per_flow_rate=None,
+            electric_power_per_flow_per_pressure=None,
+            electric_power_function_flow_fraction_curve: openstudio.openstudiomodel.CurveQuartic = None,
+            night_ventilation_pressure_rise=None,
+            night_ventilation_flow_fraction=None,
+            motor_loss_zone=None,
+            motor_loss_radiative_fraction=None,
+            motor_efficiency=None,
+            motor_in_airstream_fraction=None):
+
+        fan = openstudio.openstudiomodel.FanSystemModel(model)
+        if name is not None:
+            fan.setName(name)
+
+        if speed_control_method is not None:
+            fan.setSpeedControlMethod(speed_control_method)
+
+        if fan_total_efficiency is not None:
+            fan.setFanTotalEfficiency(fan_total_efficiency)
+
+        if pressure_rise is not None:
+            fan.setDesignPressureRise(pressure_rise)
+
+        if electric_power_min_flow_rate_fraction is not None:
+            fan.setElectricPowerMinimumFlowRateFraction(electric_power_min_flow_rate_fraction)
+        else:
+            fan.setElectricPowerMinimumFlowRateFraction(0)
+
+        if max_flow_rate is not None:
+            fan.setDesignMaximumAirFlowRate(max_flow_rate)
+        else:
+            fan.autosizeDesignMaximumAirFlowRate()
+
+        if design_electric_power is not None:
+            fan.setDesignElectricPowerConsumption(design_electric_power)
+        else:
+            fan.autosizeDesignElectricPowerConsumption()
+
+        # Options:
+        # ********************************************************
+        # PowerPerFlow
+        # PowerPerFlowPerPressure
+        # TotalEfficiencyAndPressure
+        if design_power_sizing_method is not None:
+            fan.setDesignPowerSizingMethod(design_power_sizing_method)
+
+        if electric_power_per_flow_rate is not None:
+            fan.setElectricPowerPerUnitFlowRate(electric_power_per_flow_rate)
+
+        if electric_power_per_flow_per_pressure is not None:
+            fan.setElectricPowerPerUnitFlowRatePerUnitPressure(electric_power_per_flow_per_pressure)
+
+        if electric_power_function_flow_fraction_curve is not None:
+            fan.setElectricPowerFunctionofFlowFractionCurve(electric_power_function_flow_fraction_curve)
+        else:
+            curve = Curve.quartic(model, 0.04076, 0.088, -0.0729, 0.9437, 0, 0, 1, 0, 1)
+            fan.setElectricPowerFunctionofFlowFractionCurve(curve)
+
+        if night_ventilation_pressure_rise is not None:
+            fan.setNightVentilationModePressureRise(night_ventilation_pressure_rise)
+
+        if night_ventilation_flow_fraction is not None:
+            fan.setNightVentilationModeFlowFraction(night_ventilation_flow_fraction)
+
+        if motor_loss_zone is not None:
+            fan.setMotorLossZone(motor_loss_zone)
+
+        if motor_loss_radiative_fraction is not None:
+            fan.setMotorLossRadiativeFraction(motor_loss_radiative_fraction)
+
+        if motor_efficiency is not None:
+            fan.setMotorEfficiency(motor_efficiency)
+
+        if motor_in_airstream_fraction is not None:
+            fan.setMotorInAirStreamFraction(motor_in_airstream_fraction)
+
+        return fan
+
+    @staticmethod
+    def fan_system_model_constant(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            speed_control_method="Discrete",  # Continuous, Discrete
+            number_of_speed=1.0,
+            electric_power_min_flow_rate_fraction=None,
+            fan_total_efficiency=None,
+            pressure_rise=None,
+            max_flow_rate=None,
+            design_electric_power=None,
+            design_power_sizing_method: str = None,
+            electric_power_per_flow_rate=None,
+            electric_power_per_flow_per_pressure=None,
+            night_ventilation_pressure_rise=None,
+            night_ventilation_flow_fraction=None,
+            motor_loss_zone=None,
+            motor_loss_radiative_fraction=None,
+            motor_efficiency=None,
+            motor_in_airstream_fraction=None):
+
+        fan = openstudio.openstudiomodel.FanSystemModel(model)
+        if name is not None:
+            fan.setName(name)
+
+        fan.setSpeedControlMethod(speed_control_method)
+        if number_of_speed == 1:
+            fan.addSpeed(1.0, 1.0)
+        elif number_of_speed > 1:
+            for i in range(int(number_of_speed)):
+                fan.addSpeed((i+1)/number_of_speed, (i+1)/number_of_speed)
+        else:
+            raise ValueError("number of speed cannot be less than 0")
+
+        if fan_total_efficiency is not None:
+            fan.setFanTotalEfficiency(fan_total_efficiency)
+
+        if pressure_rise is not None:
+            fan.setDesignPressureRise(pressure_rise)
+
+        if electric_power_min_flow_rate_fraction is not None:
+            fan.setElectricPowerMinimumFlowRateFraction(electric_power_min_flow_rate_fraction)
+        else:
+            fan.setElectricPowerMinimumFlowRateFraction(0.2)
+
+        if max_flow_rate is not None:
+            fan.setDesignMaximumAirFlowRate(max_flow_rate)
+        else:
+            fan.autosizeDesignMaximumAirFlowRate()
+
+        if design_electric_power is not None:
+            fan.setDesignElectricPowerConsumption(design_electric_power)
+        else:
+            fan.autosizeDesignElectricPowerConsumption()
+
+        # Options:
+        # ********************************************************
+        # PowerPerFlow
+        # PowerPerFlowPerPressure
+        # TotalEfficiencyAndPressure
+        if design_power_sizing_method is not None:
+            fan.setDesignPowerSizingMethod(design_power_sizing_method)
+
+        if electric_power_per_flow_rate is not None:
+            fan.setElectricPowerPerUnitFlowRate(electric_power_per_flow_rate)
+
+        if electric_power_per_flow_per_pressure is not None:
+            fan.setElectricPowerPerUnitFlowRatePerUnitPressure(electric_power_per_flow_per_pressure)
+
+        if night_ventilation_pressure_rise is not None:
+            fan.setNightVentilationModePressureRise(night_ventilation_pressure_rise)
+
+        if night_ventilation_flow_fraction is not None:
+            fan.setNightVentilationModeFlowFraction(night_ventilation_flow_fraction)
+
+        if motor_loss_zone is not None:
+            fan.setMotorLossZone(motor_loss_zone)
+
+        if motor_loss_radiative_fraction is not None:
+            fan.setMotorLossRadiativeFraction(motor_loss_radiative_fraction)
+
+        if motor_efficiency is not None:
+            fan.setMotorEfficiency(motor_efficiency)
+
+        if motor_in_airstream_fraction is not None:
+            fan.setMotorInAirStreamFraction(motor_in_airstream_fraction)
 
         return fan
 

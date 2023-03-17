@@ -12,19 +12,138 @@ class ZoneTool:
 
     # Create a thermal zone
     @staticmethod
-    def thermal_zone(model, name):
+    def thermal_zone(
+            model,
+            name,
+            cooling_setpoint_schedules=[],
+            heating_setpoint_schedules=[],
+            dehumidification_setpoint_schedules=[],
+            humidification_setpoint_schedules=[],
+            multiplier: int = None,
+            ceiling_height=None,
+            volume=None,
+            zone_inside_convention_algorithm: str = None,
+            zone_outside_convention_algorithm: str = None,
+            use_ideal_air_load: bool = False):
+
         zone = ThermalZone(model)
         zone.setName(name)
+
+        # Assign thermostats to the zone:
+        thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
+        if cooling_setpoint_schedules is not None and len(cooling_setpoint_schedules) != 0:
+            if len(cooling_setpoint_schedules) == len(spaces):
+                thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
+            else:
+                thermostat.setCoolingSchedule(cooling_setpoint_schedules[0])
+        if heating_setpoint_schedules is not None and len(heating_setpoint_schedules) != 0:
+            if len(heating_setpoint_schedules) == len(spaces):
+                thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
+            else:
+                thermostat.setHeatingSchedule(heating_setpoint_schedules[0])
+
+        # Assign humidity thermostat to the zone:
+        humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
+        if dehumidification_setpoint_schedules is not None and len(dehumidification_setpoint_schedules) != 0:
+            if len(dehumidification_setpoint_schedules) == len(spaces):
+                humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                    dehumidification_setpoint_schedules[i])
+            else:
+                humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                    cooling_setpoint_schedules[0])
+        if humidification_setpoint_schedules is not None and len(humidification_setpoint_schedules) != 0:
+            if len(humidification_setpoint_schedules) == len(spaces):
+                humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                    humidification_setpoint_schedules[i])
+            else:
+                humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                    humidification_setpoint_schedules[0])
+
+        # Set other properties:
+        if multiplier is not None:
+            zone.setMultiplier(multiplier)
+        if ceiling_height is not None:
+            zone.setCeilingHeight(ceiling_height)
+        if volume is not None:
+            zone.setVolume(volume)
+        if zone_inside_convention_algorithm is not None:
+            zone.setZoneInsideConvectionAlgorithm(zone_inside_convention_algorithm)
+        if zone_outside_convention_algorithm is not None:
+            zone.setZoneOutsideConvectionAlgorithm(zone_outside_convention_algorithm)
+
+        zone.setUseIdealAirLoads(use_ideal_air_load)
 
         return zone
 
     @staticmethod
-    def thermal_zone_from_space(model, spaces=[]):
+    def thermal_zone_from_space(
+            model,
+            spaces=[],
+            cooling_setpoint_schedules=[],
+            heating_setpoint_schedules=[],
+            dehumidification_setpoint_schedules=[],
+            humidification_setpoint_schedules=[],
+            multiplier: int = None,
+            ceiling_height=None,
+            volume=None,
+            zone_inside_convention_algorithm: str = None,
+            zone_outside_convention_algorithm: str = None,
+            use_ideal_air_load: bool = False):
+
         thermal_zones = []
         if spaces is not None and len(spaces) != 0:
-            for space in spaces:
+            for i in range(len(spaces)):
                 zone = ThermalZone(model)
-                zone.setName(space.nameString())
+                zone.setName(spaces[i].nameString())
+                spaces[i].setThermalZone(zone)
+
+                # Assign thermostats to the zone:
+                thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
+                if cooling_setpoint_schedules is not None and len(cooling_setpoint_schedules) != 0:
+                    if len(cooling_setpoint_schedules) == len(spaces):
+                        thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
+                    else:
+                        thermostat.setCoolingSchedule(cooling_setpoint_schedules[0])
+                if heating_setpoint_schedules is not None and len(heating_setpoint_schedules) != 0:
+                    if len(heating_setpoint_schedules) == len(spaces):
+                        thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
+                    else:
+                        thermostat.setHeatingSchedule(heating_setpoint_schedules[0])
+
+                zone.setThermostatSetpointDualSetpoint(thermostat)
+
+                # Assign humidity thermostat to the zone:
+                humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
+                if dehumidification_setpoint_schedules is not None and len(dehumidification_setpoint_schedules) != 0:
+                    if len(dehumidification_setpoint_schedules) == len(spaces):
+                        humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                            dehumidification_setpoint_schedules[i])
+                    else:
+                        humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                            cooling_setpoint_schedules[0])
+                if humidification_setpoint_schedules is not None and len(humidification_setpoint_schedules) != 0:
+                    if len(humidification_setpoint_schedules) == len(spaces):
+                        humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                            humidification_setpoint_schedules[i])
+                    else:
+                        humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                            humidification_setpoint_schedules[0])
+
+                zone.setZoneControlHumidistat(humidity_thermostat)
+
+                # Set other properties:
+                if multiplier is not None:
+                    zone.setMultiplier(multiplier)
+                if ceiling_height is not None:
+                    zone.setCeilingHeight(ceiling_height)
+                if volume is not None:
+                    zone.setVolume(volume)
+                if zone_inside_convention_algorithm is not None:
+                    zone.setZoneInsideConvectionAlgorithm(zone_inside_convention_algorithm)
+                if zone_outside_convention_algorithm is not None:
+                    zone.setZoneOutsideConvectionAlgorithm(zone_outside_convention_algorithm)
+
+                zone.setUseIdealAirLoads(use_ideal_air_load)
                 thermal_zones.append(zone)
 
         return thermal_zones
@@ -218,11 +337,12 @@ class ZoneTool:
         people.setSpace(space)
 
         # Gas Equipment:
-        gas_def = GasEquipmentDefinition(model)
-        gas_def.setWattsperSpaceFloorArea(gas_power)
-        gas = GasEquipment(gas_def)
-        if gas_schedule is not None: gas.setSchedule(gas_schedule)
-        gas.setSpace(space)
+        if gas_power is not None and gas_power != 0:
+            gas_def = GasEquipmentDefinition(model)
+            gas_def.setWattsperSpaceFloorArea(gas_power)
+            gas = GasEquipment(gas_def)
+            if gas_schedule is not None: gas.setSchedule(gas_schedule)
+            gas.setSpace(space)
 
         # Space Type:
         space_type = SpaceType(model)
@@ -282,3 +402,5 @@ class ZoneTool:
             space_type.setDesignSpecificationOutdoorAir(outdoor_air)
         if infiltration is not None:
             infiltration.setSpaceType(space_type)
+
+        return space

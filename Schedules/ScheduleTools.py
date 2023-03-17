@@ -9,13 +9,13 @@ class ScheduleTool:
 
     # Schedule Type Limits
     @staticmethod
-    def schedule_type_limits(model, unit_type, lower_limit=-9999, upper_limit=-9999, numeric_type=None, name=None):
+    def schedule_type_limits(model, unit_type, numeric_type, lower_limit=-9999, upper_limit=-9999, name=None):
         type_limits = osModel.ScheduleTypeLimits(model)
         type_limits.setUnitType(unit_type)
+        type_limits.setNumericType(numeric_type)
         if name is not None: type_limits.setName(name)
         if lower_limit != -9999: type_limits.setLowerLimitValue(lower_limit)
         if upper_limit != -9999: type_limits.setUpperLimitValue(upper_limit)
-        if numeric_type is not None: type_limits.setNumericType(numeric_type)
 
         return type_limits
 
@@ -91,3 +91,17 @@ class ScheduleTool:
         if name is not None: schedule_ruleset.setName(name)
 
         return schedule_ruleset
+
+    @staticmethod
+    def always_on(model):
+        type_limit = ScheduleTool.schedule_type_limits(model, "Availability", "Discrete", 0, 1, "always on limits")
+        schedule = ScheduleTool.schedule_ruleset(model, 1, type_limits=type_limit, name="AlwaysOn")
+
+        return schedule
+
+    @staticmethod
+    def always_off(model):
+        type_limit = ScheduleTool.schedule_type_limits(model, "Availability", "Discrete", 0, 1, "always off limits")
+        schedule = ScheduleTool.schedule_ruleset(model, 0, type_limits=type_limit, name="AlwaysOff")
+
+        return schedule
