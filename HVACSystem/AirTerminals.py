@@ -1,6 +1,6 @@
 import openstudio
 from Schedules.ScheduleTools import ScheduleTool
-from AirLoopComponents import AirLoopComponent
+from HVACSystem.AirLoopComponents import AirLoopComponent
 
 
 class AirTerminal:

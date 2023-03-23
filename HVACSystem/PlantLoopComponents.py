@@ -56,11 +56,10 @@ class PlantLoopComponent:
                     item.addToNode(node)
 
         if demand_branches is not None and len(demand_branches) != 0:
-            for branch in demand_branches:
-                plant.addSupplyBranchForComponent(branch.pop(-1))
-                node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
-                for item in branch:
-                    item.addToNode(node)
+            for item in demand_branches:
+                plant.addSupplyBranchForComponent(demand_branches.pop(-1))
+                node = plant.demandMixer().inletModelObjects()[-1].to_Node().get()
+                item.addToNode(node)
 
         node_supply_out = plant.supplyOutletNode()
         node_demand_inlet = plant.demandInletNode()

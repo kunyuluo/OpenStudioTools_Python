@@ -1,6 +1,6 @@
 import openstudio
 from Schedules.ScheduleTools import ScheduleTool
-from AirLoopComponents import AirLoopComponent
+from HVACSystem.AirLoopComponents import AirLoopComponent
 
 
 class ZoneEquipment:
@@ -76,7 +76,7 @@ class ZoneEquipment:
                                       or heating_coil_type == "CoilHeatingElectric" \
                                       or heating_coil_type == "CoilHeatingGas"
 
-            cooling_coil_type_check = cooling_coil_type == "CoilCoolingWater" \
+            cooling_coil_type_check = cooling_coil_type == "CoilCoolingDXHeatExchangerAssisted" \
                                       or cooling_coil_type == "CoilCoolingDX" \
                                       or cooling_coil_type == "CoilCoolingDXSingleSpeed" \
                                       or cooling_coil_type == "CoilCoolingDXVariableSpeed"
@@ -89,8 +89,8 @@ class ZoneEquipment:
 
             type_error_message = {
                 "heating": "Heating coil type can only be CoilHeatingWater, CoilHeatingElectric, or CoilHeatingGas",
-                "cooling": "Cooling coil type can only be CoilCoolingWater, CoilCoolingDX, CoilCoolingDXSingleSpeed, "
-                           "or CoilCoolingDXVariableSpeed",
+                "cooling": "Cooling coil type can only be CoilCoolingDXHeatExchangerAssisted, CoilCoolingDX, "
+                           "CoilCoolingDXSingleSpeed or CoilCoolingDXVariableSpeed",
                 "fan": "Fan type can only be FanConstantVolume or FanSystemModel"}
 
             if fan_type_check and cooling_coil_type_check and heating_coil_type_check:
@@ -114,6 +114,197 @@ class ZoneEquipment:
                         raise TypeError(type_error_message[key])
         else:
             raise ValueError(ZoneEquipment.model_null_message)
+
+    @staticmethod
+    def vrf_terminal(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            schedule=None,
+            supply_air_flow_rate_cooling=None,
+            supply_air_flow_rate_no_cooling=None,
+            supply_air_flow_rate_heating=None,
+            supply_air_flow_rate_no_heating=None,
+            need_outdoor_air: bool = False,
+            outdoor_air_flow_rate_cooling=None,
+            outdoor_air_flow_rate_heating=None,
+            outdoor_air_flow_rate_no_cooling_heating=None,
+            supply_air_fan_schedule=None,
+            terminal_on_parasitic_electric_energy=None,
+            terminal_off_parasitic_electric_energy=None,
+            heating_capacity_sizing_ratio=None,
+            max_supply_air_temp_from_supplemental_heater=None,
+            max_outdoor_air_temp_for_supplemental_heater=None,
+            thermal_zone=None,
+            outdoor_unit: openstudio.openstudiomodel.AirConditionerVariableRefrigerantFlow = None):
+
+        terminal = openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(model)
+
+        if name is not None:
+            terminal.setName(name)
+
+        if schedule is not None:
+            terminal.setTerminalUnitAvailabilityschedule(schedule)
+
+        if supply_air_flow_rate_cooling is not None:
+            terminal.setSupplyAirFlowRateDuringCoolingOperation(supply_air_flow_rate_cooling)
+        else:
+            terminal.autosizeSupplyAirFlowRateDuringCoolingOperation()
+        if supply_air_flow_rate_no_cooling is not None:
+            terminal.setSupplyAirFlowRateWhenNoCoolingisNeeded(supply_air_flow_rate_no_cooling)
+        else:
+            terminal.autosizeSupplyAirFlowRateWhenNoCoolingisNeeded()
+        if supply_air_flow_rate_heating is not None:
+            terminal.setSupplyAirFlowRateDuringHeatingOperation(supply_air_flow_rate_heating)
+        else:
+            terminal.autosizeSupplyAirFlowRateDuringHeatingOperation()
+        if supply_air_flow_rate_no_heating is not None:
+            terminal.setSupplyAirFlowRateWhenNoHeatingisNeeded(supply_air_flow_rate_no_heating)
+        else:
+            terminal.autosizeSupplyAirFlowRateWhenNoHeatingisNeeded()
+
+        if need_outdoor_air:
+            if outdoor_air_flow_rate_cooling is not None:
+                terminal.setOutdoorAirFlowRateDuringCoolingOperation(outdoor_air_flow_rate_cooling)
+            else:
+                terminal.autosizeOutdoorAirFlowRateDuringCoolingOperation()
+            if outdoor_air_flow_rate_heating is not None:
+                terminal.setOutdoorAirFlowRateDuringHeatingOperation(outdoor_air_flow_rate_heating)
+            else:
+                terminal.autosizeOutdoorAirFlowRateDuringHeatingOperation()
+            if outdoor_air_flow_rate_no_cooling_heating is not None:
+                terminal.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(outdoor_air_flow_rate_no_cooling_heating)
+            else:
+                terminal.autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()
+        else:
+            terminal.setOutdoorAirFlowRateDuringCoolingOperation(0)
+            terminal.setOutdoorAirFlowRateDuringHeatingOperation(0)
+            terminal.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0)
+
+        if supply_air_fan_schedule is not None:
+            terminal.setSupplyAirFanOperatingModeSchedule(supply_air_fan_schedule)
+
+        if terminal_on_parasitic_electric_energy is not None:
+            terminal.setZoneTerminalUnitOnParasiticElectricEnergyUse(terminal_on_parasitic_electric_energy)
+        if terminal_off_parasitic_electric_energy is not None:
+            terminal.setZoneTerminalUnitOffParasiticElectricEnergyUse(terminal_off_parasitic_electric_energy)
+
+        if heating_capacity_sizing_ratio is not None:
+            terminal.setRatedTotalHeatingCapacitySizingRatio(heating_capacity_sizing_ratio)
+
+        if max_supply_air_temp_from_supplemental_heater is not None:
+            terminal.setMaximumSupplyAirTemperaturefromSupplementalHeater(max_supply_air_temp_from_supplemental_heater)
+        else:
+            terminal.autosizeMaximumSupplyAirTemperaturefromSupplementalHeater()
+
+        if max_outdoor_air_temp_for_supplemental_heater is not None:
+            terminal.setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(
+                max_outdoor_air_temp_for_supplemental_heater)
+
+        if thermal_zone is not None:
+            terminal.setControllingZoneorThermostatLocation(thermal_zone)
+
+        if outdoor_unit is not None:
+            outdoor_unit.addTerminal(terminal)
+
+        return terminal
+
+    @staticmethod
+    def vrf_terminal_adv(
+            model: openstudio.openstudiomodel.Model,
+            cooling_coil: openstudio.openstudiomodel.CoilCoolingDXVariableRefrigerantFlow,
+            heating_coil: openstudio.openstudiomodel.CoilHeatingDXVariableRefrigerantFlow,
+            name: str = None,
+            schedule=None,
+            supply_air_flow_rate_cooling=None,
+            supply_air_flow_rate_no_cooling=None,
+            supply_air_flow_rate_heating=None,
+            supply_air_flow_rate_no_heating=None,
+            need_outdoor_air: bool = False,
+            outdoor_air_flow_rate_cooling=None,
+            outdoor_air_flow_rate_heating=None,
+            outdoor_air_flow_rate_no_cooling_heating=None,
+            supply_air_fan_schedule=None,
+            terminal_on_parasitic_electric_energy=None,
+            terminal_off_parasitic_electric_energy=None,
+            heating_capacity_sizing_ratio=None,
+            max_supply_air_temp_from_supplemental_heater=None,
+            max_outdoor_air_temp_for_supplemental_heater=None,
+            thermal_zone=None,
+            outdoor_unit: openstudio.openstudiomodel.AirConditionerVariableRefrigerantFlow = None):
+
+        terminal = openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(model)
+        # fan = AirLoopComponent.fan_on_off(model)
+        terminal.setCoolingCoil(cooling_coil)
+        terminal.setHeatingCoil(heating_coil)
+
+        if name is not None:
+            terminal.setName(name)
+
+        if schedule is not None:
+            terminal.setTerminalUnitAvailabilityschedule(schedule)
+
+        if supply_air_flow_rate_cooling is not None:
+            terminal.setSupplyAirFlowRateDuringCoolingOperation(supply_air_flow_rate_cooling)
+        else:
+            terminal.autosizeSupplyAirFlowRateDuringCoolingOperation()
+        if supply_air_flow_rate_no_cooling is not None:
+            terminal.setSupplyAirFlowRateWhenNoCoolingisNeeded(supply_air_flow_rate_no_cooling)
+        else:
+            terminal.autosizeSupplyAirFlowRateWhenNoCoolingisNeeded()
+        if supply_air_flow_rate_heating is not None:
+            terminal.setSupplyAirFlowRateDuringHeatingOperation(supply_air_flow_rate_heating)
+        else:
+            terminal.autosizeSupplyAirFlowRateDuringHeatingOperation()
+        if supply_air_flow_rate_no_heating is not None:
+            terminal.setSupplyAirFlowRateWhenNoHeatingisNeeded(supply_air_flow_rate_no_heating)
+        else:
+            terminal.autosizeSupplyAirFlowRateWhenNoHeatingisNeeded()
+
+        if need_outdoor_air:
+            if outdoor_air_flow_rate_cooling is not None:
+                terminal.setOutdoorAirFlowRateDuringCoolingOperation(outdoor_air_flow_rate_cooling)
+            else:
+                terminal.autosizeOutdoorAirFlowRateDuringCoolingOperation()
+            if outdoor_air_flow_rate_heating is not None:
+                terminal.setOutdoorAirFlowRateDuringHeatingOperation(outdoor_air_flow_rate_heating)
+            else:
+                terminal.autosizeOutdoorAirFlowRateDuringHeatingOperation()
+            if outdoor_air_flow_rate_no_cooling_heating is not None:
+                terminal.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(outdoor_air_flow_rate_no_cooling_heating)
+            else:
+                terminal.autosizeOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded()
+        else:
+            terminal.setOutdoorAirFlowRateDuringCoolingOperation(0)
+            terminal.setOutdoorAirFlowRateDuringHeatingOperation(0)
+            terminal.setOutdoorAirFlowRateWhenNoCoolingorHeatingisNeeded(0)
+
+        if supply_air_fan_schedule is not None:
+            terminal.setSupplyAirFanOperatingModeSchedule(supply_air_fan_schedule)
+
+        if terminal_on_parasitic_electric_energy is not None:
+            terminal.setZoneTerminalUnitOnParasiticElectricEnergyUse(terminal_on_parasitic_electric_energy)
+        if terminal_off_parasitic_electric_energy is not None:
+            terminal.setZoneTerminalUnitOffParasiticElectricEnergyUse(terminal_off_parasitic_electric_energy)
+
+        if heating_capacity_sizing_ratio is not None:
+            terminal.setRatedTotalHeatingCapacitySizingRatio(heating_capacity_sizing_ratio)
+
+        if max_supply_air_temp_from_supplemental_heater is not None:
+            terminal.setMaximumSupplyAirTemperaturefromSupplementalHeater(max_supply_air_temp_from_supplemental_heater)
+        else:
+            terminal.autosizeMaximumSupplyAirTemperaturefromSupplementalHeater()
+
+        if max_outdoor_air_temp_for_supplemental_heater is not None:
+            terminal.setMaximumOutdoorDryBulbTemperatureforSupplementalHeaterOperation(
+                max_outdoor_air_temp_for_supplemental_heater)
+
+        if thermal_zone is not None:
+            terminal.setControllingZoneorThermostatLocation(thermal_zone)
+
+        if outdoor_unit is not None:
+            outdoor_unit.addTerminal(terminal)
+
+        return terminal
 
     # @staticmethod
     # def fan_coil_unit(

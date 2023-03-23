@@ -7,6 +7,45 @@ from Schedules.ScheduleTools import ScheduleTool
 class AirLoopComponent:
 
     @staticmethod
+    def air_loop_simplified(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            design_air_flow_rate=None,
+            design_return_air_flow_fraction=None,
+            air_terminal=None,
+            thermal_zones: openstudio.openstudiomodel.ThermalZone = []):
+
+        loop = openstudio.openstudiomodel.AirLoopHVAC(model)
+        reheat_coils = []
+        if name is not None: loop.setName(name)
+        if design_air_flow_rate is not None:
+            loop.setDesignSupplyAirFlowRate(design_air_flow_rate)
+        else:
+            loop.autosizeDesignSupplyAirFlowRate()
+
+        if design_return_air_flow_fraction is not None:
+            loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
+
+        if air_terminal is not None:
+            terminal = air_terminal
+        else:
+            terminal = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(
+                model, ScheduleTool.always_on(model))
+
+        # Demand branch
+        if thermal_zones is not None and len(thermal_zones) != 0:
+            for zone in thermal_zones:
+                diffuser = terminal
+                loop.addBranchForZone(zone, diffuser)
+
+                # Get all reheat coils if available
+                try:
+                    reheat_coils.append(diffuser.reheatCoil())
+                except: pass
+
+        return loop, reheat_coils
+
+    @staticmethod
     def air_loop(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
@@ -62,10 +101,191 @@ class AirLoopComponent:
         # Demand branch
         if thermal_zones is not None and len(thermal_zones) != 0:
             for zone in thermal_zones:
-                diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(model, ScheduleTool.always_on(model))
+                diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(model,
+                                                                                                  ScheduleTool.always_on(
+                                                                                                      model))
                 loop.addBranchForZone(zone, diffuser)
 
         return loop
+
+    @staticmethod
+    def vrf_system(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            schedule=None,
+            cooling_capacity=None,
+            heating_capacity=None,
+            cooling_cop=None,
+            heating_cop=None,
+            heating_capacity_sizing_ratio=None,
+            min_outdoor_temp_cooling_mode=None,
+            max_outdoor_temp_cooling_mode=None,
+            min_outdoor_temp_heating_mode=None,
+            max_outdoor_temp_heating_mode=None,
+            min_heat_pump_part_load_ratio=None,
+            zone_for_master_thermostat_location: openstudio.openstudiomodel.ThermalZone = None,
+            master_thermostat_priority_control_type: str = None,
+            thermostat_priority_schedule=None,
+            heat_pump_waste_heat_recovery: bool = False,
+            pipe_length_for_piping_correction_factor_cooling=None,
+            vertical_height_for_piping_correction_factor=None,
+            piping_correction_factor_for_height_cooling=None,
+            pipe_length_for_piping_correction_factor_heating=None,
+            piping_correction_factor_for_height_heating=None,
+            crankcase_heater_power_per_compressor=None,
+            number_of_compressor=None,
+            defrost_strategy: str = None,
+            defrost_control: str = None,
+            condenser_type: str = None,  # AirCooled, WaterCooled, EvapCooled
+            water_condenser_volume_flow_rate=None,
+            evaporative_condenser_effectiveness=None,
+            evaporative_condenser_air_flow_rate=None,
+            evaporative_condenser_pump_power=None,
+            fuel_type: str = None,
+            min_outdoor_temp_heat_recovery=None,
+            max_outdoor_temp_heat_recovery=None,
+            initial_heat_recovery_cooling_capacity_fraction=None,
+            heat_recovery_cooling_capacity_time_constant=None,
+            initial_heat_recovery_cooling_energy_fraction=None,
+            heat_recovery_cooling_energy_time_constant=None,
+            initial_heat_recovery_heating_capacity_fraction=None,
+            heat_recovery_heating_capacity_time_constant=None,
+            initial_heat_recovery_heating_energy_fraction=None,
+            heat_recovery_heating_energy_time_constant=None,
+            performance_curve_set=None,
+            terminals=None):
+
+        vrf_sys = openstudio.openstudiomodel.AirConditionerVariableRefrigerantFlow(model)
+
+        if name is not None:
+            vrf_sys.setName(name)
+
+        if schedule is not None:
+            vrf_sys.setAvailabilitySchedule(schedule)
+
+        if cooling_capacity is not None:
+            vrf_sys.setGrossRatedTotalCoolingCapacity(cooling_capacity)
+        else:
+            vrf_sys.autosizeGrossRatedTotalCoolingCapacity()
+        if heating_capacity is not None:
+            vrf_sys.setGrossRatedHeatingCapacity(heating_capacity)
+        else:
+            vrf_sys.autosizeGrossRatedHeatingCapacity()
+
+        if cooling_cop is not None:
+            vrf_sys.setGrossRatedCoolingCOP(cooling_cop)
+        if heating_cop is not None:
+            vrf_sys.setRatedHeatingCOP(heating_cop)
+        if heating_capacity_sizing_ratio is not None:
+            vrf_sys.setRatedHeatingCapacitySizingRatio(heating_capacity_sizing_ratio)
+
+        if min_outdoor_temp_cooling_mode is not None:
+            vrf_sys.setMinimumOutdoorTemperatureinCoolingMode(min_outdoor_temp_cooling_mode)
+        if min_outdoor_temp_heating_mode is not None:
+            vrf_sys.setMinimumOutdoorTemperatureinHeatingMode(min_outdoor_temp_heating_mode)
+        if max_outdoor_temp_cooling_mode is not None:
+            vrf_sys.setMaximumOutdoorTemperatureinCoolingMode(max_outdoor_temp_cooling_mode)
+        if max_outdoor_temp_heating_mode is not None:
+            vrf_sys.setMaximumOutdoorTemperatureinHeatingMode(max_outdoor_temp_heating_mode)
+
+        if min_heat_pump_part_load_ratio is not None:
+            vrf_sys.setMinimumHeatPumpPartLoadRatio(min_heat_pump_part_load_ratio)
+
+        if zone_for_master_thermostat_location is not None:
+            vrf_sys.setZoneforMasterThermostatLocation(zone_for_master_thermostat_location)
+
+        # Options:
+        # ******************************************************************
+        # LoadPriority
+        # ZonePriority
+        # ThermostatOffsetPriority
+        # MasterThermostatPriority
+        # Scheduled
+        if master_thermostat_priority_control_type is not None:
+            vrf_sys.setMasterThermostatPriorityControlType(master_thermostat_priority_control_type)
+
+        if thermostat_priority_schedule is not None:
+            vrf_sys.setThermostatPrioritySchedule(thermostat_priority_schedule)
+
+        if heat_pump_waste_heat_recovery:
+            vrf_sys.setHeatPumpWasteHeatRecovery(heat_pump_waste_heat_recovery)
+
+        if pipe_length_for_piping_correction_factor_cooling is not None:
+            vrf_sys.setEquivalentPipingLengthusedforPipingCorrectionFactorinCoolingMode(
+                pipe_length_for_piping_correction_factor_cooling)
+
+        if vertical_height_for_piping_correction_factor is not None:
+            vrf_sys.setVerticalHeightusedforPipingCorrectionFactor(vertical_height_for_piping_correction_factor)
+
+        if piping_correction_factor_for_height_cooling is not None:
+            vrf_sys.setPipingCorrectionFactorforHeightinCoolingModeCoefficient(
+                piping_correction_factor_for_height_cooling)
+
+        if pipe_length_for_piping_correction_factor_heating is not None:
+            vrf_sys.setEquivalentPipingLengthusedforPipingCorrectionFactorinHeatingMode(
+                pipe_length_for_piping_correction_factor_heating)
+
+        if piping_correction_factor_for_height_heating is not None:
+            vrf_sys.setPipingCorrectionFactorforHeightinHeatingModeCoefficient(
+                piping_correction_factor_for_height_heating)
+
+        if crankcase_heater_power_per_compressor is not None:
+            vrf_sys.setCrankcaseHeaterPowerperCompressor(crankcase_heater_power_per_compressor)
+        if number_of_compressor is not None:
+            vrf_sys.setNumberofCompressors(number_of_compressor)
+
+        if defrost_strategy is not None:
+            vrf_sys.setDefrostStrategy(defrost_strategy)
+        if defrost_control is not None:
+            vrf_sys.setDefrostControl(defrost_control)
+
+        if condenser_type is not None:
+            vrf_sys.setCondenserType(condenser_type)
+
+        if water_condenser_volume_flow_rate is not None:
+            vrf_sys.setWaterCondenserVolumeFlowRate(water_condenser_volume_flow_rate)
+        if evaporative_condenser_effectiveness is not None:
+            vrf_sys.setEvaporativeCondenserEffectiveness(evaporative_condenser_effectiveness)
+        if evaporative_condenser_air_flow_rate is not None:
+            vrf_sys.setEvaporativeCondenserAirFlowRate(evaporative_condenser_air_flow_rate)
+        if evaporative_condenser_pump_power is not None:
+            vrf_sys.setEvaporativeCondenserPumpRatedPowerConsumption(evaporative_condenser_pump_power)
+
+        if fuel_type is not None:
+            vrf_sys.setFuelType(fuel_type)
+
+        if min_outdoor_temp_heat_recovery is not None:
+            vrf_sys.setMinimumOutdoorTemperatureinHeatRecoveryMode(min_outdoor_temp_heat_recovery)
+        if max_outdoor_temp_heat_recovery is not None:
+            vrf_sys.setMaximumOutdoorTemperatureinHeatRecoveryMode(max_outdoor_temp_heat_recovery)
+
+        if initial_heat_recovery_cooling_capacity_fraction is not None:
+            vrf_sys.setInitialHeatRecoveryCoolingCapacityFraction(initial_heat_recovery_cooling_capacity_fraction)
+        if initial_heat_recovery_cooling_energy_fraction is not None:
+            vrf_sys.setInitialHeatRecoveryCoolingEnergyFraction(initial_heat_recovery_cooling_energy_fraction)
+        if heat_recovery_cooling_capacity_time_constant is not None:
+            vrf_sys.setHeatRecoveryCoolingCapacityTimeConstant(heat_recovery_cooling_capacity_time_constant)
+        if heat_recovery_cooling_energy_time_constant is not None:
+            vrf_sys.setHeatRecoveryCoolingEnergyTimeConstant(heat_recovery_cooling_energy_time_constant)
+
+        if initial_heat_recovery_heating_capacity_fraction is not None:
+            vrf_sys.setInitialHeatRecoveryHeatingCapacityFraction(initial_heat_recovery_heating_capacity_fraction)
+        if initial_heat_recovery_heating_energy_fraction is not None:
+            vrf_sys.setInitialHeatRecoveryHeatingEnergyFraction(initial_heat_recovery_heating_energy_fraction)
+        if heat_recovery_heating_capacity_time_constant is not None:
+            vrf_sys.setHeatRecoveryHeatingCapacityTimeConstant(heat_recovery_heating_capacity_time_constant)
+        if heat_recovery_heating_energy_time_constant is not None:
+            vrf_sys.setHeatRecoveryHeatingEnergyTimeConstant(heat_recovery_heating_energy_time_constant)
+
+        # Add VRF terminal unit to the system
+        if terminals is not None:
+            if isinstance(terminals, openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow):
+                vrf_sys.addTerminal(terminals)
+            if isinstance(terminals, list):
+                for terminal in terminals:
+                    vrf_sys.addTerminal(terminal)
+
+        return vrf_sys
 
     # Sizing:
     @staticmethod
@@ -242,7 +462,6 @@ class AirLoopComponent:
 
         # controller = coil.controllerWaterCoil().get()
 
-
         return coil
 
     @staticmethod
@@ -304,7 +523,8 @@ class AirLoopComponent:
             coil.setMinimumOutdoorDryBulbTemperatureforCompressorOperation(min_outdoor_air_temp_compressor_operation)
 
         if max_outdoor_air_temp_crankcase_operation is not None:
-            coil.setMaximumOutdoorDryBulbTemperatureForCrankcaseHeaterOperation(max_outdoor_air_temp_crankcase_operation)
+            coil.setMaximumOutdoorDryBulbTemperatureForCrankcaseHeaterOperation(
+                max_outdoor_air_temp_crankcase_operation)
 
         if crankcase_heater_capacity is not None:
             coil.setCrankcaseHeaterCapacity(crankcase_heater_capacity)
@@ -335,6 +555,46 @@ class AirLoopComponent:
             coil.setEnergyInputRatioFunctionOfFlowFractionCurve(cop_flow_curve)
         if plr_curve is not None:
             coil.setPartLoadFractionCorrelationCurve(plr_curve)
+
+        return coil
+
+    @staticmethod
+    def coil_cooling_vrf(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            schedule=None,
+            capacity=None,
+            rated_air_flow_rate=None,
+            sensible_heat_ratio=None,
+            capacity_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            capacity_flow_curve: openstudio.openstudiomodel.CurveQuadratic = None):
+
+        coil = openstudio.openstudiomodel.CoilCoolingDXVariableRefrigerantFlow(model)
+
+        if name is not None:
+            coil.setName(name)
+        if schedule is not None:
+            coil.setAvailabilitySchedule(schedule)
+
+        if capacity is not None:
+            coil.setRatedTotalCoolingCapacity(capacity)
+        else:
+            coil.autosizeRatedTotalCoolingCapacity()
+
+        if rated_air_flow_rate is not None:
+            coil.setRatedAirFlowRate(rated_air_flow_rate)
+        else:
+            coil.autosizeRatedAirFlowRate()
+
+        if sensible_heat_ratio is not None:
+            coil.setRatedSensibleHeatRatio(sensible_heat_ratio)
+        else:
+            coil.autosizeRatedSensibleHeatRatio()
+
+        if capacity_temperature_curve is not None:
+            coil.setCoolingCapacityRatioModifierFunctionofTemperatureCurve(capacity_temperature_curve)
+        if capacity_flow_curve is not None:
+            coil.setCoolingCapacityModifierCurveFunctionofFlowFraction(capacity_flow_curve)
 
         return coil
 
@@ -452,7 +712,8 @@ class AirLoopComponent:
             coil.setMaximumOutdoorDryBulbTemperatureforDefrostOperation(max_outdoor_air_temp_defrost_operation)
 
         if max_outdoor_air_temp_crankcase_operation is not None:
-            coil.setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(max_outdoor_air_temp_crankcase_operation)
+            coil.setMaximumOutdoorDryBulbTemperatureforCrankcaseHeaterOperation(
+                max_outdoor_air_temp_crankcase_operation)
 
         if crankcase_heater_capacity is not None:
             coil.setCrankcaseHeaterCapacity(crankcase_heater_capacity)
@@ -479,6 +740,40 @@ class AirLoopComponent:
             coil.setEnergyInputRatioFunctionofFlowFractionCurve(cop_flow_curve)
         if plr_curve is not None:
             coil.setPartLoadFractionCorrelationCurve(plr_curve)
+
+        return coil
+
+    @staticmethod
+    def coil_heating_vrf(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            schedule=None,
+            capacity=None,
+            rated_air_flow_rate=None,
+            capacity_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            capacity_flow_curve: openstudio.openstudiomodel.CurveQuadratic = None):
+
+        coil = openstudio.openstudiomodel.CoilHeatingDXVariableRefrigerantFlow(model)
+
+        if name is not None:
+            coil.setName(name)
+        if schedule is not None:
+            coil.setAvailabilitySchedule(schedule)
+
+        if capacity is not None:
+            coil.setRatedTotalHeatingCapacity(capacity)
+        else:
+            coil.autosizeRatedTotalHeatingCapacity()
+
+        if rated_air_flow_rate is not None:
+            coil.setRatedAirFlowRate(rated_air_flow_rate)
+        else:
+            coil.autosizeRatedAirFlowRate()
+
+        if capacity_temperature_curve is not None:
+            coil.setHeatingCapacityRatioModifierFunctionofTemperatureCurve(capacity_temperature_curve)
+        if capacity_flow_curve is not None:
+            coil.setHeatingCapacityModifierFunctionofFlowFractionCurve(capacity_flow_curve)
 
         return coil
 
@@ -811,7 +1106,7 @@ class AirLoopComponent:
             fan.addSpeed(1.0, 1.0)
         elif number_of_speed > 1:
             for i in range(int(number_of_speed)):
-                fan.addSpeed((i+1)/number_of_speed, (i+1)/number_of_speed)
+                fan.addSpeed((i + 1) / number_of_speed, (i + 1) / number_of_speed)
         else:
             raise ValueError("number of speed cannot be less than 0")
 

@@ -11,12 +11,14 @@ from Resources.ExteriorEquipments import ExteriorEquipments
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
 from Schedules.Templates.Template import Office, Residential
+from Schedules.ScheduleTools import ScheduleTool
 from Constructions.ConstructionSets import ConstructionSet
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
 from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.Template.ASHRAE import ASHRAEBaseline
-
+from HVACSystem.Template.Template import Template
+from HVACSystem.ZoneEquipments import ZoneEquipment
 
 # vertices = []
 path_str = "D:\Projects\OpenStudioDev\Model_350.osm"
@@ -182,17 +184,9 @@ PlantLoopComponent.sizing(model, plant_loop, "Cooling")
 
 # Air loop:
 # **************************************************************************************
-air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
-
-coil1 = openstudio.openstudiomodel.CoilHeatingWater(model)
-fan1 = openstudio.openstudiomodel.CoilCoolingDXVariableSpeed(model)
-print(str(type(fan1)).split('.')[-1].split("'")[0])
-# coil2 = openstudio.openstudiomodel.CoilHeatingGas(model)
-# print(type(coil2))
-# if type(coil1) == type(coil2):
-#     print("yes")
-# else:
-#     print("no")
+# air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
+# Template.vav_chiller_boiler(model, thermal_zones=thermal_zones)
+vrf = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal")
 
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
