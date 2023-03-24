@@ -19,6 +19,8 @@ from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.Template.ASHRAE import ASHRAEBaseline
 from HVACSystem.Template.Template import Template
 from HVACSystem.ZoneEquipments import ZoneEquipment
+from HVACSystem.PerformanceCurves import Curve
+from Resources.Helpers import Helper
 
 # vertices = []
 path_str = "D:\Projects\OpenStudioDev\Model_350.osm"
@@ -116,77 +118,59 @@ thermal_zones = ZoneTool.thermal_zone_from_space(
     spaces=[space_1, space_2],
     cooling_setpoint_schedules=[office_sch.cooling_setpoint(), resid_sch.cooling_setpoint()],
     heating_setpoint_schedules=[office_sch.heating_setpoint(), resid_sch.heating_setpoint()],
-    use_ideal_air_load=True)
+    use_ideal_air_load=False)
 
 # Geometry tool testing:
-# **************************************************************************************
-# vertices_1 = [[0.0, 0.0, 0.0], [5.0, 0.0, 0.0], [5.0, 0.0, 3.0], [0.0, 0.0, 3.0]]
-# wall_1 = GeometryTool.make_surface(model, vertices_1)
-#
-# vertices_2 = [[0.0, 0.0, 0.0], [0.0, 0.0, 3.0], [5.0, 0.0, 3.0], [5.0, 0.0, 0.0]]
-# wall_2 = GeometryTool.make_surface(model, vertices_2)
-#
-# vertices_3 = [[0.0, 4.0, 0.0], [0.0, 4.0, 3.0], [5.0, 4.0, 3.0], [5.0, 4.0, 0.0]]
-# wall_3 = GeometryTool.make_surface(model, vertices_3)
-#
-# vertices_4 = [[0.0, 9.0, 0.0], [0.0, 9.0, 3.0], [5.0, 9.0, 3.0], [5.0, 9.0, 0.0]]
-# wall_4 = GeometryTool.make_surface(model, vertices_4)
-#
-# walls = [wall_1, wall_2, wall_3, wall_4]
-# GeometryTool.solve_adjacency(walls, True)
-#
-# wall_show = wall_4
-# print(wall_show.surfaceType() + "," + wall_show.outsideBoundaryCondition())
-# print(wall_show.outwardNormal())
-
 # **************************************************************************************
 cons_set = ConstructionSet(model, "OMG").get()
 floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
 floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
-srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
-                                          building_story=stories[0])
+floor_plan3 = [[10.0, 0.0, 3.5], [10.0, 5.0, 3.5], [14.0, 5.0, 3.5], [14.0, 0.0, 3.5]]
+# srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
+#                                           building_story=stories[0])
 srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2, construction_set=cons_set,
                                           building_story=stories[0])
-GeometryTool.solve_adjacency(srfs1 + srfs2)
-
-# Plane Testing:
-# **************************************************************************************
-origin = Point3d(0, 0, 0)
-normal = Vector3d(0, 0, 1)
-plane = Plane(origin, normal)
-# print(plane.outwardNormal())
+srfs3 = GeometryTool.space_from_extrusion(model, floor_plan3, 3.5, space=space_1, construction_set=cons_set,
+                                          building_story=stories[1])
+GeometryTool.solve_adjacency(srfs3 + srfs2)
 
 # Plant loop:
 # **************************************************************************************
-chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1", condenser_type="AirCooled")
-chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2", condenser_type="AirCooled")
-chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3", condenser_type="AirCooled")
-pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
-pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
-pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
-pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
-pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
-pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
-adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
-items = [[chiller1, pump1, pump4], [chiller2, pump2, pump5], [chiller3, pump3, pump6], [adiabatic_pipe]]
-spm1 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
-spm2 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
-
-plant_loop = PlantLoopComponent.plant_loop(
-    model,
-    name="Chilled Water Loop HaHaHa",
-    common_pipe_simulation="TwoWayCommonPipe",
-    supply_branches=items,
-    setpoint_manager=spm1,
-    setpoint_manager_secondary=spm2)
-
-PlantLoopComponent.sizing(model, plant_loop, "Cooling")
+# chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1", condenser_type="AirCooled")
+# chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2", condenser_type="AirCooled")
+# chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3", condenser_type="AirCooled")
+# pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
+# pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
+# pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
+# pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
+# pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
+# pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
+# adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
+# items = [[chiller1, pump1, pump4], [chiller2, pump2, pump5], [chiller3, pump3, pump6], [adiabatic_pipe]]
+# spm1 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
+# spm2 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
+#
+# plant_loop = PlantLoopComponent.plant_loop(
+#     model,
+#     name="Chilled Water Loop HaHaHa",
+#     common_pipe_simulation="TwoWayCommonPipe",
+#     supply_branches=items,
+#     setpoint_manager=spm1,
+#     setpoint_manager_secondary=spm2)
+#
+# PlantLoopComponent.sizing(model, plant_loop, "Cooling")
 
 # Air loop:
 # **************************************************************************************
 # air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
 # Template.vav_chiller_boiler(model, thermal_zones=thermal_zones)
-vrf = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal")
+terminals = []
+for i in range(len(thermal_zones)):
+    vrf_terminal = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
+    terminals.append(vrf_terminal)
+vrf_sys = AirLoopComponent.vrf_system(
+    model, "Kunyu's VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
+
 
 # ASHRAEBaseline.system_list()
 # **************************************************************************************

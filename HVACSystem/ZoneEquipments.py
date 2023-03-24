@@ -202,6 +202,7 @@ class ZoneEquipment:
 
         if thermal_zone is not None:
             terminal.setControllingZoneorThermostatLocation(thermal_zone)
+            terminal.addToThermalZone(thermal_zone)
 
         if outdoor_unit is not None:
             outdoor_unit.addTerminal(terminal)
@@ -213,6 +214,7 @@ class ZoneEquipment:
             model: openstudio.openstudiomodel.Model,
             cooling_coil: openstudio.openstudiomodel.CoilCoolingDXVariableRefrigerantFlow,
             heating_coil: openstudio.openstudiomodel.CoilHeatingDXVariableRefrigerantFlow,
+            fan,
             name: str = None,
             schedule=None,
             supply_air_flow_rate_cooling=None,
@@ -232,10 +234,18 @@ class ZoneEquipment:
             thermal_zone=None,
             outdoor_unit: openstudio.openstudiomodel.AirConditionerVariableRefrigerantFlow = None):
 
-        terminal = openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(model)
-        # fan = AirLoopComponent.fan_on_off(model)
-        terminal.setCoolingCoil(cooling_coil)
-        terminal.setHeatingCoil(heating_coil)
+        fan_type = str(type(fan)).split('.')[-1].split("'")[0]
+        fan_type_check = fan_type == "FanConstantVolume" \
+                         or fan_type == "FanSystemModel" \
+                         or fan_type == "FanOnOff"
+
+        if fan_type_check:
+            terminal_fan = fan
+        else:
+            terminal_fan = AirLoopComponent.fan_constant_speed(model)
+
+        terminal = openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow(
+            model, cooling_coil, heating_coil, terminal_fan)
 
         if name is not None:
             terminal.setName(name)
@@ -306,9 +316,104 @@ class ZoneEquipment:
 
         return terminal
 
-    # @staticmethod
-    # def fan_coil_unit(
-    #         model: openstudio.openstudiomodel.Model,
-    #         name: str = None,):
+    @staticmethod
+    def fan_coil_unit(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            capacity_control_method: int = 0,
+            max_supply_air_flow_rate=None,
+            low_speed_supply_air_flow_ratio=None,
+            medium_speed_supply_air_flow_ratio=None,
+            max_outdoor_air_flow_rate=None,
+            outdoor_air_schedule=None,
+            max_cold_water_flow_rate=None,
+            min_cold_water_flow_rate=None,
+            max_hot_water_flow_rate=None,
+            min_hot_water_flow_rate=None,
+            supply_air_fan_operating_mode_schedule=None,
+            min_supply_air_temp_cooling=None,
+            max_supply_air_temp_heating=None):
 
-    # equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil()
+        """
+        :param model:
+        :param name:
+        :param capacity_control_method:
+            0:"ConstantFanVariableFlow",
+            1:"VariableFanVariableFlow",
+            2:"VariableFanConstantFlow",
+            3:"CyclingFan",
+            4:"MultiSpeedFan",
+            5:"ASHRAE90VariableFan"
+        :param max_supply_air_flow_rate:
+        :param low_speed_supply_air_flow_ratio:
+        :param medium_speed_supply_air_flow_ratio:
+        :param max_outdoor_air_flow_rate:
+        :param outdoor_air_schedule:
+        :param max_cold_water_flow_rate:
+        :param min_cold_water_flow_rate:
+        :param max_hot_water_flow_rate:
+        :param min_hot_water_flow_rate:
+        :param supply_air_fan_operating_mode_schedule:
+        :param min_supply_air_temp_cooling:
+        :param max_supply_air_temp_heating:
+        :return:
+        """
+
+        # if capacity_control_method == 0
+        equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(model, ScheduleTool.always_on(model),)
+
+        if name is not None:
+            equipment.setName(name)
+
+        if capacity_control_method is not None:
+            equipment.setCapacityControlMethod(capacity_control_method)
+
+        if max_supply_air_flow_rate is not None:
+            equipment.setMaximumSupplyAirFlowRate(max_supply_air_flow_rate)
+        else:
+            equipment.autosizeMaximumSupplyAirFlowRate()
+
+        if low_speed_supply_air_flow_ratio is not None:
+            equipment.setLowSpeedSupplyAirFlowRatio(low_speed_supply_air_flow_ratio)
+
+        if medium_speed_supply_air_flow_ratio is not None:
+            equipment.setMediumSpeedSupplyAirFlowRatio(medium_speed_supply_air_flow_ratio)
+
+        if max_outdoor_air_flow_rate is not None:
+            equipment.setMaximumOutdoorAirFlowRate(max_outdoor_air_flow_rate)
+        else:
+            equipment.autosizeMaximumOutdoorAirFlowRate()
+
+        if outdoor_air_schedule is not None:
+            equipment.setOutdoorAirSchedule(outdoor_air_schedule)
+
+        if max_cold_water_flow_rate is not None:
+            equipment.setMaximumColdWaterFlowRate(max_cold_water_flow_rate)
+        else:
+            equipment.autosizeMaximumColdWaterFlowRate()
+
+        if min_cold_water_flow_rate is not None:
+            equipment.setMinimumColdWaterFlowRate(min_cold_water_flow_rate)
+
+        if max_hot_water_flow_rate is not None:
+            equipment.setMaximumHotWaterFlowRate(max_hot_water_flow_rate)
+        else:
+            equipment.autosizeMaximumColdWaterFlowRate()
+
+        if min_hot_water_flow_rate is not None:
+            equipment.setMinimumHotWaterFlowRate(min_hot_water_flow_rate)
+
+        if supply_air_fan_operating_mode_schedule is not None:
+            equipment.setSupplyAirFanOperatingModeSchedule(supply_air_fan_operating_mode_schedule)
+
+        if min_supply_air_temp_cooling is not None:
+            equipment.setMinimumSupplyAirTemperatureInCoolingMode(min_supply_air_temp_cooling)
+        else:
+            equipment.autosizeMinimumSupplyAirTemperatureInCoolingMode()
+
+        if max_supply_air_temp_heating is not None:
+            equipment.setMaximumSupplyAirTemperatureInHeatingMode(max_supply_air_temp_heating)
+        else:
+            equipment.autosizeMaximumSupplyAirTemperatureInHeatingMode()
+
+        return equipment

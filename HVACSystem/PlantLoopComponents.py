@@ -197,6 +197,7 @@ class PlantLoopComponent:
             power_per_flow_rate_per_head=None,
             thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
             skin_loss_radiative_fraction=None,
+            pump_curve_coeff=None,
             coefficient_1=None,
             coefficient_2=None,
             coefficient_3=None,
@@ -237,14 +238,12 @@ class PlantLoopComponent:
         if skin_loss_radiative_fraction is not None:
             pump.setSkinLossRadiativeFraction(skin_loss_radiative_fraction)
 
-        if coefficient_1 is not None:
-            pump.setCoefficient1ofthePartLoadPerformanceCurve(coefficient_1)
-        if coefficient_2 is not None:
-            pump.setCoefficient2ofthePartLoadPerformanceCurve(coefficient_2)
-        if coefficient_3 is not None:
-            pump.setCoefficient3ofthePartLoadPerformanceCurve(coefficient_3)
-        if coefficient_4 is not None:
-            pump.setCoefficient4ofthePartLoadPerformanceCurve(coefficient_4)
+        if pump_curve_coeff is not None:
+            if isinstance(pump_curve_coeff, list) and len(pump_curve_coeff) == 4:
+                pump.setCoefficient1ofthePartLoadPerformanceCurve(pump_curve_coeff[0])
+                pump.setCoefficient2ofthePartLoadPerformanceCurve(pump_curve_coeff[1])
+                pump.setCoefficient3ofthePartLoadPerformanceCurve(pump_curve_coeff[2])
+                pump.setCoefficient4ofthePartLoadPerformanceCurve(pump_curve_coeff[3])
 
         return pump
 

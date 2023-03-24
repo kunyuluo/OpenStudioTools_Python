@@ -277,6 +277,179 @@ class AirLoopComponent:
         if heat_recovery_heating_energy_time_constant is not None:
             vrf_sys.setHeatRecoveryHeatingEnergyTimeConstant(heat_recovery_heating_energy_time_constant)
 
+        # Apply performance curves if available
+        if performance_curve_set is not None:
+            if isinstance(performance_curve_set, dict):
+                if len(performance_curve_set) != 0:
+                    # Cooling
+                    # ***********************************************************************************
+                    try:
+                        vrf_sys.setCoolingCapacityRatioModifierFunctionofLowTemperatureCurve(
+                            performance_curve_set["Cooling Capacity Ratio Modifier Function of Low Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Capacity Ratio Modifier Function of Low Temperature Curve' key")
+                    try:
+                        vrf_sys.setCoolingCapacityRatioModifierFunctionofHighTemperatureCurve(
+                            performance_curve_set["Cooling Capacity Ratio Modifier Function of High Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Capacity Ratio Modifier Function of High Temperature Curve' key")
+                    try:
+                        vrf_sys.setCoolingCapacityRatioBoundaryCurve(
+                            performance_curve_set["Cooling Capacity Ratio Boundary Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Capacity Ratio Boundary Curve' key")
+                    try:
+                        vrf_sys.setCoolingEnergyInputRatioModifierFunctionofLowTemperatureCurve(
+                            performance_curve_set[
+                                "Cooling Energy Input Ratio Modifier Function of Low Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Energy Input Ratio Modifier Function of Low Temperature Curve' key")
+                    try:
+                        vrf_sys.setCoolingEnergyInputRatioModifierFunctionofHighTemperatureCurve(
+                            performance_curve_set[
+                                "Cooling Energy Input Ratio Modifier Function of High Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Energy Input Ratio Modifier Function of High Temperature Curve' key")
+                    try:
+                        vrf_sys.setCoolingEnergyInputRatioBoundaryCurve(
+                            performance_curve_set["Cooling Energy Input Ratio Boundary Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Energy Input Ratio Boundary Curve' key")
+                    try:
+                        vrf_sys.setCoolingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(
+                            performance_curve_set[
+                                "Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve' key")
+                    try:
+                        vrf_sys.setCoolingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(
+                            performance_curve_set[
+                                "Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve' key")
+                    try:
+                        vrf_sys.setCoolingCombinationRatioCorrectionFactorCurve(
+                            performance_curve_set["Cooling Combination Ratio Correction Factor Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Combination Ratio Correction Factor Curve' key")
+                    try:
+                        vrf_sys.setCoolingPartLoadFractionCorrelationCurve(
+                            performance_curve_set["Cooling Part-Load Fraction Correlation Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Part-Load Fraction Correlation Curve' key")
+
+                    # Heating
+                    # ***********************************************************************************
+                    try:
+                        vrf_sys.setHeatingCapacityRatioModifierFunctionofLowTemperatureCurve(
+                            performance_curve_set["Heating Capacity Ratio Modifier Function of Low Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Capacity Ratio Modifier Function of Low Temperature Curve' key")
+                    try:
+                        vrf_sys.setHeatingCapacityRatioModifierFunctionofHighTemperatureCurve(
+                            performance_curve_set["Heating Capacity Ratio Modifier Function of High Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Capacity Ratio Modifier Function of High Temperature Curve' key")
+                    try:
+                        vrf_sys.setHeatingCapacityRatioBoundaryCurve(
+                            performance_curve_set["Heating Capacity Ratio Boundary Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Capacity Ratio Boundary Curve' key")
+                    try:
+                        vrf_sys.setHeatingEnergyInputRatioModifierFunctionofLowTemperatureCurve(
+                            performance_curve_set[
+                                "Heating Energy Input Ratio Modifier Function of Low Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Energy Input Ratio Modifier Function of Low Temperature Curve' key")
+                    try:
+                        vrf_sys.setHeatingEnergyInputRatioModifierFunctionofHighTemperatureCurve(
+                            performance_curve_set[
+                                "Heating Energy Input Ratio Modifier Function of High Temperature Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Energy Input Ratio Modifier Function of High Temperature Curve' key")
+                    try:
+                        vrf_sys.setHeatingEnergyInputRatioBoundaryCurve(
+                            performance_curve_set["Heating Energy Input Ratio Boundary Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Energy Input Ratio Boundary Curve' key")
+                    try:
+                        vrf_sys.setHeatingEnergyInputRatioModifierFunctionofLowPartLoadRatioCurve(
+                            performance_curve_set[
+                                "Heating Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve' key")
+                    try:
+                        vrf_sys.setHeatingEnergyInputRatioModifierFunctionofHighPartLoadRatioCurve(
+                            performance_curve_set[
+                                "Heating Energy Input Ratio Modifier Function of High Part-Load Ratio Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Energy Input Ratio Modifier Function of High Part-Load Ratio Curve' key")
+                    try:
+                        vrf_sys.setHeatingCombinationRatioCorrectionFactorCurve(
+                            performance_curve_set["Heating Combination Ratio Correction Factor Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Combination Ratio Correction Factor Curve' key")
+                    try:
+                        vrf_sys.setHeatingPartLoadFractionCorrelationCurve(
+                            performance_curve_set["Heating Part-Load Fraction Correlation Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Part-Load Fraction Correlation Curve' key")
+
+                    # Piping
+                    # ***********************************************************************************
+                    try:
+                        vrf_sys.setPipingCorrectionFactorforLengthinCoolingModeCurve(
+                            performance_curve_set["Piping Correction Factor for Length in Cooling Mode Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Piping Correction Factor for Length in Cooling Mode Curve' key")
+                    try:
+                        vrf_sys.setPipingCorrectionFactorforLengthinHeatingModeCurve(
+                            performance_curve_set["Piping Correction Factor for Length in Heating Mode Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Piping Correction Factor for Length in Heating Mode Curve' key")
+
+                    # Heat Recovery
+                    # ***********************************************************************************
+                    try:
+                        vrf_sys.setHeatRecoveryCoolingCapacityModifierCurve(
+                            performance_curve_set["Heat Recovery Cooling Capacity Modifier Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heat Recovery Cooling Capacity Modifier Curve' key")
+                    try:
+                        vrf_sys.setHeatRecoveryHeatingCapacityModifierCurve(
+                            performance_curve_set["Heat Recovery Heating Capacity Modifier Curve"])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heat Recovery Heating Capacity Modifier Curve' key")
+
+                else:
+                    raise ValueError("performance_curve_set cannot be empty.")
+            else:
+                raise TypeError("Invalid input type. performance_curve_set should be dictionary")
+
         # Add VRF terminal unit to the system
         if terminals is not None:
             if isinstance(terminals, openstudio.openstudiomodel.ZoneHVACTerminalUnitVariableRefrigerantFlow):
@@ -848,11 +1021,7 @@ class AirLoopComponent:
             power_min_flow_rate=None,
             motor_efficiency=None,
             motor_in_airstream_fraction=None,
-            fan_power_coeff_1=None,
-            fan_power_coeff_2=None,
-            fan_power_coeff_3=None,
-            fan_power_coeff_4=None,
-            fan_power_coeff_5=None):
+            fan_curve_coeff=None):
 
         fan = openstudio.openstudiomodel.FanVariableVolume(model)
         if name is not None:
@@ -883,20 +1052,14 @@ class AirLoopComponent:
         if motor_in_airstream_fraction is not None:
             fan.setMotorInAirstreamFraction(motor_in_airstream_fraction)
 
-        if fan_power_coeff_1 is not None:
-            fan.setFanPowerCoefficient1(fan_power_coeff_1)
-
-        if fan_power_coeff_2 is not None:
-            fan.setFanPowerCoefficient2(fan_power_coeff_2)
-
-        if fan_power_coeff_3 is not None:
-            fan.setFanPowerCoefficient3(fan_power_coeff_3)
-
-        if fan_power_coeff_4 is not None:
-            fan.setFanPowerCoefficient4(fan_power_coeff_4)
-
-        if fan_power_coeff_5 is not None:
-            fan.setFanPowerCoefficient5(fan_power_coeff_5)
+        if fan_curve_coeff is not None:
+            if isinstance(fan_curve_coeff, list) and len(fan_curve_coeff) == 4:
+                fan.setFanPowerCoefficient1(fan_curve_coeff[0])
+                fan.setFanPowerCoefficient2(fan_curve_coeff[1])
+                fan.setFanPowerCoefficient3(fan_curve_coeff[2])
+                fan.setFanPowerCoefficient4(fan_curve_coeff[3])
+                if len(fan_curve_coeff) > 4:
+                    fan.setFanPowerCoefficient5(fan_curve_coeff[4])
 
         return fan
 

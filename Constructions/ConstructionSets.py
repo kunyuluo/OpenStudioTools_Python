@@ -90,7 +90,15 @@ class ConstructionSet:
 
         # Ceiling:
         # ***************************************************************************************
-        interior_surfaces.setRoofCeilingConstruction(exterior_roof_cons)
+        interior_roof_cons = ConstructionTool.construction(self._model, "My Interior Roof")
+        interior_roof_mat_vec = openstudio.openstudiomodel.MaterialVector()
+
+        interior_roof_mat_vec.append(exterior_roof_mat1)
+        interior_roof_mat_vec.append(exterior_wall_mat4)
+        interior_roof_mat_vec.append(exterior_roof_mat2)
+
+        interior_roof_cons.setLayers(interior_roof_mat_vec)
+        interior_surfaces.setRoofCeilingConstruction(interior_roof_cons)
 
         # Floor:
         # ***************************************************************************************

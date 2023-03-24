@@ -281,6 +281,7 @@ class GeometryTool:
             for srf in surfaces:
                 srf_curr = srf
                 srfs_remain.remove(srf)
+
                 # First, find normal vector and centroid:
                 normal_curr = GeometryTool.newell_method(srf_curr)
                 centroid_curr = GeometryTool.centroid(srf_curr)
