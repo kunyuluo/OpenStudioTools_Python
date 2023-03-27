@@ -266,6 +266,51 @@ class Curve:
 
         return curve
 
+    @staticmethod
+    def sigmoid(
+            model: openstudio.openstudiomodel.Model,
+            coeff1=None,
+            coeff2=None,
+            coeff3=None,
+            coeff4=None,
+            coeff5=None,
+            min_x=None,
+            max_x=None,
+            min_out=None,
+            max_out=None,
+            input_unit_type: str = "Dimensionless",
+            output_unit_type: str = "Dimensionless",
+            name: str = None):
+
+        curve = openstudio.openstudiomodel.CurveSigmoid(model)
+
+        if name is not None:
+            curve.setName(name)
+        if coeff1 is not None:
+            curve.setCoefficient1C1(coeff1)
+        if coeff2 is not None:
+            curve.setCoefficient1C1(coeff2)
+        if coeff3 is not None:
+            curve.setCoefficient1C1(coeff3)
+        if coeff4 is not None:
+            curve.setCoefficient1C1(coeff4)
+        if coeff5 is not None:
+            curve.setCoefficient1C1(coeff5)
+        if min_x is not None:
+            curve.setMinimumValueofx(min_x)
+        if max_x is not None:
+            curve.setMaximumValueofx(max_x)
+        if min_out is not None:
+            curve.setMinimumCurveOutput(min_out)
+        if max_out is not None:
+            curve.setMaximumCurveOutput(max_out)
+        if input_unit_type is not None:
+            curve.setInputUnitTypeforx(input_unit_type)
+        if output_unit_type is not None:
+            curve.setOutputUnitType(output_unit_type)
+
+        return curve
+
     # Build-in performance curve sets:
     @staticmethod
     def pump_curve_set(control_strategy: int = 0):
@@ -292,20 +337,23 @@ class Curve:
     def fan_curve_set(control_strategy: int = 0):
         """
         :param str control_strategy:
-        0:"VSD Only",
-        1:"VSD+StaticPressureControl (Good)",
-        2:"VSD+StaticPressureControl (Perfect)"
+        0:"ASHRAE 90.1 Baseline",
+        1:"VSD Only",
+        2:"VSD+StaticPressureControl (Good)",
+        3:"VSD+StaticPressureControl (Perfect)"
         :return: a list of coefficient values from C1 to C4
         """
 
         if control_strategy == 0:
-            values = [0.070428852, 0.385330201, -0.460864118, 1.00920344]
+            values = [0.0013, 0.147, 0.9506, -0.0998, 0]
         elif control_strategy == 1:
-            values = [0.04076, 0.08804, -0.07293, 0.94374]
+            values = [0.070428852, 0.385330201, -0.460864118, 1.00920344, 0]
         elif control_strategy == 2:
-            values = [0.02783, 0.02658, -0.08707, 1.03092]
+            values = [0.04076, 0.08804, -0.07293, 0.94374, 0]
+        elif control_strategy == 3:
+            values = [0.02783, 0.02658, -0.08707, 1.03092, 0]
         else:
-            values = [0, 1, 0, 0]
+            values = [0, 1, 0, 0, 0]
 
         return values
 

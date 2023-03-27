@@ -136,7 +136,7 @@ class AirLoopComponent:
             number_of_compressor=None,
             defrost_strategy: str = None,
             defrost_control: str = None,
-            condenser_type: str = None,  # AirCooled, WaterCooled, EvapCooled
+            condenser_type: str = None,
             water_condenser_volume_flow_rate=None,
             evaporative_condenser_effectiveness=None,
             evaporative_condenser_air_flow_rate=None,
@@ -154,6 +154,61 @@ class AirLoopComponent:
             heat_recovery_heating_energy_time_constant=None,
             performance_curve_set=None,
             terminals=None):
+
+        """
+
+        :param model:
+        :param name:
+        :param schedule:
+        :param cooling_capacity:
+        :param heating_capacity:
+        :param cooling_cop:
+        :param heating_cop:
+        :param heating_capacity_sizing_ratio:
+        :param min_outdoor_temp_cooling_mode:
+        :param max_outdoor_temp_cooling_mode:
+        :param min_outdoor_temp_heating_mode:
+        :param max_outdoor_temp_heating_mode:
+        :param min_heat_pump_part_load_ratio:
+        :param zone_for_master_thermostat_location:
+        :param master_thermostat_priority_control_type:
+            1: LoadPriority
+            2: ZonePriority
+            3: ThermostatOffsetPriority
+            4: MasterThermostatPriority
+            5: Scheduled
+            (Default is LoadPriority)
+        :param thermostat_priority_schedule:
+        :param heat_pump_waste_heat_recovery:
+        :param pipe_length_for_piping_correction_factor_cooling:
+        :param vertical_height_for_piping_correction_factor:
+        :param piping_correction_factor_for_height_cooling:
+        :param pipe_length_for_piping_correction_factor_heating:
+        :param piping_correction_factor_for_height_heating:
+        :param crankcase_heater_power_per_compressor:
+        :param number_of_compressor:
+        :param defrost_strategy: 1: ReverseCycle, 2: Resistive
+        :param defrost_control: 1: Timed, 2: OnDemand
+        :param condenser_type: 1: AirCooled, 2: WaterCooled, 3: EvapCooled
+        :param water_condenser_volume_flow_rate:
+        :param evaporative_condenser_effectiveness:
+        :param evaporative_condenser_air_flow_rate:
+        :param evaporative_condenser_pump_power:
+        :param fuel_type:
+        :param min_outdoor_temp_heat_recovery:
+        :param max_outdoor_temp_heat_recovery:
+        :param initial_heat_recovery_cooling_capacity_fraction:
+        :param heat_recovery_cooling_capacity_time_constant:
+        :param initial_heat_recovery_cooling_energy_fraction:
+        :param heat_recovery_cooling_energy_time_constant:
+        :param initial_heat_recovery_heating_capacity_fraction:
+        :param heat_recovery_heating_capacity_time_constant:
+        :param initial_heat_recovery_heating_energy_fraction:
+        :param heat_recovery_heating_energy_time_constant:
+        :param performance_curve_set:
+        :param terminals:
+        :return:
+        """
 
         vrf_sys = openstudio.openstudiomodel.AirConditionerVariableRefrigerantFlow(model)
 
@@ -488,6 +543,34 @@ class AirLoopComponent:
             fraction_of_autosized_heating_design_capacity=None,
             central_cooling_capacity_control_method: str = "OnOff",
             occupant_diversity=None):
+
+        """
+        -Options for "type_of_load_to_size_on":
+            1: Total (Sensible + Latent)
+            2: Sensible
+            3: VentilationRequirement (choose this option for DOAS)
+
+        -Options for "system_outdoor_air_method":
+            1: ZoneSum
+            2: Standard62.1VentilationRateProcedure (VRP)
+            3: Standard62.1SimplifiedProcedure (SP)
+            (Default is ZoneSum)
+
+        -Options for "sizing_option":
+            1: Coincident
+            2: NonCoincident
+            (Default is NonCoincident)
+
+        -Options for "cooling_design_capacity_method":
+            1: DesignDay
+            2: Flow/System
+            3: FlowPerFloorArea
+            4: FractionOfAutosizedCoolingAirflow
+            5: FlowPerCoolingCapacity
+            (Default is DesignDay)
+
+        -Options for "heating_design_capacity_method": same as above
+        """
 
         sizing = openstudio.openstudiomodel.SizingSystem(model, air_loop)
 
@@ -1023,6 +1106,11 @@ class AirLoopComponent:
             motor_in_airstream_fraction=None,
             fan_curve_coeff=None):
 
+        """
+        -Options for "power_min_flow_rate_input_method":
+        1: Fraction, 2: FixedFlowRate
+        """
+
         fan = openstudio.openstudiomodel.FanVariableVolume(model)
         if name is not None:
             fan.setName(name)
@@ -1243,7 +1331,7 @@ class AirLoopComponent:
     def fan_system_model_constant(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
-            speed_control_method="Discrete",  # Continuous, Discrete
+            speed_control_method="Discrete",
             number_of_speed=1.0,
             electric_power_min_flow_rate_fraction=None,
             fan_total_efficiency=None,
@@ -1259,6 +1347,14 @@ class AirLoopComponent:
             motor_loss_radiative_fraction=None,
             motor_efficiency=None,
             motor_in_airstream_fraction=None):
+
+        """
+        -Options for "speed_control_method":
+        1: Continuous, 2: Discrete
+
+        -Options for "design_power_sizing_method":
+        1: PowerPerFlow, 2: PowerPerFlowPerPressure 3: TotalEfficiencyAndPressure
+        """
 
         fan = openstudio.openstudiomodel.FanSystemModel(model)
         if name is not None:
@@ -1294,11 +1390,6 @@ class AirLoopComponent:
         else:
             fan.autosizeDesignElectricPowerConsumption()
 
-        # Options:
-        # ********************************************************
-        # PowerPerFlow
-        # PowerPerFlowPerPressure
-        # TotalEfficiencyAndPressure
         if design_power_sizing_method is not None:
             fan.setDesignPowerSizingMethod(design_power_sizing_method)
 

@@ -1,6 +1,7 @@
 import openstudio
 from Schedules.ScheduleTools import ScheduleTool
 from HVACSystem.AirLoopComponents import AirLoopComponent
+from HVACSystem.PlantLoopComponents import PlantLoopComponent
 
 
 class ZoneEquipment:
@@ -321,6 +322,8 @@ class ZoneEquipment:
             model: openstudio.openstudiomodel.Model,
             name: str = None,
             capacity_control_method: int = 0,
+            heating_coil_type: str = "Water",
+            fan_pressure_rise=None,
             max_supply_air_flow_rate=None,
             low_speed_supply_air_flow_ratio=None,
             medium_speed_supply_air_flow_ratio=None,
@@ -332,35 +335,41 @@ class ZoneEquipment:
             min_hot_water_flow_rate=None,
             supply_air_fan_operating_mode_schedule=None,
             min_supply_air_temp_cooling=None,
-            max_supply_air_temp_heating=None):
+            max_supply_air_temp_heating=None,
+            chilled_water_loop: openstudio.openstudiomodel.PlantLoop = None,
+            hot_water_loop: openstudio.openstudiomodel.PlantLoop = None):
 
         """
-        :param model:
-        :param name:
-        :param capacity_control_method:
+        -Options for "capacity_control_method":
             0:"ConstantFanVariableFlow",
             1:"VariableFanVariableFlow",
             2:"VariableFanConstantFlow",
             3:"CyclingFan",
             4:"MultiSpeedFan",
             5:"ASHRAE90VariableFan"
-        :param max_supply_air_flow_rate:
-        :param low_speed_supply_air_flow_ratio:
-        :param medium_speed_supply_air_flow_ratio:
-        :param max_outdoor_air_flow_rate:
-        :param outdoor_air_schedule:
-        :param max_cold_water_flow_rate:
-        :param min_cold_water_flow_rate:
-        :param max_hot_water_flow_rate:
-        :param min_hot_water_flow_rate:
-        :param supply_air_fan_operating_mode_schedule:
-        :param min_supply_air_temp_cooling:
-        :param max_supply_air_temp_heating:
-        :return:
         """
 
-        # if capacity_control_method == 0
-        equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(model, ScheduleTool.always_on(model),)
+        # Create a fan object based on control method:
+        match capacity_control_method:
+            case 0:
+                fan = AirLoopComponent.fan_constant_speed(model, pressure_rise=fan_pressure_rise)
+            case [1, 2]:
+                fan = AirLoopComponent.fan_variable_speed(model, pressure_rise=fan_pressure_rise)
+            case [3, 4, 5] | _:
+                fan = AirLoopComponent.fan_on_off(model, pressure_rise=fan_pressure_rise)
+
+        # Create a heating coil object based on control method:
+        match heating_coil_type:
+            case "Water":
+                heating_coil = AirLoopComponent.coil_heating_water(model)
+            case "Electric" | _:
+                heating_coil = AirLoopComponent.coil_heating_electric(model)
+
+        # Create a cooling coil object:
+        cooling_coil = AirLoopComponent.coil_cooling_water(model)
+
+        equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(
+            model, ScheduleTool.always_on(model), fan, cooling_coil, heating_coil)
 
         if name is not None:
             equipment.setName(name)
@@ -415,5 +424,13 @@ class ZoneEquipment:
             equipment.setMaximumSupplyAirTemperatureInHeatingMode(max_supply_air_temp_heating)
         else:
             equipment.autosizeMaximumSupplyAirTemperatureInHeatingMode()
+
+        # Add cooling coil to the chilled water loop if applicable:
+        if chilled_water_loop is not None:
+            chilled_water_loop.addDemandBranchForComponent(cooling_coil)
+
+        # Add heating coil to the chilled water loop if applicable:
+        if heating_coil_type == "Water" and hot_water_loop is not None:
+            hot_water_loop.addDemandBranchForComponent(heating_coil)
 
         return equipment

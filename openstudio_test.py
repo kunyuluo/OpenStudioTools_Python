@@ -164,13 +164,20 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 # **************************************************************************************
 # air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
 # Template.vav_chiller_boiler(model, thermal_zones=thermal_zones)
-terminals = []
-for i in range(len(thermal_zones)):
-    vrf_terminal = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
-    terminals.append(vrf_terminal)
-vrf_sys = AirLoopComponent.vrf_system(
-    model, "Kunyu's VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
 
+# terminals = []
+# for i in range(len(thermal_zones)):
+#     vrf_terminal = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
+#     terminals.append(vrf_terminal)
+# vrf_sys = AirLoopComponent.vrf_system(
+#     model, "Kunyu's VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
+
+variable_1 = [5.0,5.56,6.11,6.67,7.22,7.78,8.33,8.89,9.44,10.0]
+Helper.visualize_curve(
+    Curve.biquadratic(model,0.258,0.0389,-0.00022,0.0469,-0.00094,-0.00034),
+    normalize=False, variable_1=variable_1, variable_2=29.44,
+    reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
+# Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
