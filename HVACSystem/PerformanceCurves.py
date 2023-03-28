@@ -31,6 +31,10 @@ class Curve:
             input_unit_type_y: str = "Dimensionless",
             output_unit_type: str = "Dimensionless",
             name: str = None):
+
+        """
+        f(x) = c1 + c2*x + c3*x^2 + c4*y + c5*y^2 + c6*x*y
+        """
         curve = openstudio.openstudiomodel.CurveBiquadratic(model)
 
         if name is not None:
@@ -81,6 +85,11 @@ class Curve:
             input_unit_type_x: str = "Dimensionless",
             output_unit_type: str = "Dimensionless",
             name: str = None):
+
+        """
+        f(x) = c1 + c2*x + c3*x^2
+        """
+
         curve = openstudio.openstudiomodel.CurveQuadratic(model)
 
         if name is not None:
@@ -121,6 +130,10 @@ class Curve:
             input_unit_type: str = "Dimensionless",
             output_unit_type: str = "Dimensionless",
             name: str = None):
+
+        """
+        f(x) = c1 + c2*x + c3*x^2 + c4*x^3 + c5*x^4
+        """
 
         curve = openstudio.openstudiomodel.CurveQuartic(model)
 
@@ -166,6 +179,10 @@ class Curve:
             output_unit_type: str = "Dimensionless",
             name: str = None):
 
+        """
+        f(x) = c1 + c2*x + c3*x^2 + c4*x^3
+        """
+
         curve = openstudio.openstudiomodel.CurveCubic(model)
 
         if name is not None:
@@ -207,6 +224,10 @@ class Curve:
             output_unit_type: str = "Dimensionless",
             name: str = None):
 
+        """
+        f(x) = c1 + c2*x^c3
+        """
+
         curve = openstudio.openstudiomodel.CurveExponent(model)
 
         if name is not None:
@@ -242,6 +263,10 @@ class Curve:
             input_unit_type: str = "Dimensionless",
             output_unit_type: str = "Dimensionless",
             name: str = None):
+
+        """
+        f(x) = c1 + c2*x
+        """
 
         curve = openstudio.openstudiomodel.CurveLinear(model)
 
@@ -281,6 +306,10 @@ class Curve:
             input_unit_type: str = "Dimensionless",
             output_unit_type: str = "Dimensionless",
             name: str = None):
+
+        """
+        f(x) = c1 + c2 / (1 + e^((c3 - x) / c4))^c5
+        """
 
         curve = openstudio.openstudiomodel.CurveSigmoid(model)
 
@@ -358,7 +387,94 @@ class Curve:
         return values
 
     @staticmethod
+    def chiller_performance_curve_ashrae_baseline(model: openstudio.openstudiomodel.Model):
+
+        """
+        1.Cooling Capacity Function of Temperature Curve \n
+        2.Electric Input to Cooling Output Ratio Function of Temperature Curve \n
+        3.Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        """
+        curves = {}
+
+        # Cooling Capacity Function of Temperature Curve
+        curves["Cooling Capacity Function of Temperature Curve"] = \
+            Curve.biquadratic(model, 0.258, 0.0389, -0.000217, 0.0469, -0.000943, -0.000343,
+                              5, 10, 24, 35,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="CoolingCapTempCurve_ASHRAE90.1")
+
+        # Electric Input to Cooling Output Ratio Function of Temperature Curve
+        curves["Electric Input to Cooling Output Ratio Function of Temperature Curve"] = \
+            Curve.biquadratic(model, 0.934, -0.0582, 0.0045, 0.00243, 0.000486, -0.00122,
+                              5, 10, 24, 35,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="CoolingEIRRatioTempCurve_ASHRAE90.1")
+
+        # Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        curves["Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve"] = \
+            Curve.quadratic(model, 0.222903, 0.313387, 0.46371, 0, 1, name="CoolingEIRRatioPLRCurve_ASHRAE90.1")
+
+        return curves
+
+    @staticmethod
+    def chiller_performance_curve_title24(model: openstudio.openstudiomodel.Model):
+
+        """
+        1.Cooling Capacity Function of Temperature Curve \n
+        2.Electric Input to Cooling Output Ratio Function of Temperature Curve \n
+        3.Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        """
+        curves = {}
+
+        # Cooling Capacity Function of Temperature Curve
+        curves["Cooling Capacity Function of Temperature Curve"] = \
+            Curve.biquadratic(model, 1.35608, 0.04875, -0.000888, -0.014525, -0.000286, -0.00004,
+                              5, 10, 24, 35,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="CoolingCapTempCurve_ASHRAE90.1")
+
+        # Electric Input to Cooling Output Ratio Function of Temperature Curve
+        curves["Electric Input to Cooling Output Ratio Function of Temperature Curve"] = \
+            Curve.biquadratic(model, 0.756376, -0.015019, 0.000156, 0.00246, 0.000515, -0.000687,
+                              5, 10, 24, 35,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="CoolingEIRRatioTempCurve_ASHRAE90.1")
+
+        # Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        curves["Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve"] = \
+            Curve.quadratic(model, 0.055483, 0.451866, 0.488242, 0, 1, name="CoolingEIRRatioPLRCurve_ASHRAE90.1")
+
+        return curves
+
+    @staticmethod
     def vrf_performance_curve_set_1(model: openstudio.openstudiomodel.Model):
+
+        """
+        1.Cooling Capacity Ratio Boundary Curve \n
+        2.Cooling Capacity Ratio Modifier Function of Low Temperature Curve \n
+        3.Cooling Capacity Ratio Modifier Function of High Temperature Curve \n
+        4.Cooling Energy Input Ratio Boundary Curve \n
+        5.Cooling Energy Input Ratio Modifier Function of Low Temperature Curve \n
+        6.Cooling Energy Input Ratio Modifier Function of High Temperature Curve \n
+        7.Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve \n
+        8.Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve \n
+        9.Cooling Combination Ratio Correction Factor Curve \n
+        10.Cooling Part-Load Fraction Correlation Curve \n
+        11.Heating Capacity Ratio Boundary Curve \n
+        12.Heating Capacity Ratio Modifier Function of Low Temperature Curve \n
+        13.Heating Capacity Ratio Modifier Function of High Temperature Curve \n
+        14.Heating Energy Input Ratio Boundary Curve \n
+        15.Heating Energy Input Ratio Modifier Function of Low Temperature Curve \n
+        16.Heating Energy Input Ratio Modifier Function of High Temperature Curve \n
+        17.Heating Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve \n
+        18.Heating Energy Input Ratio Modifier Function of High Part-Load Ratio Curve \n
+        19.Heating Combination Ratio Correction Factor Curve \n
+        20.Heating Part-Load Fraction Correlation Curve \n
+        21.Piping Correction Factor for Length in Cooling Mode Curve \n
+        22.Piping Correction Factor for Length in Heating Mode Curve \n
+        23.Heat Recovery Cooling Capacity Modifier Curve \n
+        24.Heat Recovery Heating Capacity Modifier Curve
+        """
 
         curves = {}
 

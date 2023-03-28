@@ -169,14 +169,19 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 # for i in range(len(thermal_zones)):
 #     vrf_terminal = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
 #     terminals.append(vrf_terminal)
-# vrf_sys = AirLoopComponent.vrf_system(
+# vrf_sys = Template.vrf_system(
 #     model, "Kunyu's VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
 
-variable_1 = [5.0,5.56,6.11,6.67,7.22,7.78,8.33,8.89,9.44,10.0]
+# variable_1 = [5.0,5.56,6.11,6.67,7.22,7.78,8.33,8.89,9.44,10.0]
+# Helper.visualize_curve(
+#     Curve.biquadratic(model,0.258,0.0389,-0.00022,0.0469,-0.00094,-0.00034),
+#     normalize=False, variable_1=variable_1, variable_2=29.44,
+#     reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
+
+vrf_curves = Curve.vrf_performance_curve_set_1(model)
 Helper.visualize_curve(
-    Curve.biquadratic(model,0.258,0.0389,-0.00022,0.0469,-0.00094,-0.00034),
-    normalize=False, variable_1=variable_1, variable_2=29.44,
-    reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
+    vrf_curves["Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve"],
+    reference_curve=vrf_curves["Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve"])
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # ASHRAEBaseline.system_list()
