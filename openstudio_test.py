@@ -2,7 +2,6 @@ import math
 import openstudio
 from openstudio import *
 from openstudio.openstudiomodel import Model
-from openstudio.openstudioutilitiesgeometry import Point3d, Vector3d, Plane
 from Geometry.GeometryTools import GeometryTool
 from SiteAndLocation.SiteTools import SiteLocationTool
 from SimulationSettings.SimulationSettings import SimulationSettingTool
@@ -136,29 +135,29 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 
 # Plant loop:
 # **************************************************************************************
-# chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1", condenser_type="AirCooled")
-# chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2", condenser_type="AirCooled")
-# chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3", condenser_type="AirCooled")
-# pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
-# pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
-# pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
-# pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
-# pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
-# pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
-# adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
-# items = [[chiller1, pump1, pump4], [chiller2, pump2, pump5], [chiller3, pump3, pump6], [adiabatic_pipe]]
-# spm1 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
-# spm2 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
-#
-# plant_loop = PlantLoopComponent.plant_loop(
-#     model,
-#     name="Chilled Water Loop HaHaHa",
-#     common_pipe_simulation="TwoWayCommonPipe",
-#     supply_branches=items,
-#     setpoint_manager=spm1,
-#     setpoint_manager_secondary=spm2)
-#
-# PlantLoopComponent.sizing(model, plant_loop, "Cooling")
+chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1", condenser_type="AirCooled")
+chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2", condenser_type="AirCooled")
+chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3", condenser_type="AirCooled")
+pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
+pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
+pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
+pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
+pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
+pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
+adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
+items = [[pump1, chiller1, pump4], [pump2, chiller2, pump5], [pump3, chiller3, pump6], [adiabatic_pipe]]
+spm1 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
+spm2 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
+
+plant_loop = PlantLoopComponent.plant_loop(
+    model,
+    name="Chilled Water Loop HaHaHa",
+    common_pipe_simulation=1,
+    supply_branches=items,
+    setpoint_manager=spm1,
+    setpoint_manager_secondary=spm2)
+
+PlantLoopComponent.sizing(model, plant_loop, "Cooling")
 
 # Air loop:
 # **************************************************************************************
@@ -167,10 +166,11 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 
 # terminals = []
 # for i in range(len(thermal_zones)):
-#     vrf_terminal = ZoneEquipment.vrf_terminal(model, "Kunyu's VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
+#     vrf_terminal = ZoneEquipment.vrf_terminal(
+#     model, "Kunyu VRF Terminal " + str(i+1), thermal_zone=thermal_zones[i])
 #     terminals.append(vrf_terminal)
 # vrf_sys = Template.vrf_system(
-#     model, "Kunyu's VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
+#     model, "Kunyu VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
 
 # variable_1 = [5.0,5.56,6.11,6.67,7.22,7.78,8.33,8.89,9.44,10.0]
 # Helper.visualize_curve(
@@ -178,11 +178,8 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 #     normalize=False, variable_1=variable_1, variable_2=29.44,
 #     reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
 
-vrf_curves = Curve.vrf_performance_curve_set_1(model)
-Helper.visualize_curve(
-    vrf_curves["Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve"],
-    reference_curve=vrf_curves["Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve"])
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
+
 
 # ASHRAEBaseline.system_list()
 # **************************************************************************************

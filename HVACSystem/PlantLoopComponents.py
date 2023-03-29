@@ -1,4 +1,5 @@
 import openstudio
+from Resources.Helpers import Helper
 
 
 class PlantLoopComponent:
@@ -7,24 +8,49 @@ class PlantLoopComponent:
     def plant_loop(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
-            fluid_type: str = None,  # Water, Steam, PropyleneGlycol, EthyleneGlycol
+            fluid_type: int = 1,
             max_loop_temp=None,
             min_loop_temp=None,
             max_loop_flow_rate=None,
             min_loop_flow_rate=None,
             plant_loop_volume=None,
-            load_distribution_scheme: str = None,  # Optimal, SequentialLoad, UniformLoad, UniformPLR, SequentialUniformPLR
-            common_pipe_simulation: str = None,  # None, CommonPipe, TwoWayCommonPipe
+            load_distribution_scheme: int = 1,
+            common_pipe_simulation: int = 1,
             supply_branches=None,
             demand_branches=None,
             setpoint_manager: openstudio.openstudiomodel.SetpointManager = None,
             setpoint_manager_secondary: openstudio.openstudiomodel.SetpointManager = None):
 
+        """
+        -Fluid_type:
+            1:Water 2:Steam 3:PropyleneGlycol 4:EthyleneGlycol \n
+
+        -Load_distribution_scheme:
+            1:Optimal 2:SequentialLoad 3:UniformLoad 4:UniformPLR 5:SequentialUniformPLR \n
+
+        -Common_pipe_simulation:
+            1:None \n
+            2:CommonPipe (for secondary pump system.
+            Typically, constant pump on primary side and variable speed pump on secondary side)\n
+            3:TwoWayCommonPipe (for thermal energy storage system, with temperature control for
+            both primary and secondary sides)
+        """
+
+        fluid_types = {1: "Water", 2: "Steam", 3: "PropyleneGlycol", 4: "EthyleneGlycol"}
+        load_distribution_schemes = {1: "Optimal", 2: "SequentialLoad", 3: "UniformLoad",
+                                     4: "UniformPLR", 5: "SequentialUniformPLR"}
+        common_pipe_types = {1: "None", 2: "CommonPipe", 3: "TwoWayCommonPipe"}
+
         plant = openstudio.openstudiomodel.PlantLoop(model)
-        if name is not None: plant.setName(name)
-        if fluid_type is not None: plant.setFluidType(fluid_type)
-        if max_loop_temp is not None: plant.setMaximumLoopTemperature(max_loop_temp)
-        if min_loop_temp is not None: plant.setMinimumLoopTemperature(min_loop_temp)
+
+        if name is not None:
+            plant.setName(name)
+        if fluid_type != 1:
+            plant.setFluidType(fluid_types[fluid_type])
+        if max_loop_temp is not None:
+            plant.setMaximumLoopTemperature(max_loop_temp)
+        if min_loop_temp is not None:
+            plant.setMinimumLoopTemperature(min_loop_temp)
 
         if max_loop_flow_rate is not None:
             plant.setMaximumLoopFlowRate(max_loop_flow_rate)
@@ -33,27 +59,38 @@ class PlantLoopComponent:
 
         if min_loop_flow_rate is not None:
             plant.setMinimumLoopFlowRate(min_loop_flow_rate)
-        # else:
-        #     plant.autosizeMinimumLoopFlowRate()
 
         if plant_loop_volume is not None:
             plant.setPlantLoopVolume(plant_loop_volume)
         else:
             plant.autocalculatePlantLoopVolume()
 
-        if load_distribution_scheme is not None:
-            plant.setLoadDistributionScheme(load_distribution_scheme)
+        if load_distribution_scheme != 1:
+            plant.setLoadDistributionScheme(load_distribution_schemes[load_distribution_scheme])
 
-        if common_pipe_simulation is not None:
-            plant.setCommonPipeSimulation(common_pipe_simulation)
+        if common_pipe_simulation != 1:
+            plant.setCommonPipeSimulation(common_pipe_types[common_pipe_simulation])
 
         # Add branches to the loop:
-        if supply_branches is not None and len(supply_branches) != 0:
-            for branch in supply_branches:
-                plant.addSupplyBranchForComponent(branch.pop(-1))
-                node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
-                for item in branch:
-                    item.addToNode(node)
+        if isinstance(supply_branches, list):
+            if len(supply_branches) != 0:
+                # for multiple branches (2-d list)
+                if isinstance(supply_branches[0], list) and isinstance(supply_branches[-1], list):
+                    for branch in supply_branches:
+                        plant.addSupplyBranchForComponent(branch.pop(-1))
+                        node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
+                        for item in branch:
+                            item.addToNode(node)
+                # for single branch (1-d list)
+                else:
+                    plant.addSupplyBranchForComponent(supply_branches.pop(-1))
+                    node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
+                    for item in supply_branches:
+                        item.addToNode(node)
+            else:
+                raise ValueError("supply_branches cannot be empty")
+        else:
+            raise TypeError("Invalid input format of supply_branches. It has to be list (either 1d or 2d)")
 
         if demand_branches is not None and len(demand_branches) != 0:
             for item in demand_branches:
@@ -67,13 +104,19 @@ class PlantLoopComponent:
         if setpoint_manager is not None:
             setpoint_manager.addToNode(node_supply_out)
 
-        if common_pipe_simulation == "CommonPipe":
-            pump = PlantLoopComponent.pump_variable_speed(model)
-            pump.addToNode(node_demand_inlet)
-        elif common_pipe_simulation == "TwoWayCommonPipe":
-            pump = PlantLoopComponent.pump_variable_speed(model)
-            pump.addToNode(node_demand_inlet)
-            setpoint_manager_secondary.addToNode(node_demand_inlet)
+        match common_pipe_simulation:
+            case 0:
+                pass
+            case 1:
+                pump = PlantLoopComponent.pump_variable_speed(model)
+                pump.addToNode(node_demand_inlet)
+            case 2:
+                pump = PlantLoopComponent.pump_variable_speed(model)
+                pump.addToNode(node_demand_inlet)
+                try:
+                    setpoint_manager_secondary.addToNode(node_demand_inlet)
+                except ValueError:
+                    print('For "TwoWayCommonPipe", a setpoint manager in needed at demand inlet or supply inlet node.')
 
         return plant
 
@@ -81,17 +124,68 @@ class PlantLoopComponent:
     def sizing(
             model: openstudio.openstudiomodel.Model,
             plant_loop: openstudio.openstudiomodel.PlantLoop,
-            loop_type,  # Cooling, Heating, Condenser, Steam
+            loop_type: int = 1,
             loop_exit_temp=None,
-            loop_temp_diff=None):
+            loop_temp_diff=None,
+            sizing_option: int = None,
+            zone_timesteps_in_averaging_window=None,
+            coincident_sizing_factor_mode: int = 1):
+
+        """
+        -Loop_type: 1:Cooling 2:Heating 3:Condenser 4:Steam \n
+
+        -Sizing_option:
+        1: Coincident
+        2: NonCoincident
+        (Default is NonCoincident) \n
+
+        -Coincident_sizing_factor_mode: \n
+        1: None \n
+        2: GlobalCoolingSizingFactor \n
+        3: GlobalHeatingSizingFactor \n
+        4: LoopComponentSizingFactor
+        """
+
+        loop_types = {1: "Cooling", 2: "Heating", 3: "Condenser", 4: "Steam"}
+        sizing_options = {1: "Coincident", 2: "NonCoincident"}
+        sizing_factor_modes = {1: "None", 2: "GlobalCoolingSizingFactor",
+                               3: "GlobalHeatingSizingFactor", 4: "LoopComponentSizingFactor"}
 
         sizing = openstudio.openstudiomodel.SizingPlant(model, plant_loop)
 
-        sizing.setLoopType(loop_type)
+        sizing.setLoopType(loop_types[loop_type])
+
         if loop_exit_temp is not None:
             sizing.setDesignLoopExitTemperature(loop_exit_temp)
+        else:
+            match loop_type:
+                case 1:
+                    sizing.setDesignLoopExitTemperature(Helper.f_to_c(44))
+                case 2:
+                    sizing.setDesignLoopExitTemperature(Helper.f_to_c(180))
+                case 3:
+                    sizing.setDesignLoopExitTemperature(Helper.f_to_c(85))
+                case 4 | _:
+                    sizing.setDesignLoopExitTemperature(Helper.f_to_c(210))
+
         if loop_temp_diff is not None:
             sizing.setLoopDesignTemperatureDifference(loop_temp_diff)
+        else:
+            match loop_type:
+                case 1:
+                    sizing.setLoopDesignTemperatureDifference(Helper.delta_temp_f_to_c(12))
+                case 2:
+                    sizing.setLoopDesignTemperatureDifference(Helper.delta_temp_f_to_c(30))
+                case 3:
+                    sizing.setLoopDesignTemperatureDifference(Helper.delta_temp_f_to_c(10))
+                case 4 | _:
+                    sizing.setLoopDesignTemperatureDifference(Helper.delta_temp_f_to_c(50))
+
+        if sizing_option is not None:
+            sizing.setSizingOption(sizing_options[sizing_option])
+
+        if coincident_sizing_factor_mode is not None:
+            sizing.setCoincidentSizingFactorMode(sizing_factor_modes[coincident_sizing_factor_mode])
 
     @staticmethod
     def chiller_electric(
@@ -177,6 +271,43 @@ class PlantLoopComponent:
         return chiller
 
     @staticmethod
+    def boiler_hot_water(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            fuel_type: int = 1,
+            nominal_capacity=None,
+            efficiency=None,
+            efficiency_curve_temp_eval_variable: int = 1,
+            boiler_efficiency_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            design_water_flow_rate=None,
+            min_part_load_ratio=None,
+            max_part_load_ratio=None,
+            optimal_part_load_ratio=None,
+            water_outlet_upper_temp_limit=None,
+            boiler_flow_mode: int = 1,
+            parasitic_electric_load=None,
+            sizing_factor=None):
+
+        boiler = openstudio.openstudiomodel.BoilerHotWater(model)
+
+        if name is not None:
+            boiler.setName(name)
+
+        return boiler
+
+    @staticmethod
+    def boiler_steam(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,):
+
+        boiler = openstudio.openstudiomodel.BoilerSteam(model)
+
+        if name is not None:
+            boiler.setName(name)
+
+        return boiler
+
+    @staticmethod
     def adiabatic_pipe(model: openstudio.openstudiomodel.Model):
         pipe = openstudio.openstudiomodel.PipeAdiabatic(model)
         return pipe
@@ -197,11 +328,7 @@ class PlantLoopComponent:
             power_per_flow_rate_per_head=None,
             thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
             skin_loss_radiative_fraction=None,
-            pump_curve_coeff=None,
-            coefficient_1=None,
-            coefficient_2=None,
-            coefficient_3=None,
-            coefficient_4=None, ):
+            pump_curve_coeff=None):
 
         pump = openstudio.openstudiomodel.PumpVariableSpeed(model)
 

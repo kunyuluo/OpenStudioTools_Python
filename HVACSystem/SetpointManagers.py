@@ -7,29 +7,48 @@ class SetpointManager:
     @staticmethod
     def scheduled(
             model: openstudio.openstudiomodel.Model,
-            control_variable="Temperature",
+            control_variable: int = 1,
             constant_value=None,
             schedule: openstudio.openstudiomodel.Schedule = None):
-        # Alternatives of control variable:
-        # *******************************************************************
-        # Temperature
-        # MaximumTemperature
-        # MinimumTemperature
-        # HumidityRatio
-        # MaximumHumidityRatio
-        # MinimumHumidityRatio
-        # MassFlowRate
-        # MaximumMassFlowRate
-        # MinimumMassFlowRate
-        # *******************************************************************
-        type_limits = ScheduleTool.schedule_type_limits(model, "Temperature", "Continuous", 0, 100)
-        if constant_value is not None:
-            schedule = ScheduleTool.schedule_ruleset(model, constant_value, type_limits)
-        else:
-            if schedule is None:
-                schedule = ScheduleTool.schedule_ruleset(model, 6.67, type_limits)
 
-        manager = openstudio.openstudiomodel.SetpointManagerScheduled(model, control_variable, schedule)
+        """
+        -Control variable:
+        1.Temperature
+        2.MaximumTemperature
+        3.MinimumTemperature
+        4.HumidityRatio
+        5.MaximumHumidityRatio
+        6.MinimumHumidityRatio
+        7.MassFlowRate
+        8.MaximumMassFlowRate
+        9.MinimumMassFlowRate
+        """
+
+        control_variables = {1: "Temperature", 2: "MaximumTemperature", 3: "MinimumTemperature",
+                             4: "HumidityRatio", 5: "MaximumHumidityRatio", 6: "MinimumHumidityRatio",
+                             7: "MassFlowRate", 8: "MaximumMassFlowRate", 9: "MinimumMassFlowRate"}
+
+        match control_variable:
+            case 1 | 2 | 3:
+                type_limits = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 100)
+            case 4 | 5 | 6:
+                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 10)
+            case 7 | 8 | 9:
+                type_limits = ScheduleTool.schedule_type_limits(model, 15, 1, 0, 100)
+            case _:
+                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
+
+        if constant_value is not None:
+            setpoint_schedule = ScheduleTool.schedule_ruleset(model, constant_value, type_limits)
+        else:
+            if schedule is not None:
+                setpoint_schedule = schedule
+            else:
+                raise ValueError("Specify either constant value or a schedule")
+
+        manager = openstudio.openstudiomodel.SetpointManagerScheduled(
+            model, control_variables[control_variable], setpoint_schedule)
+
         return manager
 
     @staticmethod

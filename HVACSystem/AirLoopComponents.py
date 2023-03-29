@@ -1,171 +1,10 @@
 import openstudio
 from HVACSystem.SetpointManagers import SetpointManager
 from HVACSystem.PerformanceCurves import Curve
-from HVACSystem.AirTerminals import AirTerminal
 from Schedules.ScheduleTools import ScheduleTool
 
 
 class AirLoopComponent:
-
-    @staticmethod
-    def air_loop_simplified(
-            model: openstudio.openstudiomodel.Model,
-            name: str = None,
-            design_air_flow_rate=None,
-            design_return_air_flow_fraction=None,
-            air_terminal_type: str = None,
-            air_terminal_reheat_type: str = None,
-            thermal_zones: openstudio.openstudiomodel.ThermalZone = []):
-
-        """
-        -Air Terminal Type: \n
-        1.SingleDuctConstantVolumeNoReheat \n
-        2.SingleDuctConstantVolumeReheat \n
-        3.SingleDuctVAVNoReheat \n
-        4.SingleDuctVAVReheat \n
-        5.SingleDuctVAVHeatAndCoolNoReheat \n
-        6.SingleDuctVAVHeatAndCoolReheat \n
-        7.SingleDuctSeriesPIUReheat \n
-        8.SingleDuctParallelPIUReheat \n
-        9.SingleDuctConstantVolumeFourPipeInduction \n
-        10.SingleDuctConstantVolumeFourPipeBeam \n
-        11.SingleDuctConstantVolumeFourCooledBeam
-
-        -Air Terminal Reheat Type: \n
-        1.Water
-        2.Electric
-        3.Gas
-        """
-
-        loop = openstudio.openstudiomodel.AirLoopHVAC(model)
-        reheat_water_coils = []
-        beam_cool_coils = []
-        beam_heat_coils = []
-
-        if name is not None:
-            loop.setName(name)
-        if design_air_flow_rate is not None:
-            loop.setDesignSupplyAirFlowRate(design_air_flow_rate)
-        else:
-            loop.autosizeDesignSupplyAirFlowRate()
-
-        if design_return_air_flow_fraction is not None:
-            loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
-
-        # Demand branch
-        if thermal_zones is not None and len(thermal_zones) != 0:
-
-            for zone in thermal_zones:
-                match air_terminal_type:
-                    case "SingleDuctConstantVolumeNoReheat":
-                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model)
-
-                    case "SingleDuctConstantVolumeReheat":
-                        match air_terminal_reheat_type:
-                            case "Water":
-                                reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
-                            case "Gas":
-                                reheat_coil = AirLoopComponent.coil_heating_gas(model)
-                            case "Electric" | _:
-                                reheat_coil = AirLoopComponent.coil_heating_electric(model)
-
-                        terminal = AirTerminal.single_duct_constant_volume_reheat(model, coil=reheat_coil)
-                    case "SingleDuctVAVNoReheat":
-                        terminal = AirTerminal.single_duct_vav_no_reheat(model)
-
-                    case "SingleDuctVAVReheat":
-                        match air_terminal_reheat_type:
-                            case "Water":
-                                reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
-                            case "Gas":
-                                reheat_coil = AirLoopComponent.coil_heating_gas(model)
-                            case "Electric" | _:
-                                reheat_coil = AirLoopComponent.coil_heating_electric(model)
-
-                        terminal = AirTerminal.single_duct_vav_reheat(model, coil=reheat_coil)
-
-                    case "SingleDuctVAVHeatAndCoolNoReheat":
-                        terminal = AirTerminal.single_duct_vav_heat_and_cool_no_reheat(model)
-
-                    case "SingleDuctVAVHeatAndCoolReheat":
-                        match air_terminal_reheat_type:
-                            case "Water":
-                                reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
-                            case "Gas":
-                                reheat_coil = AirLoopComponent.coil_heating_gas(model)
-                            case "Electric" | _:
-                                reheat_coil = AirLoopComponent.coil_heating_electric(model)
-
-                        terminal = AirTerminal.single_duct_vav_heat_and_cool_reheat(
-                            model, coil=reheat_coil)
-
-                    case "SingleDuctSeriesPIUReheat":
-                        match air_terminal_reheat_type:
-                            case "Water":
-                                reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
-                            case "Gas":
-                                reheat_coil = AirLoopComponent.coil_heating_gas(model)
-                            case "Electric" | _:
-                                reheat_coil = AirLoopComponent.coil_heating_electric(model)
-
-                        terminal_fan = AirLoopComponent.fan_constant_speed(model)
-
-                        terminal = AirTerminal.single_duct_series_piu_reheat(model, fan=terminal_fan, coil=reheat_coil)
-
-                    case "SingleDuctParallelPIUReheat":
-                        match air_terminal_reheat_type:
-                            case "Water":
-                                reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
-                            case "Gas":
-                                reheat_coil = AirLoopComponent.coil_heating_gas(model)
-                            case "Electric" | _:
-                                reheat_coil = AirLoopComponent.coil_heating_electric(model)
-
-                        terminal_fan = AirLoopComponent.fan_constant_speed(model)
-
-                        terminal = AirTerminal.single_duct_parallel_piu_reheat(model, fan=terminal_fan, coil=reheat_coil)
-
-                    case "SingleDuctConstantVolumeFourPipeInduction":
-                        terminal = AirTerminal.single_duct_constant_volume_four_pipe_induction(model)
-                        try:
-                            beam_cool_coils.append(terminal.coolingCoil())
-                        except ValueError:
-                            pass
-                        try:
-                            beam_heat_coils.append(terminal.heatingCoil())
-                        except ValueError:
-                            pass
-                    case "SingleDuctConstantVolumeFourPipeBeam":
-                        terminal = AirTerminal.single_duct_constant_volume_four_pipe_beam(model)
-                        try:
-                            beam_cool_coils.append(terminal.coolingCoil())
-                        except ValueError:
-                            pass
-                        try:
-                            beam_heat_coils.append(terminal.heatingCoil())
-                        except ValueError:
-                            pass
-                    case "SingleDuctConstantVolumeFourCooledBeam":
-                        terminal = AirTerminal.single_duct_constant_volume_cooled_beam(model)
-                        try:
-                            beam_cool_coils.append(terminal.coilCoolingCooledBeam())
-                        except ValueError:
-                            pass
-                    case _:
-                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model)
-                        print('This terminal type is currently not supported. Please choose another type, '
-                              'or the "constant volume no reheat" will be used as default')
-
-                loop.addBranchForZone(zone, terminal)
-
-        results = (loop, reheat_water_coils, beam_cool_coils, beam_heat_coils)
-
-        return results
 
     @staticmethod
     def air_loop(
@@ -234,28 +73,28 @@ class AirLoopComponent:
     def sizing(
             model: openstudio.openstudiomodel.Model,
             air_loop: openstudio.openstudiomodel.AirLoopHVAC,
-            type_of_load_to_size_on: str = "Total",
+            type_of_load_to_size_on: int = 1,
             design_outdoor_air_flow_rate=None,
             central_heating_max_flow_ratio=None,
-            system_outdoor_air_method: str = None,
+            system_outdoor_air_method: int = None,
             preheat_temp=None,
             preheat_humidity_ratio=None,
             precool_temp=None,
             precool_humidity_ratio=None,
             central_cooling_supply_air_temp=None,
             central_heating_supply_air_temp=None,
-            sizing_option: str = None,
-            all_outdoor_air_cooling=None,
-            all_outdoor_air_heating=None,
-            cooling_design_capacity_method: str = None,
-            heating_design_capacity_method: str = None,
+            sizing_option: int = None,
+            all_outdoor_air_cooling: bool = False,
+            all_outdoor_air_heating: bool = False,
+            cooling_design_capacity_method: int = None,
+            heating_design_capacity_method: int = None,
             cooling_design_capacity=None,
             heating_design_capacity=None,
             cooling_design_capacity_per_floor_area=None,
             heating_design_capacity_per_floor_area=None,
             fraction_of_autosized_cooling_design_capacity=None,
             fraction_of_autosized_heating_design_capacity=None,
-            central_cooling_capacity_control_method: str = "OnOff",
+            central_cooling_capacity_control_method: int = 1,
             occupant_diversity=None):
 
         """
@@ -284,12 +123,27 @@ class AirLoopComponent:
             (Default is DesignDay)
 
         -Options for "heating_design_capacity_method": same as above
+
+        -Options for "central_cooling_capacity_control_method":
+            1: OnOff
+            2: VAV
+            3: Bypass
+            4: VT
+            (Default is OnOff)
         """
+
+        load_types = {1: "Total", 2: "Sensible", 3: "VentilationRequirement"}
+        outdoor_air_methods = {1: "ZoneSum", 2: "Standard62.1VentilationRateProcedure",
+                               3: "Standard62.1SimplifiedProcedure"}
+        sizing_options = {1: "Coincident", 2: "NonCoincident"}
+        cooling_capacity_methods = {1: "DesignDay", 2: "Flow/System", 3: "FlowPerFloorArea",
+                                    4: "FractionOfAutosizedCoolingAirflow", 5: "FlowPerCoolingCapacity"}
+        cooling_control_methods = {1: "OnOff", 2: "VAV", 3: "Bypass", 4: "VT"}
 
         sizing = openstudio.openstudiomodel.SizingSystem(model, air_loop)
 
         if type_of_load_to_size_on is not None:
-            sizing.setTypeofLoadtoSizeOn(type_of_load_to_size_on)
+            sizing.setTypeofLoadtoSizeOn(load_types[type_of_load_to_size_on])
 
         if design_outdoor_air_flow_rate is not None:
             sizing.setDesignOutdoorAirFlowRate(design_outdoor_air_flow_rate)
@@ -302,7 +156,7 @@ class AirLoopComponent:
             sizing.autosizeCentralHeatingMaximumSystemAirFlowRatio()
 
         if system_outdoor_air_method is not None:
-            sizing.setSystemOutdoorAirMethod(system_outdoor_air_method)
+            sizing.setSystemOutdoorAirMethod(outdoor_air_methods[system_outdoor_air_method])
 
         if preheat_temp is not None:
             sizing.setPreheatDesignTemperature(preheat_temp)
@@ -323,7 +177,7 @@ class AirLoopComponent:
             sizing.setCentralCoolingDesignSupplyAirTemperature(central_cooling_supply_air_temp)
 
         if sizing_option is not None:
-            sizing.setSizingOption(sizing_option)
+            sizing.setSizingOption(sizing_options[sizing_option])
 
         if all_outdoor_air_heating is not None:
             sizing.setAllOutdoorAirinHeating(all_outdoor_air_heating)
@@ -331,9 +185,9 @@ class AirLoopComponent:
             sizing.setAllOutdoorAirinCooling(all_outdoor_air_cooling)
 
         if cooling_design_capacity_method is not None:
-            sizing.setCoolingDesignCapacityMethod(cooling_design_capacity_method)
+            sizing.setCoolingDesignCapacityMethod(cooling_capacity_methods[cooling_design_capacity_method])
         if heating_design_capacity_method is not None:
-            sizing.setHeatingDesignCapacityMethod(heating_design_capacity_method)
+            sizing.setHeatingDesignCapacityMethod(cooling_capacity_methods[heating_design_capacity_method])
 
         if cooling_design_capacity is not None:
             sizing.setCoolingDesignCapacity(cooling_design_capacity)
@@ -356,14 +210,13 @@ class AirLoopComponent:
             sizing.setFractionofAutosizedHeatingDesignCapacity(fraction_of_autosized_heating_design_capacity)
 
         if central_cooling_capacity_control_method is not None:
-            sizing.setCentralCoolingCapacityControlMethod(central_cooling_capacity_control_method)
+            sizing.setCentralCoolingCapacityControlMethod(
+                cooling_control_methods[central_cooling_capacity_control_method])
 
         if occupant_diversity is not None:
             sizing.setOccupantDiversity(occupant_diversity)
         else:
             sizing.autosizeOccupantDiversity()
-
-        return sizing
 
     # Coils
     # ********************************************************************************
@@ -1373,43 +1226,54 @@ class AirLoopComponent:
     # ***************************************************************************
     @staticmethod
     def controller_water_coil(
-            model: openstudio.openstudiomodel.Model,
+            controller: openstudio.openstudiomodel.ControllerWaterCoil,
             name: str = None,
-            control_variable: str = None,  # Temperature, HumidityRatio, TemperatureAndHumidityRatio
-            action: str = None,  # Normal, Reverse
+            control_variable: int = 1,
+            action: int = None,  # Normal, Reverse
             actuator_variable: str = None,
             convergence_tolerance=None,
             max_actuated_flow=None,
             min_actuated_flow=None):
 
-        controller = openstudio.openstudiomodel.ControllerWaterCoil()
+        """
+        -Control_variable: \n
+        1.Temperature \n
+        2.HumidityRatio \n
+        3.TemperatureAndHumidityRatio \n
 
-        if name is not None:
-            controller.setName(name)
+        -Action: 1.Normal 2.Reverse
+        """
 
-        if control_variable is not None:
-            controller.setControlVariable(control_variable)
+        control_variables = {1: "Temperature", 2: "HumidityRatio", 3: "TemperatureAndHumidityRatio"}
+        actions = {1: "Normal", 2: "Reverse"}
 
-        if action is not None:
-            controller.setAction(action)
+        if controller is not None:
 
-        if actuator_variable is not None:
-            controller.setActuatorVariable(actuator_variable)
+            if name is not None:
+                controller.setName(name)
 
-        if convergence_tolerance is not None:
-            controller.setControllerConvergenceTolerance(convergence_tolerance)
+            controller.setControlVariable(control_variables[control_variable])
+
+            if action is not None:
+                controller.setAction(actions[action])
+
+            if actuator_variable is not None:
+                controller.setActuatorVariable(actuator_variable)
+
+            if convergence_tolerance is not None:
+                controller.setControllerConvergenceTolerance(convergence_tolerance)
+            else:
+                controller.autosizeControllerConvergenceTolerance()
+
+            if max_actuated_flow is not None:
+                controller.setMaximumActuatedFlow(max_actuated_flow)
+            else:
+                controller.autosizeMaximumActuatedFlow()
+
+            if min_actuated_flow is not None:
+                controller.setMinimumActuatedFlow(min_actuated_flow)
         else:
-            controller.autosizeControllerConvergenceTolerance()
-
-        if max_actuated_flow is not None:
-            controller.setMaximumActuatedFlow(max_actuated_flow)
-        else:
-            controller.autosizeMaximumActuatedFlow()
-
-        if min_actuated_flow is not None:
-            controller.setMinimumActuatedFlow(min_actuated_flow)
-
-        return controller
+            raise ValueError("Controller input cannot be empty.")
 
     @staticmethod
     def controller_outdoor_air(
@@ -1417,7 +1281,7 @@ class AirLoopComponent:
             name: str = None,
             min_outdoor_air_flow_rate=None,
             max_outdoor_air_flow_rate=None,
-            economizer_control_type: str = None,
+            economizer_control_type: int = 0,
             economizer_control_action_type: str = None,
             max_limit_dry_bulb_temp=None,
             max_limit_enthalpy=None,
@@ -1430,6 +1294,18 @@ class AirLoopComponent:
             max_fraction_outdoor_air_schedule=None,
             time_of_day_economizer_control_schedule=None,
             heat_recovery_bypass_control_type: str = None):
+
+        """
+        -Economizer Control Type: \n
+        1.NoEconomizer \n
+        2.FixedDryBulb \n
+        3.FixedDewPointAndDryBulb \n
+        4.FixedEnthalpy \n
+        5.DifferentialDryBulb \n
+        6.DifferentialEnthalpy \n
+        7.DifferentialDryBulbAndEnthalpy \n
+        8.ElectronicEnthalpy
+        """
 
         controller = openstudio.openstudiomodel.ControllerOutdoorAir(model)
         if name is not None:
@@ -1445,14 +1321,11 @@ class AirLoopComponent:
         else:
             controller.autosizeMaximumOutdoorAirFlowRate()
 
-        # Economizer type options:
-        # *************************************************************
-        # NoEconomizer            FixedDewPointAndDryBulb
-        # FixedDryBulb            FixedEnthalpy
-        # DifferentialDryBulb     DifferentialEnthalpy
-        # ElectronicEnthalpy      DifferentialDryBulbAndEnthalpy
-        if economizer_control_type is not None:
-            controller.setEconomizerControlType(economizer_control_type)
+        economizer_types = {0: "NoEconomizer", 1: "FixedDryBulb", 2: "FixedDewPointAndDryBulb", 3: "FixedEnthalpy",
+                            4: "FixedEnthalpy", 5: "DifferentialDryBulb", 6: "DifferentialEnthalpy",
+                            7: "DifferentialDryBulbAndEnthalpy", 8: "ElectronicEnthalpy"}
+        if economizer_control_type != 0:
+            controller.setEconomizerControlType(economizer_types[economizer_control_type])
 
         if economizer_control_action_type is not None:
             controller.setEconomizerControlActionType(economizer_control_action_type)

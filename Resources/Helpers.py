@@ -25,6 +25,22 @@ class Helper:
         return result
 
     @staticmethod
+    def f_to_c(temperature):
+        return (temperature - 32) / 1.8
+
+    @staticmethod
+    def c_to_f(temperature):
+        return temperature * 1.8 + 32
+
+    @staticmethod
+    def delta_temp_f_to_c(delta):
+        return delta / 1.8
+
+    @staticmethod
+    def delta_temp_c_to_f(delta):
+        return delta * 1.8
+
+    @staticmethod
     def visualize_curve(
             curve: openstudio.openstudiomodel.Curve,
             variable_1=range(0, 11, 1),

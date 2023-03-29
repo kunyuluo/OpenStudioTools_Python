@@ -3,7 +3,6 @@ from Schedules.ScheduleTools import ScheduleTool
 
 
 class Office:
-
     # Data Source: Title 24 Appendix 5.4B
     _occupancy = None
     _lighting = None
@@ -21,9 +20,8 @@ class Office:
         self._model = model
 
     # Occupancy Schedule
-    # @classmethod
     def occupancy(self):
-        occ_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        occ_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         occ_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=occ_typelimits,
                                                      name=self.prefix + "Occ_Schedule")
 
@@ -54,9 +52,8 @@ class Office:
         return self._occupancy
 
     # Lighting Schedule
-    # @classmethod
     def lighting(self):
-        ltg_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        ltg_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         ltg_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=ltg_typelimits,
                                                      name=self.prefix + "Ltg_Schedule")
 
@@ -87,9 +84,8 @@ class Office:
         return self._lighting
 
     # Equipment Schedule
-    # @classmethod
     def equipment(self):
-        equip_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        equip_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         equip_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=equip_typelimits,
                                                        name=self.prefix + "Equip_Schedule")
         equip_wd_values = [0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.1, 0.3, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
@@ -118,9 +114,8 @@ class Office:
         self._equipment = equip_schedule
         return self._equipment
 
-    # @classmethod
     def infiltration(self):
-        infil_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        infil_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         infil_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=infil_typelimits,
                                                        name=self.prefix + "Infil_Schedule")
         infil_wd_values = [1, 1, 1, 1, 1, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
@@ -149,9 +144,8 @@ class Office:
         self._infiltration = infil_schedule
         return self._infiltration
 
-    # @classmethod
     def cooling_setpoint(self):
-        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, "Temperature", "Continuous", 0, 50)
+        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, 2, 1, 0, 50)
         temp_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=temp_typelimits,
                                                       name=self.prefix + "ClgSP_Schedule")
         temp_wd_values = [29.4, 29.4, 29.4, 29.4, 29.4, 23.9, 23.9, 23.9, 23.9, 23.9, 23.9, 23.9, 23.9, 23.9, 23.9,
@@ -182,9 +176,8 @@ class Office:
         self._cooling_setpoint = temp_schedule
         return self._cooling_setpoint
 
-    # @classmethod
     def heating_setpoint(self):
-        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, "Temperature", "Continuous", 0, 50)
+        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, 2, 1, 0, 50)
         temp_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=temp_typelimits,
                                                       name=self.prefix + "HtgSP_Schedule")
         temp_wd_values = [15.6, 15.6, 15.6, 15.6, 15.6, 21.1, 21.1, 21.1, 21.1, 21.1, 21.1, 21.1, 21.1, 21.1, 21.1,
@@ -215,9 +208,8 @@ class Office:
         self._heating_setpoint = temp_schedule
         return self._heating_setpoint
 
-    # @classmethod
     def hvac_availability(self):
-        avail_typelimits = ScheduleTool.schedule_type_limits(self._model, "Availability", numeric_type="Discrete")
+        avail_typelimits = ScheduleTool.schedule_type_limits(self._model, 11, 2)
         avail_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=avail_typelimits,
                                                        name=self.prefix + "Avail_Schedule")
         avail_wd_values = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -243,9 +235,8 @@ class Office:
         self._hvac_availability = avail_schedule
         return self._hvac_availability
 
-    # @classmethod
     def dcv(self):
-        dcv_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        dcv_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         dcv_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=dcv_typelimits,
                                                      name=self.prefix + "DCV_Schedule")
 
@@ -275,9 +266,8 @@ class Office:
         self._dcv = dcv_schedule
         return self._dcv
 
-    # @classmethod
     def activity_level(self):
-        act_typelimits = ScheduleTool.schedule_type_limits(self._model, "ActivityLevel", "Continuous", 0, 200)
+        act_typelimits = ScheduleTool.schedule_type_limits(self._model, 7, 1, 0, 200)
         act_schedule = ScheduleTool.schedule_ruleset(
             self._model,
             120,
@@ -289,7 +279,6 @@ class Office:
 
 
 class Residential:
-
     # Data Source: Title 24 Appendix 5.4B
     _occupancy = None
     _lighting = None
@@ -307,9 +296,8 @@ class Residential:
         self._model = model
 
     # Occupancy Schedule
-    # @classmethod
     def occupancy(self):
-        occ_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        occ_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         occ_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=occ_typelimits,
                                                      name=self.prefix + "Occ_Schedule")
 
@@ -340,9 +328,8 @@ class Residential:
         return self._occupancy
 
     # Lighting Schedule
-    # @classmethod
     def lighting(self):
-        ltg_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        ltg_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         ltg_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=ltg_typelimits,
                                                      name=self.prefix + "Ltg_Schedule")
 
@@ -373,9 +360,8 @@ class Residential:
         return self._lighting
 
     # Equipment Schedule
-    # @classmethod
     def equipment(self):
-        equip_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        equip_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         equip_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=equip_typelimits,
                                                        name=self.prefix + "Equip_Schedule")
         equip_wd_values = [0.1, 0.1, 0.1, 0.1, 0.1, 0.3, 0.45, 0.45, 0.45, 0.45, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3,
@@ -404,9 +390,8 @@ class Residential:
         self._equipment = equip_schedule
         return self._equipment
 
-    # @classmethod
     def infiltration(self):
-        infil_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        infil_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         infil_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=infil_typelimits,
                                                        name=self.prefix + "Infil_Schedule")
 
@@ -436,9 +421,8 @@ class Residential:
         self._infiltration = infil_schedule
         return self._infiltration
 
-    # @classmethod
     def cooling_setpoint(self):
-        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, "Temperature", "Continuous", 0, 50)
+        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, 2, 1, 0, 50)
         temp_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=temp_typelimits,
                                                       name=self.prefix + "ClgSP_Schedule")
 
@@ -470,9 +454,8 @@ class Residential:
         self._cooling_setpoint = temp_schedule
         return self._cooling_setpoint
 
-    # @classmethod
     def heating_setpoint(self):
-        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, "Temperature", "Continuous", 0, 50)
+        temp_typelimits = ScheduleTool.schedule_type_limits(self._model, 2, 1, 0, 50)
         temp_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=temp_typelimits,
                                                       name=self.prefix + "HtgSP_Schedule")
         temp_wd_values = [15.6, 15.6, 15.6, 15.6, 15.6, 15.6, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
@@ -503,9 +486,8 @@ class Residential:
         self._heating_setpoint = temp_schedule
         return self._heating_setpoint
 
-    # @classmethod
     def hvac_availability(self):
-        avail_typelimits = ScheduleTool.schedule_type_limits(self._model, "Availability", numeric_type="Discrete")
+        avail_typelimits = ScheduleTool.schedule_type_limits(self._model, 11, 2)
         avail_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=avail_typelimits,
                                                        name=self.prefix + "Avail_Schedule")
 
@@ -532,9 +514,8 @@ class Residential:
         self._hvac_availability = avail_schedule
         return self._hvac_availability
 
-    # @classmethod
     def dcv(self):
-        dcv_typelimits = ScheduleTool.schedule_type_limits(self._model, "Dimensionless", "Continuous", 0, 1)
+        dcv_typelimits = ScheduleTool.schedule_type_limits(self._model, 1, 1, 0, 1)
         dcv_schedule = ScheduleTool.schedule_ruleset(self._model, type_limits=dcv_typelimits,
                                                      name=self.prefix + "DCV_Schedule")
 
@@ -564,9 +545,8 @@ class Residential:
         self._dcv = dcv_schedule
         return self._dcv
 
-    # @classmethod
     def activity_level(self):
-        act_typelimits = ScheduleTool.schedule_type_limits(self._model, "ActivityLevel", "Continuous", 0, 200)
+        act_typelimits = ScheduleTool.schedule_type_limits(self._model, 7, 1, 0, 200)
         act_schedule = ScheduleTool.schedule_ruleset(
             self._model,
             120,

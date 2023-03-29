@@ -1,7 +1,10 @@
 import openstudio
+from HVACSystem.HVACTools import HVACTool
 from HVACSystem.AirTerminals import AirTerminal
 from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
+from HVACSystem.PerformanceCurves import Curve
+from HVACSystem.SetpointManagers import SetpointManager
 
 
 class Template:
@@ -376,7 +379,10 @@ class Template:
     @staticmethod
     def vav_chiller_boiler(
             model: openstudio.openstudiomodel.Model,
-            thermal_zones):
+            thermal_zones,
+            need_relief_fan: bool = False,
+            need_heat_exchanger: bool = False,
+            air_loop_dehumidification_control: bool = False):
 
         """
         thermal_zones: \n
@@ -401,7 +407,7 @@ class Template:
 
                 # if the input thermal zone is a single thermal zone object:
                 if isinstance(thermal_zones, openstudio.openstudiomodel.ThermalZone):
-                    air_loop = AirLoopComponent.air_loop_simplified(
+                    air_loop = HVACTool.air_loop_simplified(
                         model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat", air_terminal_reheat_type="Water",
                         thermal_zones=[thermal_zones])
                     air_loops.append(air_loop[0])
@@ -419,7 +425,7 @@ class Template:
                     if isinstance(thermal_zones[0], openstudio.openstudiomodel.ThermalZone)\
                             and isinstance(thermal_zones[-1], openstudio.openstudiomodel.ThermalZone):
 
-                        air_loop = AirLoopComponent.air_loop_simplified(
+                        air_loop = HVACTool.air_loop_simplified(
                             model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat",
                             air_terminal_reheat_type="Water",
                             thermal_zones=[thermal_zones])
@@ -435,7 +441,7 @@ class Template:
                     # for 2-D list of thermal zone objects:
                     if isinstance(thermal_zones[0], list) and isinstance(thermal_zones[-1], list):
                         for i in range(len(thermal_zones)):
-                            air_loop = AirLoopComponent.air_loop_simplified(
+                            air_loop = HVACTool.air_loop_simplified(
                                 model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat",
                                 air_terminal_reheat_type="Water",
                                 thermal_zones=[thermal_zones])
@@ -451,7 +457,7 @@ class Template:
                 # if the input thermal zones is a dictionary of thermal zone objects:
                 elif isinstance(thermal_zones, dict):
                     for key in thermal_zones:
-                        air_loop = AirLoopComponent.air_loop_simplified(
+                        air_loop = HVACTool.air_loop_simplified(
                             model, "VAV Loop" + str(key), air_terminal_type="SingleDuctVAVReheat",
                             air_terminal_reheat_type="Water",
                             thermal_zones=[thermal_zones])
@@ -470,8 +476,51 @@ class Template:
                 # Add other components into the air loop:
                 try:
                     for loop in air_loops:
+                        # Set sizing parameters
+                        AirLoopComponent.sizing(model, loop, type_of_load_to_size_on=1)
+
                         supply_inlet_node = loop.supplyInletNode()
                         supply_outlet_node = loop.supplyOutletNode()
+
+                        # Add outdoor air system to the loop
+                        controller = AirLoopComponent.controller_outdoor_air(model, economizer_control_type=2)
+                        outdoor_air_system = openstudio.openstudiomodel.AirLoopHVACOutdoorAirSystem(model, controller)
+                        outdoor_air_system.addToNode(supply_inlet_node)
+
+                        oa_node = outdoor_air_system.outboardOANode().get()
+                        relief_node = outdoor_air_system.outboardReliefNode().get()
+
+                        # Add relief fan if needed
+                        if need_relief_fan:
+                            relief_fan = AirLoopComponent.fan_variable_speed(model)
+                            relief_fan.addToNode(relief_node)
+                        # Add heat exchanger if needed
+                        if need_heat_exchanger:
+                            heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air_simplified(model, efficiency=0.7)
+                            heat_exchanger.addToNode(oa_node)
+
+                        # Add cooling water coil
+                        coil_cooling = AirLoopComponent.coil_cooling_water(model)
+                        coil_cooling.addToNode(supply_outlet_node)
+                        cooling_coils.append(coil_cooling)
+
+                        # Add set point manager after cooling coil for dehumidification:
+                        if air_loop_dehumidification_control:
+                            spm_dehum = SetpointManager.scheduled(model, control_variable=5, constant_value=0.008)
+                            spm_dehum.addToNode(supply_outlet_node)
+
+                        # Add heating water coil
+                        coil_heating = AirLoopComponent.coil_heating_water(model)
+                        coil_heating.addToNode(supply_outlet_node)
+                        heating_coils.append(coil_heating)
+
+                        # Add fan
+                        fan = AirLoopComponent.fan_variable_speed(model, fan_curve_coeff=Curve.fan_curve_set(1))
+                        fan.addToNode(supply_outlet_node)
+
+                        # Add set point manager
+                        spm = SetpointManager.scheduled(model, control_variable=1, constant_value=12.6)
+                        spm.addToNode(supply_outlet_node)
 
                 except ValueError:
                     pass
@@ -479,7 +528,9 @@ class Template:
                 # Build a hot water loop:
                 # *****************************************************************************
                 hot_water_loop = PlantLoopComponent.plant_loop(
-                    model, "Hot Water Loop", "Water", demand_branches=reheat_coils)
+                    model, "Hot Water Loop", 1, demand_branches=reheat_coils)
+
+                PlantLoopComponent.sizing(model, hot_water_loop)
 
             else:
                 raise ValueError(Template.zone_null_message)
