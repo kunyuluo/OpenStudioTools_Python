@@ -380,18 +380,25 @@ class Template:
     def vav_chiller_boiler(
             model: openstudio.openstudiomodel.Model,
             thermal_zones,
-            need_relief_fan: bool = False,
-            need_heat_exchanger: bool = False,
-            air_loop_dehumidification_control: bool = False):
+            vav_need_relief_fan: bool = False,
+            vav_need_heat_exchanger: bool = False,
+            air_loop_dehumidification_control: bool = False,
+            number_of_chiller: int = 1,
+            chiller_cop=5.5,
+            chiller_condenser_type: int = 1,
+            number_of_boiler: int = 1,
+            boiler_efficiency=0.95):
 
         """
-        thermal_zones: \n
-        Could be: \n
+        Thermal_zones: \n
+        could be: \n
         1.A single thermal zone \n
         2.A list of thermal zone (will be all in one air loop) \n
         3.A 2-d list of thermal zone (will be in several air loops based on substructure of the list) \n
         4.A dictionary of thermal zone (each key represents an individual air loop,
-        and will have a list of thermal zone as input)
+        and will have a list of thermal zone as input) \n
+
+        Chiller condenser type: 1:AirCooled 2:WaterCooled 3:EvapCooled
         """
 
         # Check input validity:
@@ -491,11 +498,11 @@ class Template:
                         relief_node = outdoor_air_system.outboardReliefNode().get()
 
                         # Add relief fan if needed
-                        if need_relief_fan:
+                        if vav_need_relief_fan:
                             relief_fan = AirLoopComponent.fan_variable_speed(model)
                             relief_fan.addToNode(relief_node)
                         # Add heat exchanger if needed
-                        if need_heat_exchanger:
+                        if vav_need_heat_exchanger:
                             heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air_simplified(model, efficiency=0.7)
                             heat_exchanger.addToNode(oa_node)
 
@@ -527,10 +534,54 @@ class Template:
 
                 # Build a hot water loop:
                 # *****************************************************************************
-                hot_water_loop = PlantLoopComponent.plant_loop(
-                    model, "Hot Water Loop", 1, demand_branches=reheat_coils)
+                hot_water_supply_branches = []
+                for i in range(number_of_boiler):
+                    branch = []
 
-                PlantLoopComponent.sizing(model, hot_water_loop)
+                    pump = PlantLoopComponent.pump_variable_speed(model)
+                    boiler = PlantLoopComponent.boiler_hot_water(model, efficiency=boiler_efficiency)
+
+                    branch.append(pump)
+                    branch.append(boiler)
+
+                    hot_water_supply_branches.append(branch)
+
+                hot_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
+                hot_water_supply_branches.append(hot_water_bypass_pipe)
+
+                hot_water_loop = PlantLoopComponent.plant_loop(
+                    model, "Hot Water Loop", 1,
+                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
+                    supply_branches=hot_water_supply_branches,
+                    demand_branches=reheat_coils)
+
+                PlantLoopComponent.sizing(model, hot_water_loop, 2)
+
+                # Build a chilled water loop:
+                # *****************************************************************************
+                chilled_water_supply_branches = []
+                for i in range(number_of_boiler):
+                    branch = []
+
+                    pump = PlantLoopComponent.pump_variable_speed(model)
+                    chiller = PlantLoopComponent.chiller_electric(
+                        model, condenser_type=chiller_condenser_type, cop=chiller_cop)
+
+                    branch.append(pump)
+                    branch.append(chiller)
+
+                    chilled_water_supply_branches.append(branch)
+
+                chilled_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
+                chilled_water_supply_branches.append(chilled_water_bypass_pipe)
+
+                chilled_water_loop = PlantLoopComponent.plant_loop(
+                    model, "Chilled Water Loop", 1,
+                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
+                    supply_branches=chilled_water_supply_branches,
+                    demand_branches=cooling_coils)
+
+                PlantLoopComponent.sizing(model, chilled_water_loop, 1)
 
             else:
                 raise ValueError(Template.zone_null_message)

@@ -41,6 +41,38 @@ class Helper:
         return delta * 1.8
 
     @staticmethod
+    def cfm_to_m3s(flow):
+        return flow * 0.0004719474
+
+    @staticmethod
+    def gpm_to_m3s(flow):
+        return flow * 0.0000630902
+
+    @staticmethod
+    def pump_power_calculator_ip(head, flow, motor_efficiency=0.9, pump_efficiency=0.7):
+        """
+        :param head: pump head in ft
+        :param flow: pump water flow rate in gpm
+        :param motor_efficiency: default is 0.9
+        :param pump_efficiency: default is 0.7
+        :return: pump power in watts (W)
+        """
+        hp = head * flow * 8.33 / (33000 * motor_efficiency * pump_efficiency)
+        return hp * 745.7
+
+    @staticmethod
+    def pump_power_calculator_si(head, flow, motor_efficiency=0.9, pump_efficiency=0.7):
+        """
+        :param head: pump head in meter
+        :param flow: pump water flow rate in m3/h
+        :param motor_efficiency: default is 0.9
+        :param pump_efficiency: default is 0.7
+        :return: pump power in watts (W)
+        """
+        kw = head * flow * 1000 * 9.81 / (3600000 * motor_efficiency * pump_efficiency)
+        return kw * 1000
+
+    @staticmethod
     def visualize_curve(
             curve: openstudio.openstudiomodel.Curve,
             variable_1=range(0, 11, 1),

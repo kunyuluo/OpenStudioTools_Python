@@ -135,9 +135,9 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 
 # Plant loop:
 # **************************************************************************************
-chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1", condenser_type="AirCooled")
-chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2", condenser_type="AirCooled")
-chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3", condenser_type="AirCooled")
+chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1")
+chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2")
+chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3")
 pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
 pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
 pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
@@ -146,8 +146,8 @@ pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
 pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
 adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
 items = [[pump1, chiller1, pump4], [pump2, chiller2, pump5], [pump3, chiller3, pump6], [adiabatic_pipe]]
-spm1 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
-spm2 = SetpointManager.outdoor_air_reset(model, "Temperature", 13.3, 6.67, 10, 24)
+spm1 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
+spm2 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
 
 plant_loop = PlantLoopComponent.plant_loop(
     model,
@@ -157,7 +157,7 @@ plant_loop = PlantLoopComponent.plant_loop(
     setpoint_manager=spm1,
     setpoint_manager_secondary=spm2)
 
-PlantLoopComponent.sizing(model, plant_loop, "Cooling")
+PlantLoopComponent.sizing(model, plant_loop, 1)
 
 # Air loop:
 # **************************************************************************************
