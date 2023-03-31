@@ -15,10 +15,12 @@ from Constructions.ConstructionSets import ConstructionSet
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
 from HVACSystem.AirLoopComponents import AirLoopComponent
+from HVACSystem.AirTerminals import AirTerminal
 from HVACSystem.Template.ASHRAE import ASHRAEBaseline
 from HVACSystem.Template.Template import Template
 from HVACSystem.ZoneEquipments import ZoneEquipment
 from HVACSystem.PerformanceCurves import Curve
+from HVACSystem.HVACTools import HVACTool
 from Resources.Helpers import Helper
 
 # vertices = []
@@ -135,29 +137,29 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 
 # Plant loop:
 # **************************************************************************************
-chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1")
-chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2")
-chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3")
-pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
-pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
-pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
-pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
-pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
-pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
-adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
-items = [[pump1, chiller1, pump4], [pump2, chiller2, pump5], [pump3, chiller3, pump6], [adiabatic_pipe]]
-spm1 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
-spm2 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
-
-plant_loop = PlantLoopComponent.plant_loop(
-    model,
-    name="Chilled Water Loop HaHaHa",
-    common_pipe_simulation=1,
-    supply_branches=items,
-    setpoint_manager=spm1,
-    setpoint_manager_secondary=spm2)
-
-PlantLoopComponent.sizing(model, plant_loop, 1)
+# chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1")
+# chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2")
+# chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3")
+# pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
+# pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
+# pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
+# pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
+# pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
+# pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
+# adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
+# items = [[pump1, chiller1, pump4], [pump2, chiller2, pump5], [pump3, chiller3, pump6], [adiabatic_pipe]]
+# spm1 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
+# spm2 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
+#
+# plant_loop = PlantLoopComponent.plant_loop(
+#     model,
+#     name="Chilled Water Loop HaHaHa",
+#     common_pipe_simulation=1,
+#     supply_branches=items,
+#     setpoint_manager=spm1,
+#     setpoint_manager_secondary=spm2)
+#
+# PlantLoopComponent.sizing(model, plant_loop, 1)
 
 # Air loop:
 # **************************************************************************************
@@ -180,7 +182,8 @@ PlantLoopComponent.sizing(model, plant_loop, 1)
 
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
-
+# Template.vav_chiller_boiler(model, thermal_zones, number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
+heater = PlantLoopComponent.water_heater_mixed(model, sizing=PlantLoopComponent.water_heater_sizing())
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
 # model.save(newPath, True)

@@ -1,6 +1,5 @@
 import openstudio
 from HVACSystem.HVACTools import HVACTool
-from HVACSystem.AirTerminals import AirTerminal
 from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.PerformanceCurves import Curve
@@ -387,18 +386,19 @@ class Template:
             chiller_cop=5.5,
             chiller_condenser_type: int = 1,
             number_of_boiler: int = 1,
-            boiler_efficiency=0.95):
+            boiler_efficiency=0.95,
+            number_of_cooling_tower: int = 1):
 
         """
         Thermal_zones: \n
         could be: \n
-        1.A single thermal zone \n
-        2.A list of thermal zone (will be all in one air loop) \n
-        3.A 2-d list of thermal zone (will be in several air loops based on substructure of the list) \n
-        4.A dictionary of thermal zone (each key represents an individual air loop,
+        1: a single thermal zone \n
+        2: a list of thermal zone (will be all in one air loop) \n
+        3: a 2-d list of thermal zone (will be in several air loops based on substructure of the list) \n
+        4: a dictionary of thermal zone (each key represents an individual air loop,
         and will have a list of thermal zone as input) \n
 
-        Chiller condenser type: 1:AirCooled 2:WaterCooled 3:EvapCooled
+        Chiller condenser type: 1: AirCooled 2: WaterCooled 3: EvapCooled
         """
 
         # Check input validity:
@@ -415,7 +415,7 @@ class Template:
                 # if the input thermal zone is a single thermal zone object:
                 if isinstance(thermal_zones, openstudio.openstudiomodel.ThermalZone):
                     air_loop = HVACTool.air_loop_simplified(
-                        model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat", air_terminal_reheat_type="Water",
+                        model, "VAV Loop", air_terminal_type=4, air_terminal_reheat_type=1,
                         thermal_zones=[thermal_zones])
                     air_loops.append(air_loop[0])
 
@@ -433,9 +433,9 @@ class Template:
                             and isinstance(thermal_zones[-1], openstudio.openstudiomodel.ThermalZone):
 
                         air_loop = HVACTool.air_loop_simplified(
-                            model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat",
-                            air_terminal_reheat_type="Water",
-                            thermal_zones=[thermal_zones])
+                            model, "VAV Loop", air_terminal_type=4,
+                            air_terminal_reheat_type=1,
+                            thermal_zones=thermal_zones)
                         air_loops.append(air_loop[0])
 
                         if len(air_loop[1]) != 0:
@@ -449,9 +449,9 @@ class Template:
                     if isinstance(thermal_zones[0], list) and isinstance(thermal_zones[-1], list):
                         for i in range(len(thermal_zones)):
                             air_loop = HVACTool.air_loop_simplified(
-                                model, "VAV Loop", air_terminal_type="SingleDuctVAVReheat",
-                                air_terminal_reheat_type="Water",
-                                thermal_zones=[thermal_zones])
+                                model, "VAV Loop", air_terminal_type=4,
+                                air_terminal_reheat_type=1,
+                                thermal_zones=thermal_zones[i])
                             air_loops.append(air_loop[0])
 
                             if len(air_loop[1]) != 0:
@@ -465,9 +465,9 @@ class Template:
                 elif isinstance(thermal_zones, dict):
                     for key in thermal_zones:
                         air_loop = HVACTool.air_loop_simplified(
-                            model, "VAV Loop" + str(key), air_terminal_type="SingleDuctVAVReheat",
-                            air_terminal_reheat_type="Water",
-                            thermal_zones=[thermal_zones])
+                            model, "VAV Loop" + str(key), air_terminal_type=4,
+                            air_terminal_reheat_type=1,
+                            thermal_zones=thermal_zones[key])
                         air_loops.append(air_loop[0])
 
                         if len(air_loop[1]) != 0:
@@ -503,7 +503,8 @@ class Template:
                             relief_fan.addToNode(relief_node)
                         # Add heat exchanger if needed
                         if vav_need_heat_exchanger:
-                            heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air_simplified(model, efficiency=0.7)
+                            heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air_simplified(
+                                model, efficiency=0.7)
                             heat_exchanger.addToNode(oa_node)
 
                         # Add cooling water coil
@@ -535,6 +536,13 @@ class Template:
                 # Build a hot water loop:
                 # *****************************************************************************
                 hot_water_supply_branches = []
+                hot_water_demand_branches = []
+
+                if len(heating_coils) != 0:
+                    hot_water_demand_branches.extend(heating_coils)
+                if len(reheat_coils) != 0:
+                    hot_water_demand_branches.extend(reheat_coils)
+
                 for i in range(number_of_boiler):
                     branch = []
 
@@ -549,18 +557,20 @@ class Template:
                 hot_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
                 hot_water_supply_branches.append(hot_water_bypass_pipe)
 
-                hot_water_loop = PlantLoopComponent.plant_loop(
+                hot_water_loop = HVACTool.plant_loop(
                     model, "Hot Water Loop", 1,
+                    common_pipe_simulation=2,
                     setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
                     supply_branches=hot_water_supply_branches,
-                    demand_branches=reheat_coils)
+                    demand_branches=hot_water_demand_branches)
 
                 PlantLoopComponent.sizing(model, hot_water_loop, 2)
 
                 # Build a chilled water loop:
                 # *****************************************************************************
                 chilled_water_supply_branches = []
-                for i in range(number_of_boiler):
+                chillers = []
+                for i in range(number_of_chiller):
                     branch = []
 
                     pump = PlantLoopComponent.pump_variable_speed(model)
@@ -569,19 +579,48 @@ class Template:
 
                     branch.append(pump)
                     branch.append(chiller)
+                    chillers.append(chiller)
 
                     chilled_water_supply_branches.append(branch)
 
                 chilled_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
                 chilled_water_supply_branches.append(chilled_water_bypass_pipe)
 
-                chilled_water_loop = PlantLoopComponent.plant_loop(
+                chilled_water_loop = HVACTool.plant_loop(
                     model, "Chilled Water Loop", 1,
+                    common_pipe_simulation=2,
                     setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
                     supply_branches=chilled_water_supply_branches,
                     demand_branches=cooling_coils)
 
                 PlantLoopComponent.sizing(model, chilled_water_loop, 1)
+
+                # Build a condenser water loop if needed:
+                # *****************************************************************************
+                if chiller_condenser_type == 2:
+                    condenser_water_supply_branches = []
+                    for i in range(number_of_cooling_tower):
+                        branch = []
+
+                        pump = PlantLoopComponent.pump_variable_speed(model)
+                        tower = PlantLoopComponent.cooling_tower_variable_speed(model)
+
+                        branch.append(pump)
+                        branch.append(tower)
+
+                        condenser_water_supply_branches.append(branch)
+
+                    condenser_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
+                    condenser_water_supply_branches.append(condenser_water_bypass_pipe)
+
+                    condenser_water_loop = HVACTool.plant_loop(
+                        model, "Condenser Water Loop", 1,
+                        common_pipe_simulation=1,
+                        setpoint_manager=SetpointManager.follow_outdoor_air_temperature(model, ashrae_default=True),
+                        supply_branches=condenser_water_supply_branches,
+                        demand_branches=chillers)
+
+                    PlantLoopComponent.sizing(model, condenser_water_loop, 3)
 
             else:
                 raise ValueError(Template.zone_null_message)

@@ -1,124 +1,9 @@
 import openstudio
 from Resources.Helpers import Helper
+from HVACSystem.SetpointManagers import SetpointManager
 
 
 class PlantLoopComponent:
-
-    @staticmethod
-    def plant_loop(
-            model: openstudio.openstudiomodel.Model,
-            name: str = None,
-            fluid_type: int = 1,
-            max_loop_temp=None,
-            min_loop_temp=None,
-            max_loop_flow_rate=None,
-            min_loop_flow_rate=None,
-            plant_loop_volume=None,
-            load_distribution_scheme: int = 1,
-            common_pipe_simulation: int = 1,
-            supply_branches=None,
-            demand_branches=None,
-            setpoint_manager: openstudio.openstudiomodel.SetpointManager = None,
-            setpoint_manager_secondary: openstudio.openstudiomodel.SetpointManager = None):
-
-        """
-        -Fluid_type:
-            1:Water 2:Steam 3:PropyleneGlycol 4:EthyleneGlycol \n
-
-        -Load_distribution_scheme:
-            1:Optimal 2:SequentialLoad 3:UniformLoad 4:UniformPLR 5:SequentialUniformPLR \n
-
-        -Common_pipe_simulation:
-            1:None \n
-            2:CommonPipe (for secondary pump system.
-            Typically, constant pump on primary side and variable speed pump on secondary side)\n
-            3:TwoWayCommonPipe (for thermal energy storage system, with temperature control for
-            both primary and secondary sides)
-        """
-
-        fluid_types = {1: "Water", 2: "Steam", 3: "PropyleneGlycol", 4: "EthyleneGlycol"}
-        load_distribution_schemes = {1: "Optimal", 2: "SequentialLoad", 3: "UniformLoad",
-                                     4: "UniformPLR", 5: "SequentialUniformPLR"}
-        common_pipe_types = {1: "None", 2: "CommonPipe", 3: "TwoWayCommonPipe"}
-
-        plant = openstudio.openstudiomodel.PlantLoop(model)
-
-        if name is not None:
-            plant.setName(name)
-        if fluid_type != 1:
-            plant.setFluidType(fluid_types[fluid_type])
-        if max_loop_temp is not None:
-            plant.setMaximumLoopTemperature(max_loop_temp)
-        if min_loop_temp is not None:
-            plant.setMinimumLoopTemperature(min_loop_temp)
-
-        if max_loop_flow_rate is not None:
-            plant.setMaximumLoopFlowRate(max_loop_flow_rate)
-        else:
-            plant.autosizeMaximumLoopFlowRate()
-
-        if min_loop_flow_rate is not None:
-            plant.setMinimumLoopFlowRate(min_loop_flow_rate)
-
-        if plant_loop_volume is not None:
-            plant.setPlantLoopVolume(plant_loop_volume)
-        else:
-            plant.autocalculatePlantLoopVolume()
-
-        if load_distribution_scheme != 1:
-            plant.setLoadDistributionScheme(load_distribution_schemes[load_distribution_scheme])
-
-        if common_pipe_simulation != 1:
-            plant.setCommonPipeSimulation(common_pipe_types[common_pipe_simulation])
-
-        # Add branches to the loop:
-        if isinstance(supply_branches, list):
-            if len(supply_branches) != 0:
-                # for multiple branches (2-d list)
-                if isinstance(supply_branches[0], list) and isinstance(supply_branches[-1], list):
-                    for branch in supply_branches:
-                        plant.addSupplyBranchForComponent(branch.pop(-1))
-                        node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
-                        for item in branch:
-                            item.addToNode(node)
-                # for single branch (1-d list)
-                else:
-                    plant.addSupplyBranchForComponent(supply_branches.pop(-1))
-                    node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
-                    for item in supply_branches:
-                        item.addToNode(node)
-            else:
-                raise ValueError("supply_branches cannot be empty")
-        else:
-            raise TypeError("Invalid input format of supply_branches. It has to be list (either 1d or 2d)")
-
-        if demand_branches is not None and len(demand_branches) != 0:
-            for item in demand_branches:
-                plant.addSupplyBranchForComponent(demand_branches.pop(-1))
-                node = plant.demandMixer().inletModelObjects()[-1].to_Node().get()
-                item.addToNode(node)
-
-        node_supply_out = plant.supplyOutletNode()
-        node_demand_inlet = plant.demandInletNode()
-
-        if setpoint_manager is not None:
-            setpoint_manager.addToNode(node_supply_out)
-
-        match common_pipe_simulation:
-            case 0:
-                pass
-            case 1:
-                pump = PlantLoopComponent.pump_variable_speed(model)
-                pump.addToNode(node_demand_inlet)
-            case 2:
-                pump = PlantLoopComponent.pump_variable_speed(model)
-                pump.addToNode(node_demand_inlet)
-                try:
-                    setpoint_manager_secondary.addToNode(node_demand_inlet)
-                except ValueError:
-                    print('For "TwoWayCommonPipe", a setpoint manager in needed at demand inlet or supply inlet node.')
-
-        return plant
 
     @staticmethod
     def sizing(
@@ -420,6 +305,339 @@ class PlantLoopComponent:
             district.autosizeNominalCapacity()
 
         return district
+
+    # ***************************************************************************************************
+    # Service Hot Water Equipments
+    @staticmethod
+    def water_heater_mixed(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            fuel_type: int = 1,
+            thermal_efficiency=0.8,
+            tank_volume=None,
+            setpoint_temp_schedule=None,
+            deadband_temp_diff=None,
+            max_temp_limit=None,
+            heater_control_type: int = 1,
+            heater_max_capacity=None,
+            heater_min_capacity=None,
+            heater_ignition_min_flow_rate=None,
+            heater_ignition_delay=None,
+            part_load_factor_curve=None,
+            off_cycle_parasitic_fuel_consumption_rate=None,
+            off_cycle_parasitic_fuel_type: int = 1,
+            off_cycle_parasitic_heat_fraction_to_tank=None,
+            on_cycle_parasitic_fuel_consumption_rate=None,
+            on_cycle_parasitic_fuel_type: int = 1,
+            on_cycle_parasitic_heat_fraction_to_tank=None,
+            ambient_temp_indicator: int = 1,
+            ambient_temp_schedule=None,
+            ambient_temp_thermal_zone=None,
+            off_cycle_loss_coefficient_to_ambient=None,
+            off_cycle_loss_fraction_to_thermal_zone=None,
+            on_cycle_loss_coefficient_to_ambient=None,
+            on_cycle_loss_fraction_to_thermal_zone=None,
+            peak_use_flow_rate=None,
+            use_flow_rate_fraction_schedule=None,
+            cold_water_supply_temp_schedule=None,
+            use_side_effectiveness=None,
+            source_side_effectiveness=None,
+            use_side_design_flow_rate=None,
+            source_side_design_flow_rate=None,
+            indirect_water_heating_recovery_time=None,
+            source_side_flow_control_mode: int = 1,
+            indirect_alternate_setpoint_temp_schedule=None,
+            sizing={}):
+
+        """
+        -Fuel_type: \n
+        1:NaturalGas 2:Electricity 3:Propane 4:FuelOilNo1
+        5:FuelOilNo2 6:Coal 7:Diesel 8:Gasoline 9:OtherFuel1 10:OtherFuel2 \n
+
+        -Heater control types: 1:Cycle 2:Modulate \n
+
+        -Ambient temperature indicator: 1:Schedule 2:ThermalZone 3:Outdoors \n
+
+        -Source side control mode: 1:StorageTank 2:IndirectHeatPrimarySetpoint 3:IndirectHeatAlternateSetpoint
+        """
+
+        fuel_types = {1: "NaturalGas", 2: "Electricity", 3: "Propane", 4: "FuelOilNo1", 5: "FuelOilNo2",
+                      6: "Coal", 7: "Diesel", 8: "Gasoline", 9: "OtherFuel1", 10: "OtherFuel2"}
+        control_types = {1: "Cycle", 2: "Modulate"}
+        ambient_types = {1: "Schedule", 2: "ThermalZone", 3: "Outdoors"}
+        source_control_types = {1: "StorageTank", 2: "IndirectHeatPrimarySetpoint", 3: "IndirectHeatAlternateSetpoint"}
+
+        heater = openstudio.openstudiomodel.WaterHeaterMixed(model)
+
+        if name is not None:
+            heater.setName(name)
+
+        heater.setHeaterFuelType(fuel_types[fuel_type])
+        heater.setHeaterThermalEfficiency(thermal_efficiency)
+
+        if tank_volume is not None:
+            heater.setTankVolume(tank_volume)
+        else:
+            heater.autosizeTankVolume()
+
+        if setpoint_temp_schedule is not None:
+            heater.setSetpointTemperatureSchedule(setpoint_temp_schedule)
+
+        if deadband_temp_diff is not None:
+            heater.setDeadbandTemperatureDifference(deadband_temp_diff)
+
+        if max_temp_limit is not None:
+            heater.setMaximumTemperatureLimit(max_temp_limit)
+
+        heater.setHeaterControlType(control_types[heater_control_type])
+
+        if heater_max_capacity is not None:
+            heater.setHeaterMaximumCapacity(heater_max_capacity)
+        else:
+            heater.autosizeHeaterMaximumCapacity()
+
+        if heater_min_capacity is not None:
+            heater.setHeaterMinimumCapacity(heater_min_capacity)
+
+        if heater_ignition_min_flow_rate is not None:
+            heater.setHeaterIgnitionMinimumFlowRate(heater_ignition_min_flow_rate)
+        if heater_ignition_delay is not None:
+            heater.setHeaterIgnitionDelay(heater_ignition_delay)
+
+        if part_load_factor_curve is not None:
+            heater.setPartLoadFactorCurve(part_load_factor_curve)
+
+        if off_cycle_parasitic_fuel_consumption_rate is not None:
+            heater.setOffCycleParasiticFuelConsumptionRate(off_cycle_parasitic_fuel_consumption_rate)
+
+        heater.setOffCycleParasiticFuelType(fuel_types[off_cycle_parasitic_fuel_type])
+
+        if off_cycle_parasitic_heat_fraction_to_tank is not None:
+            heater.setOffCycleParasiticHeatFractiontoTank(off_cycle_parasitic_heat_fraction_to_tank)
+
+        if on_cycle_parasitic_fuel_consumption_rate is not None:
+            heater.setOnCycleParasiticFuelConsumptionRate(on_cycle_parasitic_fuel_consumption_rate)
+
+        heater.setOnCycleParasiticFuelType(fuel_types[on_cycle_parasitic_fuel_type])
+
+        if on_cycle_parasitic_heat_fraction_to_tank is not None:
+            heater.setOnCycleParasiticHeatFractiontoTank(on_cycle_parasitic_heat_fraction_to_tank)
+
+        heater.setAmbientTemperatureIndicator(ambient_types[ambient_temp_indicator])
+
+        if ambient_temp_schedule is not None:
+            heater.setAmbientTemperatureSchedule(ambient_temp_schedule)
+
+        if ambient_temp_thermal_zone is not None:
+            heater.setAmbientTemperatureThermalZone(ambient_temp_thermal_zone)
+
+        if off_cycle_loss_coefficient_to_ambient is not None:
+            heater.setOffCycleLossCoefficienttoAmbientTemperature(off_cycle_loss_coefficient_to_ambient)
+
+        if off_cycle_loss_fraction_to_thermal_zone is not None:
+            heater.setOffCycleLossFractiontoThermalZone(off_cycle_loss_fraction_to_thermal_zone)
+
+        if on_cycle_loss_coefficient_to_ambient is not None:
+            heater.setOnCycleLossCoefficienttoAmbientTemperature(on_cycle_loss_coefficient_to_ambient)
+
+        if on_cycle_loss_fraction_to_thermal_zone is not None:
+            heater.setOnCycleLossFractiontoThermalZone(on_cycle_loss_fraction_to_thermal_zone)
+
+        if peak_use_flow_rate is not None:
+            heater.setPeakUseFlowRate(peak_use_flow_rate)
+
+        if use_flow_rate_fraction_schedule is not None:
+            heater.setUseFlowRateFractionSchedule(use_flow_rate_fraction_schedule)
+
+        if cold_water_supply_temp_schedule is not None:
+            heater.setColdWaterSupplyTemperatureSchedule(cold_water_supply_temp_schedule)
+
+        if source_side_effectiveness is not None:
+            heater.setSourceSideEffectiveness(source_side_effectiveness)
+
+        if use_side_effectiveness is not None:
+            heater.setUseSideEffectiveness(use_side_effectiveness)
+
+        if use_side_design_flow_rate is not None:
+            heater.setUseSideDesignFlowRate(use_side_design_flow_rate)
+        else:
+            heater.autosizeUseSideDesignFlowRate()
+
+        if source_side_design_flow_rate is not None:
+            heater.setSourceSideDesignFlowRate(source_side_design_flow_rate)
+        else:
+            heater.autosizeSourceSideDesignFlowRate()
+
+        if indirect_water_heating_recovery_time is not None:
+            heater.setIndirectWaterHeatingRecoveryTime(indirect_water_heating_recovery_time)
+
+        heater.setSourceSideFlowControlMode(source_control_types[source_side_flow_control_mode])
+
+        if indirect_alternate_setpoint_temp_schedule is not None:
+            heater.setIndirectAlternateSetpointTemperatureSchedule(indirect_alternate_setpoint_temp_schedule)
+
+        # Sizing parameters
+        heater_sizing = heater.waterHeaterSizing()
+        if isinstance(sizing, dict):
+            try:
+                heater_sizing.setDesignMode(sizing["Design Mode"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setTimeStorageCanMeetPeakDraw(sizing["Time Storage Can Meet Peak Draw"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setTimeforTankRecovery(sizing["Time for Tank Recovery"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setNominalTankVolumeforAutosizingPlantConnections(
+                    sizing["Nominal Tank Volume for Autosizing Plant Connections"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setNumberofBedrooms(sizing["Number of Bedrooms"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setNumberofBathrooms(sizing["Number of Bathrooms"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setStorageCapacityperPerson(sizing["Storage Capacity per Person"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setRecoveryCapacityperPerson(sizing["Recovery Capacity per Person"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setStorageCapacityperFloorArea(sizing["Storage Capacity per Floor Area"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setRecoveryCapacityperFloorArea(sizing["Recovery Capacity per Floor Area"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setNumberofUnits(sizing["Number of Units"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setStorageCapacityperUnit(sizing["Storage Capacity per Unit"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setRecoveryCapacityPerUnit(sizing["Recovery Capacity per Unit"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setStorageCapacityperCollectorArea(sizing["Storage Capacity per Collector Area"])
+            except ValueError:
+                pass
+            try:
+                heater_sizing.setHeightAspectRatio(sizing["Height Aspect Ratio"])
+            except ValueError:
+                pass
+        else:
+            raise TypeError("Invalid input for water heater sizing.")
+
+        return heater
+
+    @staticmethod
+    def water_heater_sizing(
+            design_mode: int = 1,
+            time_storage_can_meet_peak_draw: float = 0.6,
+            time_for_tank_recovery: float = 0,
+            nominal_tank_volume_autosizing_plant_connection: float = 1,
+            number_of_bedrooms: int = 0,
+            number_of_bathrooms: int = 0,
+            storage_capacity_per_person: float = 0,
+            recovery_capacity_per_person: float = 0,
+            storage_capacity_per_floor_area: float = 0,
+            recovery_capacity_per_floor_area: float = 0,
+            number_of_units: int = 0,
+            storage_capacity_per_unit: float = 0,
+            recovery_capacity_per_unit: float = 0,
+            storage_capacity_per_collector_area: float = 0,
+            height_aspect_ratio: float = 0):
+
+        """
+        -Design_mode: \n
+        1:PeakDraw \n
+        2:ResidentialHUD-FHAMinimum \n
+        3:PerPerson \n
+        4:PerFloorArea \n
+        5:PerUnit \n
+        6:PerSolarCollectorArea
+        """
+
+        design_modes = {1: "PeakDraw", 2: "ResidentialHUD-FHAMinimum", 3: "PerPerson",
+                        4: "PerFloorArea", 5: "PerUnit", 6: "PerSolarCollectorArea"}
+
+        sizing = {}
+
+        sizing["Design Mode"] = design_modes[design_mode]
+        sizing["Time Storage Can Meet Peak Draw"] = time_storage_can_meet_peak_draw
+        sizing["Time for Tank Recovery"] = time_for_tank_recovery
+        sizing["Nominal Tank Volume for Autosizing Plant Connections"] = nominal_tank_volume_autosizing_plant_connection
+        sizing["Number of Bathrooms"] = number_of_bathrooms
+        sizing["Number of Bedrooms"] = number_of_bedrooms
+        sizing["Storage Capacity per Person"] = storage_capacity_per_person
+        sizing["Recovery Capacity per Person"] = recovery_capacity_per_person
+        sizing["Storage Capacity per Floor Area"] = storage_capacity_per_floor_area
+        sizing["Recovery Capacity per Floor Area"] = recovery_capacity_per_floor_area
+        sizing["Number of Units"] = number_of_units
+        sizing["Storage Capacity per Unit"] = storage_capacity_per_unit
+        sizing["Recovery Capacity per Unit"] = recovery_capacity_per_unit
+        sizing["Storage Capacity per Collector Area"] = storage_capacity_per_collector_area
+        sizing["Height Aspect Ratio"] = height_aspect_ratio
+
+        return sizing
+
+    @staticmethod
+    def water_use_connection(
+            model: openstudio.openstudiomodel.Model,
+            water_use_equipment=None,
+            name: str = None,
+            hot_water_supply_temp_schedule=None,
+            cold_water_supply_temp_schedule=None,
+            drain_water_heat_exchanger_type: int = 1,
+            drain_water_heat_exchanger_destination: int = 1,
+            drain_water_heat_exchanger_u_factor_times_area=None):
+
+        """
+        -Drain_water_heat_exchanger_type:  \n
+        1:None 2:Ideal 3:CounterFlow 4:CrossFlow \n
+
+        -Drain_water_heat_exchanger_destination: \n
+        1:Plant 2:Equipment 3:PlantAndEquipment
+        """
+
+        exchanger_types = {1: "None", 2: "Ideal", 3: "CounterFlow", 4: "CrossFlow"}
+        exchanger_destinations = {1: "Plant", 2: "Equipment", 3: "PlantAndEquipment"}
+
+        connection = openstudio.openstudiomodel.WaterUseConnections(model)
+
+        if name is not None:
+            connection.setName(name)
+
+        if hot_water_supply_temp_schedule is not None:
+            connection.setHotWaterSupplyTemperatureSchedule(hot_water_supply_temp_schedule)
+        if cold_water_supply_temp_schedule is not None:
+            connection.setColdWaterSupplyTemperatureSchedule(cold_water_supply_temp_schedule)
+
+        connection.setDrainWaterHeatExchangerType(exchanger_types[drain_water_heat_exchanger_type])
+        connection.setDrainWaterHeatExchangerDestination(exchanger_destinations[drain_water_heat_exchanger_destination])
+
+        if drain_water_heat_exchanger_u_factor_times_area is not None:
+            connection.setDrainWaterHeatExchangerUFactorTimesArea(drain_water_heat_exchanger_u_factor_times_area)
+
+        # Add water use equipment:
+        connection.addWaterUseEquipment()
+
+        return connection
 
     # ***************************************************************************************************
     # Condenser Equipments

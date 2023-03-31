@@ -1,8 +1,9 @@
 from openstudio.openstudiomodel import Lights, ElectricEquipment, People
-from openstudio.openstudiomodel import GasEquipment, InternalMass
+from openstudio.openstudiomodel import GasEquipment, InternalMass, WaterUseEquipment
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
-from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition
+from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition, WaterUseEquipmentDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
+from Schedules.ScheduleTools import ScheduleTool
 
 
 class InternalLoad:
@@ -69,17 +70,17 @@ class InternalLoad:
 
     @staticmethod
     def add_people(model,
-               space,
-               ppl_calc_method: str = "People/Area",
-               amount=0,
-               schedule=None,
-               activity_schedule=None,
-               fraction_radiant=None,
-               sensible_heat_fraction=None,
-               co2_generation_rate=None,
-               enable_ashrae55_warning=False,
-               mrt_calc_type="ZoneAveraged",  # Options: ZoneAveraged, SurfaceWeighted, AngleFactor
-               thermal_comfort_model_type=None):
+                   space,
+                   ppl_calc_method: str = "People/Area",
+                   amount=0,
+                   schedule=None,
+                   activity_schedule=None,
+                   fraction_radiant=None,
+                   sensible_heat_fraction=None,
+                   co2_generation_rate=None,
+                   enable_ashrae55_warning=False,
+                   mrt_calc_type="ZoneAveraged",  # Options: ZoneAveraged, SurfaceWeighted, AngleFactor
+                   thermal_comfort_model_type=None):
 
         ppl_def = PeopleDefinition(model)
 
@@ -127,11 +128,12 @@ class InternalLoad:
         infiltration = SpaceInfiltrationDesignFlowRate(model)
         infiltration.setSpaceType(space_type)
         infiltration.setFlowperExteriorSurfaceArea(0.000226568446)
-        if schedule is not None: infiltration.setSchedule(schedule)
+        if schedule is not None:
+            infiltration.setSchedule(schedule)
 
     @staticmethod
     def add_outdoor_air(model, space_type, outdoor_air_per_floor_area=0, outdoor_air_per_person=0,
-                    schedule=None):
+                        schedule=None):
 
         outdoor_air = DesignSpecificationOutdoorAir(model)
         outdoor_air.setName(space_type.nameString() + "_DSOA")
@@ -141,3 +143,38 @@ class InternalLoad:
         if schedule is not None: outdoor_air.setOutdoorAirFlowRateFractionSchedule(schedule)
 
         space_type.setDesignSpecificationOutdoorAir(outdoor_air)
+
+    @staticmethod
+    def water_use_equipment(
+            model,
+            peak_flow_rate=0.000525,
+            target_temp=135,
+            space=None,
+            flow_rate_fraction_schedule=None):
+
+        water_use_def = WaterUseEquipmentDefinition(model)
+        water_use_def.setPeakFlowRate(peak_flow_rate)
+
+        # Schedules:
+        temp_type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 100)
+        temp_schedule = ScheduleTool.schedule_ruleset(model, target_temp, temp_type_limit)
+
+        ratio_type_limit = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
+        sensible_schedule = ScheduleTool.schedule_ruleset(model, 0.2, ratio_type_limit)
+        latent_schedule = ScheduleTool.schedule_ruleset(model, 0.05, ratio_type_limit)
+
+        water_use_def.setTargetTemperatureSchedule(temp_schedule)
+        water_use_def.setSensibleFractionSchedule(sensible_schedule)
+        water_use_def.setLatentFractionSchedule(latent_schedule)
+
+        water_use = WaterUseEquipment(water_use_def)
+
+        if flow_rate_fraction_schedule is not None:
+            water_use.setFlowRateFractionSchedule(flow_rate_fraction_schedule)
+
+        if space is not None:
+            water_use.setSpace(space)
+
+        return water_use
+
+

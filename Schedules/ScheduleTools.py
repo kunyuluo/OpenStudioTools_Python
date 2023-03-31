@@ -2,7 +2,6 @@ import openstudio.openstudioutilitiestime
 
 
 class ScheduleTool:
-
     year = 2023
     model_null_message = "Model cannot be empty"
 
@@ -92,7 +91,7 @@ class ScheduleTool:
                     schedule.addValue(openstudio.Time(0, 24, 0), 0.0)
                 else:
                     for i in range(len(values)):
-                        schedule.addValue(openstudio.Time(0, i+1, 0), values[i])
+                        schedule.addValue(openstudio.Time(0, i + 1, 0), values[i])
 
         if type_limits is not None:
             schedule.setScheduleTypeLimits(type_limits)
@@ -164,5 +163,21 @@ class ScheduleTool:
     def always_off(model):
         type_limit = ScheduleTool.schedule_type_limits(model, 11, 2, 0, 1, "always off limits")
         schedule = ScheduleTool.schedule_ruleset(model, 0, type_limits=type_limit, name="AlwaysOff")
+
+        return schedule
+
+    @staticmethod
+    def dhw_flow_fraction_schedule(model):
+        type_limit = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
+
+        schedule = ScheduleTool.schedule_ruleset(
+            model, 0, type_limits=type_limit, name="ESTAR MFHR DHW Fraction Schedule")
+
+        fraction_values = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.4, 0.4, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.5,
+                           0.5, 0.7, 0.7, 0.8, 0.9, 0.9]
+        schedule_day = ScheduleTool.schedule_day(model, fraction_values, type_limits=type_limit,
+                                                 name="ESTAR MFHR DHW Fraction Schedule Day")
+
+        occ_wd_schrule = ScheduleTool.schedule_rule(schedule, schedule_day, all_week=True)
 
         return schedule
