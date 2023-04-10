@@ -173,8 +173,8 @@ class ScheduleTool:
         schedule = ScheduleTool.schedule_ruleset(
             model, 0, type_limits=type_limit, name="ESTAR MFHR DHW Fraction Schedule")
 
-        fraction_values = [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.7, 0.4, 0.4, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.5,
-                           0.5, 0.7, 0.7, 0.8, 0.9, 0.9]
+        fraction_values = [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.3, 0.5, 0.4, 0.4, 0.3, 0.35, 0.4, 0.4, 0.35, 0.35, 0.3,
+                           0.3, 0.5, 0.4, 0.35, 0.45, 0.3, 0.05]
         schedule_day = ScheduleTool.schedule_day(model, fraction_values, type_limits=type_limit,
                                                  name="ESTAR MFHR DHW Fraction Schedule Day")
 

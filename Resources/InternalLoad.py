@@ -171,6 +171,8 @@ class InternalLoad:
 
         if flow_rate_fraction_schedule is not None:
             water_use.setFlowRateFractionSchedule(flow_rate_fraction_schedule)
+        else:
+            water_use.setFlowRateFractionSchedule(ScheduleTool.dhw_flow_fraction_schedule(model))
 
         if space is not None:
             water_use.setSpace(space)

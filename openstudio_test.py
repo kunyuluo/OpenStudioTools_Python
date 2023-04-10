@@ -39,7 +39,7 @@ ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 # **************************************************************************************
 model = Model.load(path).get()
 building = GeometryTool.building(model, "Kunyu's Tower", 34)
-stories = GeometryTool.building_story(model, number_of_story=3)
+# stories = GeometryTool.building_story(model, number_of_story=3)
 
 # openstudio.gbxml.GbXMLForwardTranslator().modelToGbXML(model, newPath)
 
@@ -123,17 +123,18 @@ thermal_zones = ZoneTool.thermal_zone_from_space(
 
 # Geometry tool testing:
 # **************************************************************************************
-cons_set = ConstructionSet(model, "OMG").get()
-floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
-floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
-floor_plan3 = [[10.0, 0.0, 3.5], [10.0, 5.0, 3.5], [14.0, 5.0, 3.5], [14.0, 0.0, 3.5]]
-# srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
+cons_set = ConstructionSet(model, "Kunyu_OMG").get()
+# floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
+# floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
+# floor_plan3 = [[10.0, 0.0, 3.5], [10.0, 5.0, 3.5], [14.0, 5.0, 3.5], [14.0, 0.0, 3.5]]
+# # srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
+# #                                           building_story=stories[0])
+# srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2, construction_set=cons_set,
 #                                           building_story=stories[0])
-srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2, construction_set=cons_set,
-                                          building_story=stories[0])
-srfs3 = GeometryTool.space_from_extrusion(model, floor_plan3, 3.5, space=space_1, construction_set=cons_set,
-                                          building_story=stories[1])
-GeometryTool.solve_adjacency(srfs3 + srfs2)
+# srfs3 = GeometryTool.space_from_extrusion(model, floor_plan3, 3.5, space=space_1, construction_set=cons_set,
+#                                           building_story=stories[1])
+# GeometryTool.solve_adjacency(srfs3 + srfs2)
+GeometryTool.geometry_from_json(model, "D:\Projects\OpenStudioDev\RhinoGeometry\Arctron_Building.json")
 
 # Plant loop:
 # **************************************************************************************
@@ -183,7 +184,10 @@ GeometryTool.solve_adjacency(srfs3 + srfs2)
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # Template.vav_chiller_boiler(model, thermal_zones, number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
-heater = PlantLoopComponent.water_heater_mixed(model, sizing=PlantLoopComponent.water_heater_sizing())
+
+shw_loop = HVACTool.service_hot_water_loop(
+    model, "Kunyu SHW Loop", 3, 0.98,
+    water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
-# model.save(newPath, True)
+model.save(newPath, True)

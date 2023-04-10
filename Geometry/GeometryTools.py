@@ -1,7 +1,10 @@
 import math
 import openstudio
+import json
 from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurface
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
+from Schedules.Templates.Template import Office
+from Resources.ZoneTools import ZoneTool
 
 
 class GeometryTool:
@@ -21,18 +24,13 @@ class GeometryTool:
 
     # Make a Building Story
     @staticmethod
-    def building_story(model, name=None, number_of_story: int = None):
-        if number_of_story is not None:
-            stories = []
-            for i in range(number_of_story):
-                story = openstudio.openstudiomodel.BuildingStory(model)
-                story.setName("Building Story " + str(i+1))
-                stories.append(story)
-            return stories
-        else:
+    def building_story(model, number_of_story: int = 1):
+        stories = []
+        for i in range(number_of_story):
             story = openstudio.openstudiomodel.BuildingStory(model)
-            if name is not None: story.setName(name)
-            return story
+            story.setName("Building Story " + str(i+1))
+            stories.append(story)
+        return stories
 
     # Make Vector3d
     @staticmethod
@@ -50,48 +48,81 @@ class GeometryTool:
             model: openstudio.openstudiomodel.Model,
             vertices,
             normal=None,
-            surface_type=None,
-            outside_boundary_condition="Surface",
+            surface_type: int = None,
+            outside_boundary_condition: int = 2,
             sun_exposure="Sunexposed",
             wind_exposure="Windexposed",
             construction: openstudio.openstudiomodel.Construction = None,
             space: openstudio.openstudiomodel.Space = None):
 
-        if len(vertices) != 0 and len(vertices) > 2:
-            pt_vec = Point3dVector()
-            for i in range(len(vertices)):
-                if len(vertices[i]) != 0:
-                    pt = Point3d(vertices[i][0], vertices[i][1], vertices[i][2])
-                    pt_vec.append(pt)
+        """
+        -Surface types: \n
+        1.Wall 2.Floor 3.RoofCeiling \n
 
-            surface = Surface(pt_vec, model)
+        -Outside_boundary_condition: \n
+        1.Adiabatic
+        2.Surface
+        3.Outdoors
+        4.Foundation
+        5.Ground
+        6.GroundFCfactorMethod
+        7.OtherSideCoefficients
+        8.OtherSideConditionsModel
+        9.GroundSlabPreprocessorAverage
+        10.GroundSlabPreprocessorCore
+        """
 
-            # Calculate the angle between normal vector and z-axis (by Dot Product):
-            if normal is None:
-                normal = GeometryTool.newell_method(surface)
-                # normal = Vector3d(1.0, 0.0, 0.0)
-            z_axis = Vector3d(0.0, 0.0, 1.0)
+        surface_types = {1: "Wall", 2: "Floor", 3: "RoofCeiling"}
+        boundaries = {1: "Adiabatic", 2: "Surface", 3: "Outdoors", 4: "Foundation", 5: "Ground",
+                      6: "GroundFCfactorMethod", 7: "OtherSideCoefficients", 8: "OtherSideConditionsModel",
+                      9: "GroundSlabPreprocessorAverage", 10: "GroundSlabPreprocessorCore"}
 
-            angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
+        if isinstance(vertices, list):
+            if len(vertices) != 0 and len(vertices) > 2:
+                pt_vec = Point3dVector()
+                for i in range(len(vertices)):
+                    if len(vertices[i]) != 0:
+                        pt = Point3d(vertices[i][0], vertices[i][1], vertices[i][2])
+                        pt_vec.append(pt)
 
-            if surface_type is None:
-                if angle_rad < GeometryTool.roof_threshold:
-                    surface.setSurfaceType("RoofCeiling")
-                elif GeometryTool.roof_threshold <= angle_rad < math.pi:
-                    surface.setSurfaceType("Wall")
+                surface = Surface(pt_vec, model)
+
+                # Calculate the angle between normal vector and z-axis (by Dot Product):
+                if normal is None:
+                    normal = GeometryTool.newell_method(surface)
+                    # normal = Vector3d(1.0, 0.0, 0.0)
+                z_axis = Vector3d(0.0, 0.0, 1.0)
+
+                angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
+
+                if surface_type is None:
+                    if angle_rad < GeometryTool.roof_threshold:
+                        surface.setSurfaceType("RoofCeiling")
+                    elif GeometryTool.roof_threshold <= angle_rad < 3 * GeometryTool.roof_threshold:
+                        surface.setSurfaceType("Wall")
+                    else:
+                        surface.setSurfaceType("Floor")
                 else:
-                    surface.setSurfaceType("Floor")
+                    surface.setSurfaceType(surface_types[surface_type])
 
-            surface.setOutsideBoundaryCondition(outside_boundary_condition)
-            surface.setSunExposure(sun_exposure)
-            surface.setWindExposure(wind_exposure)
-            if construction is not None: surface.setConstruction(construction)
-            if space is not None: surface.setSpace(space)
+                if outside_boundary_condition is not None:
+                    surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+                else:
+                    surface.setOutsideBoundaryCondition(boundaries[3])
 
+                surface.setSunExposure(sun_exposure)
+                surface.setWindExposure(wind_exposure)
+                if construction is not None:
+                    surface.setConstruction(construction)
+                if space is not None:
+                    surface.setSpace(space)
+
+                return surface
+
+            else:
+                raise ValueError("Not Enough Vertices to Create a Surface")
         else:
-            raise ValueError("Not Enough Vertices to Create a Surface")
-
-        return surface
+            raise TypeError("Invalid input type of vertex list")
 
     # Make Subsurface:
     @staticmethod
@@ -231,6 +262,46 @@ class GeometryTool:
             space.setBuildingStory(building_story)
 
         return room_surfaces
+
+    @staticmethod
+    def geometry_from_json(
+            model: openstudio.openstudiomodel.Model,
+            json_path: str):
+
+        with open(json_path, 'r') as openfile:
+            # Reading from json file
+            json_object = json.load(openfile)
+
+        rooms = json_object["rooms"]
+        number_of_stories = int(json_object["number_of_stories"])
+        stories = GeometryTool.building_story(model, number_of_stories)
+
+        if len(rooms) != 0:
+            office_sch = Office(model)
+            all_surfaces = []
+            for i, room in enumerate(rooms, 1):
+                space = ZoneTool.space_simplified(
+                    model,
+                    name="Kunyu Space {}".format(i),
+                    program="Office",
+                    story=stories[int(room["story"])-1],
+                    lighting_power=0.7,
+                    equipment_power=1.5,
+                    people_density=0.5,
+                    outdoor_air_per_person=0.05,
+                    outdoor_air_per_floor_area=0.15,
+                    lighting_schedule=office_sch.lighting(),
+                    equipment_schedule=office_sch.equipment(),
+                    occupancy_schedule=office_sch.occupancy(),
+                    activity_schedule=office_sch.activity_level(),
+                    infiltration_schedule=office_sch.infiltration())
+
+                surfaces = room["surfaces"]
+                for surface in surfaces:
+                    vertices = surface["vertices"]
+                    all_surfaces.append(GeometryTool.make_surface(model, vertices, space=space))
+
+            GeometryTool.solve_adjacency(all_surfaces, True)
 
     # Newell's Algorithm (find normal vector from an arbitrary polygon)
     @staticmethod

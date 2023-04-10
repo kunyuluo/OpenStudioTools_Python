@@ -635,7 +635,7 @@ class PlantLoopComponent:
             connection.setDrainWaterHeatExchangerUFactorTimesArea(drain_water_heat_exchanger_u_factor_times_area)
 
         # Add water use equipment:
-        connection.addWaterUseEquipment()
+        connection.addWaterUseEquipment(water_use_equipment)
 
         return connection
 
@@ -1556,6 +1556,152 @@ class PlantLoopComponent:
 
         if thermal_zone is not None:
             pump.setZone(thermal_zone)
+
+        return pump
+
+    @staticmethod
+    def headered_pumps_variable_speed(
+            model: openstudio.openstudiomodel.Model,
+            name=None,
+            rated_flow_rate=None,
+            number_of_pumps_in_bank: int = 2,
+            rated_head=None,
+            rated_power=None,
+            motor_efficiency=None,
+            fraction_motor_inefficiencies_to_fluid_stream=None,
+            min_flow_rate_fraction=None,
+            control_type: int = 1,
+            pump_flow_schedule=None,
+            power_sizing_method: int = 1,
+            power_per_flow_rate=None,
+            power_per_flow_rate_per_head=None,
+            thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
+            skin_loss_radiative_fraction=None,
+            pump_curve_coeff=None):
+
+        """
+        -Control_type: 1:Intermittent 2:Continuous \n
+        -Power_sizing_method: 1:PowerPerFlowPerPressure 2:PowerPerFlow
+        """
+
+        control_types = {1: "Intermittent", 2: "Continuous"}
+        sizing_methods = {1: "PowerPerFlowPerPressure", 2: "PowerPerFlow"}
+
+        pump = openstudio.openstudiomodel.HeaderedPumpsVariableSpeed(model)
+
+        if name is not None:
+            pump.setName(name)
+        if rated_head is not None:
+            pump.setRatedPumpHead(rated_head)
+
+        if rated_flow_rate is not None:
+            pump.setTotalRatedFlowRate(rated_flow_rate)
+        else:
+            pump.autosizeTotalRatedFlowRate()
+
+        pump.setNumberofPumpsinBank(number_of_pumps_in_bank)
+
+        if min_flow_rate_fraction is not None:
+            pump.setMinimumFlowRateFraction(min_flow_rate_fraction)
+
+        if rated_power is not None:
+            pump.setRatedPowerConsumption(rated_power)
+        else:
+            pump.autosizeRatedPowerConsumption()
+
+        if motor_efficiency is not None:
+            pump.setMotorEfficiency(motor_efficiency)
+        if fraction_motor_inefficiencies_to_fluid_stream is not None:
+            pump.setFractionofMotorInefficienciestoFluidStream(fraction_motor_inefficiencies_to_fluid_stream)
+        if control_type != 1:
+            pump.setPumpControlType(control_types[control_type])
+        if pump_flow_schedule is not None:
+            pump.setPumpFlowRateSchedule(pump_flow_schedule)
+        if power_sizing_method != 1:
+            pump.setDesignPowerSizingMethod(sizing_methods[power_sizing_method])
+        if power_per_flow_rate is not None:
+            pump.setDesignElectricPowerPerUnitFlowRate(power_per_flow_rate)
+        if power_per_flow_rate_per_head is not None:
+            pump.setDesignShaftPowerPerUnitFlowRatePerUnitHead(power_per_flow_rate_per_head)
+
+        if thermal_zone is not None:
+            pump.setThermalZone(thermal_zone)
+        if skin_loss_radiative_fraction is not None:
+            pump.setSkinLossRadiativeFraction(skin_loss_radiative_fraction)
+
+        if pump_curve_coeff is not None:
+            if isinstance(pump_curve_coeff, list) and len(pump_curve_coeff) == 4:
+                pump.setCoefficient1ofthePartLoadPerformanceCurve(pump_curve_coeff[0])
+                pump.setCoefficient2ofthePartLoadPerformanceCurve(pump_curve_coeff[1])
+                pump.setCoefficient3ofthePartLoadPerformanceCurve(pump_curve_coeff[2])
+                pump.setCoefficient4ofthePartLoadPerformanceCurve(pump_curve_coeff[3])
+
+        return pump
+
+    @staticmethod
+    def headered_pumps_constant_speed(
+            model: openstudio.openstudiomodel.Model,
+            name=None,
+            rated_flow_rate=None,
+            number_of_pumps_in_bank: int = 2,
+            rated_head=None,
+            rated_power=None,
+            motor_efficiency=None,
+            fraction_motor_inefficiencies_to_fluid_stream=None,
+            control_type: int = 1,
+            pump_flow_schedule=None,
+            power_sizing_method: int = 1,
+            power_per_flow_rate=None,
+            power_per_flow_rate_per_head=None,
+            thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
+            skin_loss_radiative_fraction=None):
+
+        """
+        -Control_type: 1:Intermittent 2:Continuous \n
+        -Power_sizing_method: 1:PowerPerFlowPerPressure 2:PowerPerFlow
+        """
+
+        control_types = {1: "Intermittent", 2: "Continuous"}
+        sizing_methods = {1: "PowerPerFlowPerPressure", 2: "PowerPerFlow"}
+
+        pump = openstudio.openstudiomodel.HeaderedPumpsConstantSpeed(model)
+
+        if name is not None:
+            pump.setName(name)
+        if rated_head is not None:
+            pump.setRatedPumpHead(rated_head)
+
+        if rated_flow_rate is not None:
+            pump.setTotalRatedFlowRate(rated_flow_rate)
+        else:
+            pump.autosizeTotalRatedFlowRate()
+
+        pump.setNumberofPumpsinBank(number_of_pumps_in_bank)
+
+        if rated_power is not None:
+            pump.setRatedPowerConsumption(rated_power)
+        else:
+            pump.autosizeRatedPowerConsumption()
+
+        if motor_efficiency is not None:
+            pump.setMotorEfficiency(motor_efficiency)
+        if fraction_motor_inefficiencies_to_fluid_stream is not None:
+            pump.setFractionofMotorInefficienciestoFluidStream(fraction_motor_inefficiencies_to_fluid_stream)
+        if control_type != 1:
+            pump.setPumpControlType(control_types[control_type])
+        if pump_flow_schedule is not None:
+            pump.setPumpFlowRateSchedule(pump_flow_schedule)
+        if power_sizing_method != 1:
+            pump.setDesignPowerSizingMethod(sizing_methods[power_sizing_method])
+        if power_per_flow_rate is not None:
+            pump.setDesignElectricPowerPerUnitFlowRate(power_per_flow_rate)
+        if power_per_flow_rate_per_head is not None:
+            pump.setDesignShaftPowerPerUnitFlowRatePerUnitHead(power_per_flow_rate_per_head)
+
+        if thermal_zone is not None:
+            pump.setThermalZone(thermal_zone)
+        if skin_loss_radiative_fraction is not None:
+            pump.setSkinLossRadiativeFraction(skin_loss_radiative_fraction)
 
         return pump
 

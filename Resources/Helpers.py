@@ -6,6 +6,8 @@ from HVACSystem.PerformanceCurves import Curve
 
 class Helper:
 
+    # Calculator:
+    # *************************************************************************************
     @staticmethod
     def infiltration_calculator(
             standard_flow_rate,
@@ -23,30 +25,6 @@ class Helper:
             result = flow_rate_at_target_pressure
 
         return result
-
-    @staticmethod
-    def f_to_c(temperature):
-        return (temperature - 32) / 1.8
-
-    @staticmethod
-    def c_to_f(temperature):
-        return temperature * 1.8 + 32
-
-    @staticmethod
-    def delta_temp_f_to_c(delta):
-        return delta / 1.8
-
-    @staticmethod
-    def delta_temp_c_to_f(delta):
-        return delta * 1.8
-
-    @staticmethod
-    def cfm_to_m3s(flow):
-        return flow * 0.0004719474
-
-    @staticmethod
-    def gpm_to_m3s(flow):
-        return flow * 0.0000630902
 
     @staticmethod
     def pump_power_calculator_ip(head, flow, motor_efficiency=0.9, pump_efficiency=0.7):
@@ -72,6 +50,48 @@ class Helper:
         kw = head * flow * 1000 * 9.81 / (3600000 * motor_efficiency * pump_efficiency)
         return kw * 1000
 
+    # Convertor:
+    # *************************************************************************************
+    @staticmethod
+    def f_to_c(temperature):
+        return (temperature - 32) / 1.8
+
+    @staticmethod
+    def c_to_f(temperature):
+        return temperature * 1.8 + 32
+
+    @staticmethod
+    def delta_temp_f_to_c(delta):
+        return delta / 1.8
+
+    @staticmethod
+    def delta_temp_c_to_f(delta):
+        return delta * 1.8
+
+    @staticmethod
+    def cfm_to_m3s(flow):
+        return flow * 0.0004719474
+
+    @staticmethod
+    def gpm_to_m3s(flow):
+        return flow * 0.0000630902
+
+    @staticmethod
+    def u_ip_to_si(u_value):
+        """
+        Convert U-Values in IP (BTU/hft2F) to U-Values in SI (W/Km2)
+        """
+        return u_value * 5.678263337
+
+    @staticmethod
+    def u_si_to_ip(u_value):
+        """
+        Convert U-Values in SI (W/Km2) to U-Values in IP (BTU/hft2F)
+        """
+        return u_value / 5.678263337
+
+    # Visualizer:
+    # *************************************************************************************
     @staticmethod
     def visualize_curve(
             curve: openstudio.openstudiomodel.Curve,

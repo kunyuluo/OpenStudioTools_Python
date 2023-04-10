@@ -37,7 +37,11 @@ class HVACTool:
             2:CommonPipe (for secondary pump system.
             Typically, constant pump on primary side and variable speed pump on secondary side)\n
             3:TwoWayCommonPipe (for thermal energy storage system, with temperature control for
-            both primary and secondary sides)
+            both primary and secondary sides) \n
+
+        -About supply branches:
+            The order of components for each branch should follow the stream flow direction.
+            (e.g. inlet --> pump --> chiller --> outlet. Then the list should be like [pump, chiller])
         """
 
         fluid_types = {1: "Water", 2: "Steam", 3: "PropyleneGlycol", 4: "EthyleneGlycol"}
@@ -81,12 +85,14 @@ class HVACTool:
                 # for multiple branches (2-d list)
                 if isinstance(supply_branches[0], list) and isinstance(supply_branches[-1], list):
                     for branch in supply_branches:
+                        branch.reverse()
                         plant.addSupplyBranchForComponent(branch.pop(-1))
                         node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
                         for item in branch:
                             item.addToNode(node)
                 # for single branch (1-d list)
                 else:
+                    supply_branches.reverse()
                     plant.addSupplyBranchForComponent(supply_branches.pop(-1))
                     node = plant.supplyMixer().inletModelObjects()[-1].to_Node().get()
                     for item in supply_branches:
@@ -130,16 +136,44 @@ class HVACTool:
     def service_hot_water_loop(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
+            number_of_heater: int = 1,
             heater_efficiency=0.8,
-            supply_water_temp=Helper.f_to_c(135)):
+            supply_water_temp=Helper.f_to_c(135),
+            water_use_connections=None):
 
+        # Define the set point manager:
         spm = SetpointManager.scheduled(model, 1, supply_water_temp)
-        heater = PlantLoopComponent.water_heater_mixed(
-            model, thermal_efficiency=heater_efficiency, heater_control_type=2)
-        pump = PlantLoopComponent.pump_variable_speed(model)
 
-        plant = HVACTool.plant_loop(
-            model, name, setpoint_manager=spm, supply_branches=[pump, heater])
+        # Define supply branch components:
+        supply_branches = []
+        for i in range(number_of_heater):
+            heater = PlantLoopComponent.water_heater_mixed(
+                model, thermal_efficiency=heater_efficiency, heater_control_type=2,
+                sizing=PlantLoopComponent.water_heater_sizing())
+            pump = PlantLoopComponent.pump_variable_speed(model)
+
+            branch = [heater, pump]
+            supply_branches.append(branch)
+
+        # Add water use connections to demand branches:
+        if water_use_connections is not None:
+            if isinstance(water_use_connections, openstudio.openstudiomodel.WaterUseConnections):
+                plant = HVACTool.plant_loop(
+                    model, name, setpoint_manager=spm,
+                    supply_branches=supply_branches, demand_branches=[water_use_connections])
+            elif isinstance(water_use_connections, list):
+                plant = HVACTool.plant_loop(
+                    model, name, setpoint_manager=spm,
+                    supply_branches=supply_branches, demand_branches=water_use_connections)
+            else:
+                plant = HVACTool.plant_loop(
+                    model, name, setpoint_manager=spm, supply_branches=supply_branches)
+        else:
+            plant = HVACTool.plant_loop(
+                model, name, setpoint_manager=spm, supply_branches=supply_branches)
+
+        # Plant loop sizing:
+        PlantLoopComponent.sizing(model, plant, 2, supply_water_temp)
 
         return plant
 
