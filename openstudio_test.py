@@ -123,7 +123,7 @@ thermal_zones = ZoneTool.thermal_zone_from_space(
 
 # Geometry tool testing:
 # **************************************************************************************
-cons_set = ConstructionSet(model, "Kunyu_OMG").get()
+# cons_set = ConstructionSet(model, "Kunyu_OMG").get()
 # floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
 # floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
 # floor_plan3 = [[10.0, 0.0, 3.5], [10.0, 5.0, 3.5], [14.0, 5.0, 3.5], [14.0, 0.0, 3.5]]

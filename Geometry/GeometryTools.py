@@ -5,6 +5,7 @@ from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurfa
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
 from Schedules.Templates.Template import Office
 from Resources.ZoneTools import ZoneTool
+from Constructions.ConstructionSets import ConstructionSet
 
 
 class GeometryTool:
@@ -49,11 +50,12 @@ class GeometryTool:
             vertices,
             normal=None,
             surface_type: int = None,
-            outside_boundary_condition: int = 2,
+            outside_boundary_condition: int = None,
             sun_exposure="Sunexposed",
             wind_exposure="Windexposed",
             construction: openstudio.openstudiomodel.Construction = None,
-            space: openstudio.openstudiomodel.Space = None):
+            space: openstudio.openstudiomodel.Space = None,
+            name: str = None):
 
         """
         -Surface types: \n
@@ -90,25 +92,52 @@ class GeometryTool:
                 # Calculate the angle between normal vector and z-axis (by Dot Product):
                 if normal is None:
                     normal = GeometryTool.newell_method(surface)
-                    # normal = Vector3d(1.0, 0.0, 0.0)
+
                 z_axis = Vector3d(0.0, 0.0, 1.0)
 
                 angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
+                centroid_z = GeometryTool.centroid(surface).z()
 
-                if surface_type is None:
-                    if angle_rad < GeometryTool.roof_threshold:
+                # Assign surface type based on its orientation:
+                # Assign boundary type based on its position:
+                if angle_rad < GeometryTool.roof_threshold:
+                    if surface_type is None:
                         surface.setSurfaceType("RoofCeiling")
-                    elif GeometryTool.roof_threshold <= angle_rad < 3 * GeometryTool.roof_threshold:
+                    else:
+                        surface.setSurfaceType(surface_types[surface_type])
+
+                    if outside_boundary_condition is None:
+                        surface.setOutsideBoundaryCondition(boundaries[3])
+                    else:
+                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+
+                elif GeometryTool.roof_threshold <= angle_rad < 3 * GeometryTool.roof_threshold:
+                    if surface_type is None:
                         surface.setSurfaceType("Wall")
                     else:
-                        surface.setSurfaceType("Floor")
-                else:
-                    surface.setSurfaceType(surface_types[surface_type])
+                        surface.setSurfaceType(surface_types[surface_type])
 
-                if outside_boundary_condition is not None:
-                    surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+                    if outside_boundary_condition is None:
+                        if centroid_z > GeometryTool.tolerance:
+                            surface.setOutsideBoundaryCondition(boundaries[3])
+                        else:
+                            surface.setOutsideBoundaryCondition(boundaries[5])
+                    else:
+                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+
                 else:
-                    surface.setOutsideBoundaryCondition(boundaries[3])
+                    if surface_type is None:
+                        surface.setSurfaceType("Floor")
+                    else:
+                        surface.setSurfaceType(surface_types[surface_type])
+
+                    if outside_boundary_condition is None:
+                        if centroid_z > GeometryTool.tolerance:
+                            surface.setOutsideBoundaryCondition(boundaries[3])
+                        else:
+                            surface.setOutsideBoundaryCondition(boundaries[5])
+                    else:
+                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
 
                 surface.setSunExposure(sun_exposure)
                 surface.setWindExposure(wind_exposure)
@@ -116,6 +145,8 @@ class GeometryTool:
                     surface.setConstruction(construction)
                 if space is not None:
                     surface.setSpace(space)
+                if name is not None:
+                    surface.setName(name)
 
                 return surface
 
@@ -278,6 +309,7 @@ class GeometryTool:
 
         if len(rooms) != 0:
             office_sch = Office(model)
+            cons_set = ConstructionSet(model, "Kunyu_OMG").get()
             all_surfaces = []
             for i, room in enumerate(rooms, 1):
                 space = ZoneTool.space_simplified(
@@ -296,10 +328,12 @@ class GeometryTool:
                     activity_schedule=office_sch.activity_level(),
                     infiltration_schedule=office_sch.infiltration())
 
+                space.setDefaultConstructionSet(cons_set)
                 surfaces = room["surfaces"]
                 for surface in surfaces:
                     vertices = surface["vertices"]
-                    all_surfaces.append(GeometryTool.make_surface(model, vertices, space=space))
+                    name = surface["name"]
+                    all_surfaces.append(GeometryTool.make_surface(model, vertices, space=space, name=name))
 
             GeometryTool.solve_adjacency(all_surfaces, True)
 
@@ -348,16 +382,13 @@ class GeometryTool:
         if len(surfaces) < 2:
             raise ValueError("Not enough surfaces to solve adjacency")
         else:
-            srfs_remain = surfaces
-            for srf in surfaces:
-                srf_curr = srf
-                srfs_remain.remove(srf)
+            for i, srf_curr in enumerate(surfaces):
 
                 # First, find normal vector and centroid:
                 normal_curr = GeometryTool.newell_method(srf_curr)
                 centroid_curr = GeometryTool.centroid(srf_curr)
 
-                for srf_rest in srfs_remain:
+                for j, srf_rest in enumerate(surfaces[i+1:]):
                     normal_rest = GeometryTool.newell_method(srf_rest)
                     centroid_rest = GeometryTool.centroid(srf_rest)
                     angle = math.acos(normal_curr.dot(normal_rest) / (normal_curr.length() * normal_rest.length()))
@@ -367,7 +398,6 @@ class GeometryTool:
                         surfaces_adj.append(srf_curr)
                         surfaces_adj.append(srf_rest)
                         srf_curr.setAdjacentSurface(srf_rest)
-                        srfs_remain.remove(srf_rest)
 
                         if adiabatic:
                             srf_curr.setOutsideBoundaryCondition("Adiabatic")
@@ -381,4 +411,3 @@ class GeometryTool:
                         srf_curr.setWindExposure("NoWind")
                         srf_rest.setWindExposure("NoWind")
 
-        # return surfaces_adj
