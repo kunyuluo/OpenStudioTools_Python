@@ -1,5 +1,3 @@
-import math
-import openstudio
 from openstudio import *
 from openstudio.openstudiomodel import Model
 from Geometry.GeometryTools import GeometryTool
@@ -22,17 +20,18 @@ from HVACSystem.ZoneEquipments import ZoneEquipment
 from HVACSystem.PerformanceCurves import Curve
 from HVACSystem.HVACTools import HVACTool
 from Resources.Helpers import Helper
+from RhinoGeometry.RhinoParse import load_rhino_model
 
 # vertices = []
-path_str = "D:\Projects\OpenStudioDev\Model_350.osm"
-newPath_str = "D:\Projects\OpenStudioDev\Model_2.osm"
+path_str = "D:\\Projects\\OpenStudioDev\\Model_350.osm"
+newPath_str = "D:\\Projects\\OpenStudioDev\\Model_2.osm"
 # newPath_str = "D:\Projects\OpenStudioDev\Model_gbxml.xml"
 path = openstudioutilitiescore.toPath(path_str)
 newPath = openstudioutilitiescore.toPath(newPath_str)
 
-epw_path_str = "D:\Projects\OpenStudioDev\CHN_Shanghai.Shanghai.583670_IWEC.epw"
+epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
 
-ddy_path_str = "D:\Projects\OpenStudioDev\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
+ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
 ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 
 # Get the model:
@@ -68,40 +67,40 @@ ExteriorEquipments.exterior_fuel(model, design_level=58)
 # Space with load:
 # **************************************************************************************
 office_sch = Office(model)
-resid_sch = Residential(model)
-space_1 = ZoneTool.space_simplified(
-    model,
-    name="Kunyu's room 1",
-    program="Office",
-    lighting_power=0.7,
-    equipment_power=1.5,
-    people_density=0.5,
-    outdoor_air_per_person=0.05,
-    outdoor_air_per_floor_area=0.15,
-    lighting_schedule=office_sch.lighting(),
-    equipment_schedule=office_sch.equipment(),
-    occupancy_schedule=office_sch.occupancy(),
-    activity_schedule=office_sch.activity_level(),
-    infiltration_schedule=office_sch.infiltration())
-
-space_2 = ZoneTool.space_simplified(
-    model,
-    name="Kunyu's room 2",
-    program="Office",
-    lighting_power=1.4,
-    equipment_power=2.8,
-    people_density=0.2,
-    outdoor_air_per_person=0.05,
-    outdoor_air_per_floor_area=0.15,
-    lighting_schedule=resid_sch.lighting(),
-    equipment_schedule=resid_sch.equipment(),
-    occupancy_schedule=resid_sch.occupancy(),
-    activity_schedule=resid_sch.activity_level(),
-    infiltration_schedule=resid_sch.infiltration())
+# resid_sch = Residential(model)
+# space_1 = ZoneTool.space_simplified(
+#     model,
+#     name="Kunyu's room 1",
+#     program="Office",
+#     lighting_power=0.7,
+#     equipment_power=1.5,
+#     people_density=0.5,
+#     outdoor_air_per_person=0.05,
+#     outdoor_air_per_floor_area=0.15,
+#     lighting_schedule=office_sch.lighting(),
+#     equipment_schedule=office_sch.equipment(),
+#     occupancy_schedule=office_sch.occupancy(),
+#     activity_schedule=office_sch.activity_level(),
+#     infiltration_schedule=office_sch.infiltration())
+#
+# space_2 = ZoneTool.space_simplified(
+#     model,
+#     name="Kunyu's room 2",
+#     program="Office",
+#     lighting_power=1.4,
+#     equipment_power=2.8,
+#     people_density=0.2,
+#     outdoor_air_per_person=0.05,
+#     outdoor_air_per_floor_area=0.15,
+#     lighting_schedule=resid_sch.lighting(),
+#     equipment_schedule=resid_sch.equipment(),
+#     occupancy_schedule=resid_sch.occupancy(),
+#     activity_schedule=resid_sch.activity_level(),
+#     infiltration_schedule=resid_sch.infiltration())
 
 # Load Definition:
 # **************************************************************************************
-InternalLoad.add_lights(model, space_1, lighting_power=3.75, lighting_schedule=office_sch.lighting())
+# InternalLoad.add_lights(model, space_1, lighting_power=3.75, lighting_schedule=office_sch.lighting())
 # InternalLoad.add_people(
 #     model,
 #     space_1,
@@ -114,12 +113,12 @@ InternalLoad.add_lights(model, space_1, lighting_power=3.75, lighting_schedule=o
 
 # Thermal zones:
 # **************************************************************************************
-thermal_zones = ZoneTool.thermal_zone_from_space(
-    model,
-    spaces=[space_1, space_2],
-    cooling_setpoint_schedules=[office_sch.cooling_setpoint(), resid_sch.cooling_setpoint()],
-    heating_setpoint_schedules=[office_sch.heating_setpoint(), resid_sch.heating_setpoint()],
-    use_ideal_air_load=False)
+# thermal_zones = ZoneTool.thermal_zone_from_space(
+#     model,
+#     spaces=[space_1, space_2],
+#     cooling_setpoint_schedules=[office_sch.cooling_setpoint(), resid_sch.cooling_setpoint()],
+#     heating_setpoint_schedules=[office_sch.heating_setpoint(), resid_sch.heating_setpoint()],
+#     use_ideal_air_load=False)
 
 # Geometry tool testing:
 # **************************************************************************************
@@ -134,7 +133,17 @@ thermal_zones = ZoneTool.thermal_zone_from_space(
 # srfs3 = GeometryTool.space_from_extrusion(model, floor_plan3, 3.5, space=space_1, construction_set=cons_set,
 #                                           building_story=stories[1])
 # GeometryTool.solve_adjacency(srfs3 + srfs2)
-GeometryTool.geometry_from_json(model, "D:\Projects\OpenStudioDev\RhinoGeometry\Arctron_Building.json")
+load = InternalLoad.internal_load_input_json(
+    ["Office", "Conference", "Corridor"],
+    [0.8, 1.3],
+    [1.2, 1.8],
+    [0.1, 0.3],
+    [200, 200],
+    [0.15, 0.15],
+    [0.2, 0.2])
+print(load)
+# file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
+# GeometryTool.geometry_from_json(model, file_path)
 
 # Plant loop:
 # **************************************************************************************
@@ -190,4 +199,4 @@ shw_loop = HVACTool.service_hot_water_loop(
     water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
-model.save(newPath, True)
+# model.save(newPath, True)

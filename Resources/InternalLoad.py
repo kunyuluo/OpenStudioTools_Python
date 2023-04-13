@@ -4,6 +4,7 @@ from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefini
 from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition, WaterUseEquipmentDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
 from Schedules.ScheduleTools import ScheduleTool
+import json
 
 
 class InternalLoad:
@@ -178,5 +179,76 @@ class InternalLoad:
             water_use.setSpace(space)
 
         return water_use
+
+    @staticmethod
+    def internal_load_input_json(
+            space_type=None,
+            lighting=None,
+            equipment=None,
+            people_density=None,
+            people_activity_level=None,
+            outdoor_air_per_area=None,
+            outdoor_air_per_person=None):
+
+        internal_load = {}
+
+        if space_type is not None and isinstance(space_type, list):
+            for i, space in enumerate(space_type):
+                load_dict = {}
+                if lighting is not None and isinstance(lighting, list):
+                    try:
+                        load_dict["lighting"] = lighting[i]
+                    except IndexError:
+                        load_dict["lighting"] = lighting[-1]
+                        print("Cannot find lighting value for space {}".format(space))
+                else:
+                    load_dict["lighting"] = None
+
+                if equipment is not None and isinstance(equipment, list):
+                    try:
+                        load_dict["equipment"] = equipment[i]
+                    except IndexError:
+                        load_dict["equipment"] = equipment[-1]
+                else:
+                    load_dict["equipment"] = None
+
+                if people_density is not None and isinstance(people_density, list):
+                    try:
+                        load_dict["people_density"] = people_density[i]
+                    except IndexError:
+                        load_dict["people_density"] = people_density[-1]
+                else:
+                    load_dict["people_density"] = None
+
+                if people_activity_level is not None and isinstance(people_activity_level, list):
+                    try:
+                        load_dict["people_activity_level"] = people_activity_level[i]
+                    except IndexError:
+                        load_dict["people_activity_level"] = people_activity_level[-1]
+                else:
+                    load_dict["people_activity_level"] = None
+
+                if outdoor_air_per_area is not None and isinstance(outdoor_air_per_area, list):
+                    try:
+                        load_dict["outdoor_air_per_area"] = outdoor_air_per_area[i]
+                    except IndexError:
+                        load_dict["outdoor_air_per_area"] = outdoor_air_per_area[-1]
+                else:
+                    load_dict["outdoor_air_per_area"] = None
+
+                if outdoor_air_per_person is not None and isinstance(outdoor_air_per_person, list):
+                    try:
+                        load_dict["outdoor_air_per_person"] = outdoor_air_per_person[i]
+                    except IndexError:
+                        load_dict["outdoor_air_per_person"] = outdoor_air_per_person[-1]
+                else:
+                    load_dict["outdoor_air_per_person"] = None
+
+                internal_load[space] = load_dict
+
+        internal_load_json = json.dumps(internal_load, indent=4)
+
+        return internal_load_json
+
 
 

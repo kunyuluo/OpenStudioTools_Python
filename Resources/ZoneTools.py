@@ -11,125 +11,135 @@ from Schedules.Templates.Template import Office
 class ZoneTool:
 
     # Create a thermal zone
-    @staticmethod
-    def thermal_zone(
-            model,
-            name,
-            cooling_setpoint_schedules=[],
-            heating_setpoint_schedules=[],
-            dehumidification_setpoint_schedules=[],
-            humidification_setpoint_schedules=[],
-            multiplier: int = None,
-            ceiling_height=None,
-            volume=None,
-            zone_inside_convention_algorithm: str = None,
-            zone_outside_convention_algorithm: str = None,
-            use_ideal_air_load: bool = False):
-
-        zone = ThermalZone(model)
-        zone.setName(name)
-
-        # Assign thermostats to the zone:
-        thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
-        if cooling_setpoint_schedules is not None and len(cooling_setpoint_schedules) != 0:
-            if len(cooling_setpoint_schedules) == len(spaces):
-                thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
-            else:
-                thermostat.setCoolingSchedule(cooling_setpoint_schedules[0])
-        if heating_setpoint_schedules is not None and len(heating_setpoint_schedules) != 0:
-            if len(heating_setpoint_schedules) == len(spaces):
-                thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
-            else:
-                thermostat.setHeatingSchedule(heating_setpoint_schedules[0])
-
-        # Assign humidity thermostat to the zone:
-        humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
-        if dehumidification_setpoint_schedules is not None and len(dehumidification_setpoint_schedules) != 0:
-            if len(dehumidification_setpoint_schedules) == len(spaces):
-                humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
-                    dehumidification_setpoint_schedules[i])
-            else:
-                humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
-                    cooling_setpoint_schedules[0])
-        if humidification_setpoint_schedules is not None and len(humidification_setpoint_schedules) != 0:
-            if len(humidification_setpoint_schedules) == len(spaces):
-                humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
-                    humidification_setpoint_schedules[i])
-            else:
-                humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
-                    humidification_setpoint_schedules[0])
-
-        # Set other properties:
-        if multiplier is not None:
-            zone.setMultiplier(multiplier)
-        if ceiling_height is not None:
-            zone.setCeilingHeight(ceiling_height)
-        if volume is not None:
-            zone.setVolume(volume)
-        if zone_inside_convention_algorithm is not None:
-            zone.setZoneInsideConvectionAlgorithm(zone_inside_convention_algorithm)
-        if zone_outside_convention_algorithm is not None:
-            zone.setZoneOutsideConvectionAlgorithm(zone_outside_convention_algorithm)
-
-        zone.setUseIdealAirLoads(use_ideal_air_load)
-
-        return zone
+    # @staticmethod
+    # def thermal_zone(
+    #         model,
+    #         name,
+    #         cooling_setpoint_schedules=[],
+    #         heating_setpoint_schedules=[],
+    #         dehumidification_setpoint_schedules=[],
+    #         humidification_setpoint_schedules=[],
+    #         multiplier: int = None,
+    #         ceiling_height=None,
+    #         volume=None,
+    #         zone_inside_convention_algorithm: str = None,
+    #         zone_outside_convention_algorithm: str = None,
+    #         use_ideal_air_load: bool = False):
+    #
+    #     zone = ThermalZone(model)
+    #     zone.setName(name)
+    #
+    #     # Assign thermostats to the zone:
+    #     thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
+    #     if cooling_setpoint_schedules is not None and len(cooling_setpoint_schedules) != 0:
+    #         if len(cooling_setpoint_schedules) == len(spaces):
+    #             thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
+    #         else:
+    #             thermostat.setCoolingSchedule(cooling_setpoint_schedules[0])
+    #     if heating_setpoint_schedules is not None and len(heating_setpoint_schedules) != 0:
+    #         if len(heating_setpoint_schedules) == len(spaces):
+    #             thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
+    #         else:
+    #             thermostat.setHeatingSchedule(heating_setpoint_schedules[0])
+    #
+    #     # Assign humidity thermostat to the zone:
+    #     humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
+    #     if dehumidification_setpoint_schedules is not None and len(dehumidification_setpoint_schedules) != 0:
+    #         if len(dehumidification_setpoint_schedules) == len(spaces):
+    #             humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+    #                 dehumidification_setpoint_schedules[i])
+    #         else:
+    #             humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+    #                 cooling_setpoint_schedules[0])
+    #     if humidification_setpoint_schedules is not None and len(humidification_setpoint_schedules) != 0:
+    #         if len(humidification_setpoint_schedules) == len(spaces):
+    #             humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+    #                 humidification_setpoint_schedules[i])
+    #         else:
+    #             humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+    #                 humidification_setpoint_schedules[0])
+    #
+    #     # Set other properties:
+    #     if multiplier is not None:
+    #         zone.setMultiplier(multiplier)
+    #     if ceiling_height is not None:
+    #         zone.setCeilingHeight(ceiling_height)
+    #     if volume is not None:
+    #         zone.setVolume(volume)
+    #     if zone_inside_convention_algorithm is not None:
+    #         zone.setZoneInsideConvectionAlgorithm(zone_inside_convention_algorithm)
+    #     if zone_outside_convention_algorithm is not None:
+    #         zone.setZoneOutsideConvectionAlgorithm(zone_outside_convention_algorithm)
+    #
+    #     zone.setUseIdealAirLoads(use_ideal_air_load)
+    #
+    #     return zone
 
     @staticmethod
     def thermal_zone_from_space(
             model,
-            spaces=[],
-            cooling_setpoint_schedules=[],
-            heating_setpoint_schedules=[],
-            dehumidification_setpoint_schedules=[],
-            humidification_setpoint_schedules=[],
+            spaces,
+            cooling_setpoint_schedules=None,
+            heating_setpoint_schedules=None,
+            dehumidification_setpoint_schedules=None,
+            humidification_setpoint_schedules=None,
             multiplier: int = None,
             ceiling_height=None,
             volume=None,
-            zone_inside_convention_algorithm: str = None,
-            zone_outside_convention_algorithm: str = None,
+            zone_inside_convention_algorithm: int = None,
+            zone_outside_convention_algorithm: int = None,
             use_ideal_air_load: bool = False):
 
+        """
+        -Zone_inside_convention_algorithm: \n
+        1.Simple 2.TARP 3.CeilingDiffuser 4.AdaptiveConvectionAlgorithm 5.TrombeWall 6.ASTMC1340
+
+        -Zone_outside_convention_algorithm: \n
+        1.SimpleCombined 2.TARP 3.DOE-2 4.MoWiTT 5.AdaptiveConvectionAlgorithm
+        """
+
+        inside_algorithms = {1: "Simple", 2: "TARP", 3: "CeilingDiffuser",
+                             4: "AdaptiveConvectionAlgorithm", 5: "TrombeWall", 6: "ASTMC1340"}
+
+        outside_algorithms = {1: "SimpleCombined", 2: "TARP", 3: "DOE-2",
+                              4: "MoWiTT", 5: "AdaptiveConvectionAlgorithm"}
+
         thermal_zones = []
-        if spaces is not None and len(spaces) != 0:
-            for i in range(len(spaces)):
+        if spaces is not None:
+            if isinstance(spaces, openstudio.openstudiomodel.Space):
                 zone = ThermalZone(model)
-                zone.setName(spaces[i].nameString())
-                spaces[i].setThermalZone(zone)
+                zone.setName(spaces.nameString())
+                spaces.setThermalZone(zone)
 
                 # Assign thermostats to the zone:
                 thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
-                if cooling_setpoint_schedules is not None and len(cooling_setpoint_schedules) != 0:
-                    if len(cooling_setpoint_schedules) == len(spaces):
-                        thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
+                if cooling_setpoint_schedules is not None:
+                    if isinstance(cooling_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                        thermostat.setCoolingSchedule(cooling_setpoint_schedules)
                     else:
-                        thermostat.setCoolingSchedule(cooling_setpoint_schedules[0])
-                if heating_setpoint_schedules is not None and len(heating_setpoint_schedules) != 0:
-                    if len(heating_setpoint_schedules) == len(spaces):
-                        thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
+                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                if heating_setpoint_schedules is not None:
+                    if isinstance(heating_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                        thermostat.setHeatingSchedule(heating_setpoint_schedules)
                     else:
-                        thermostat.setHeatingSchedule(heating_setpoint_schedules[0])
+                        raise TypeError("Schedule must be a ScheduleRulset object.")
 
                 zone.setThermostatSetpointDualSetpoint(thermostat)
 
                 # Assign humidity thermostat to the zone:
                 humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
-                if dehumidification_setpoint_schedules is not None and len(dehumidification_setpoint_schedules) != 0:
-                    if len(dehumidification_setpoint_schedules) == len(spaces):
+                if dehumidification_setpoint_schedules is not None:
+                    if isinstance(dehumidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
                         humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
-                            dehumidification_setpoint_schedules[i])
+                            dehumidification_setpoint_schedules)
                     else:
-                        humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
-                            cooling_setpoint_schedules[0])
-                if humidification_setpoint_schedules is not None and len(humidification_setpoint_schedules) != 0:
-                    if len(humidification_setpoint_schedules) == len(spaces):
+                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                if humidification_setpoint_schedules is not None:
+                    if isinstance(humidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
                         humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
-                            humidification_setpoint_schedules[i])
+                            humidification_setpoint_schedules)
                     else:
-                        humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
-                            humidification_setpoint_schedules[0])
-
-                zone.setZoneControlHumidistat(humidity_thermostat)
+                        raise TypeError("Schedule must be a ScheduleRulset object.")
 
                 # Set other properties:
                 if multiplier is not None:
@@ -139,14 +149,82 @@ class ZoneTool:
                 if volume is not None:
                     zone.setVolume(volume)
                 if zone_inside_convention_algorithm is not None:
-                    zone.setZoneInsideConvectionAlgorithm(zone_inside_convention_algorithm)
+                    zone.setZoneInsideConvectionAlgorithm(inside_algorithms[zone_inside_convention_algorithm])
                 if zone_outside_convention_algorithm is not None:
-                    zone.setZoneOutsideConvectionAlgorithm(zone_outside_convention_algorithm)
+                    zone.setZoneOutsideConvectionAlgorithm(
+                        outside_algorithms[zone_outside_convention_algorithm])
 
                 zone.setUseIdealAirLoads(use_ideal_air_load)
-                thermal_zones.append(zone)
 
-        return thermal_zones
+                return zone
+
+            elif isinstance(spaces, list):
+                for i, space in enumerate(spaces):
+                    zone = ThermalZone(model)
+                    zone.setName(space.nameString())
+                    space.setThermalZone(zone)
+
+                    # Assign thermostats to the zone:
+                    thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
+                    if cooling_setpoint_schedules is not None:
+                        if isinstance(cooling_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                            thermostat.setCoolingSchedule(cooling_setpoint_schedules)
+                        elif isinstance(cooling_setpoint_schedules, list):
+                            thermostat.setCoolingSchedule(cooling_setpoint_schedules[i])
+                        else:
+                            raise TypeError("Invalid input type of cooling_setpoint_schedules")
+                    if heating_setpoint_schedules is not None:
+                        if isinstance(heating_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                            thermostat.setHeatingSchedule(heating_setpoint_schedules)
+                        elif isinstance(heating_setpoint_schedules, list):
+                            thermostat.setHeatingSchedule(heating_setpoint_schedules[i])
+                        else:
+                            raise TypeError("Invalid input type of heating_setpoint_schedules")
+
+                    zone.setThermostatSetpointDualSetpoint(thermostat)
+
+                    # Assign humidity thermostat to the zone:
+                    humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
+                    if dehumidification_setpoint_schedules is not None:
+                        if isinstance(dehumidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                            humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                                dehumidification_setpoint_schedules)
+                        elif isinstance(dehumidification_setpoint_schedules, list):
+                            humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                                cooling_setpoint_schedules[i])
+                        else:
+                            raise TypeError("Invalid input type of dehumidification_setpoint_schedules")
+                    if humidification_setpoint_schedules is not None:
+                        if isinstance(humidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
+                            humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                                humidification_setpoint_schedules)
+                        elif isinstance(humidification_setpoint_schedules, list):
+                            humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                                humidification_setpoint_schedules[i])
+                        else:
+                            raise TypeError("Invalid input type of humidification_setpoint_schedules")
+
+                    zone.setZoneControlHumidistat(humidity_thermostat)
+
+                    # Set other properties:
+                    if multiplier is not None:
+                        zone.setMultiplier(multiplier)
+                    if ceiling_height is not None:
+                        zone.setCeilingHeight(ceiling_height)
+                    if volume is not None:
+                        zone.setVolume(volume)
+                    if zone_inside_convention_algorithm is not None:
+                        zone.setZoneInsideConvectionAlgorithm(inside_algorithms[zone_inside_convention_algorithm])
+                    if zone_outside_convention_algorithm is not None:
+                        zone.setZoneOutsideConvectionAlgorithm(outside_algorithms[zone_outside_convention_algorithm])
+
+                    zone.setUseIdealAirLoads(use_ideal_air_load)
+                    thermal_zones.append(zone)
+
+                return thermal_zones
+
+            else:
+                raise TypeError("Invalid input type of spaces")
 
     @staticmethod
     def sizing(
@@ -382,7 +460,7 @@ class ZoneTool:
             gas_equipment: GasEquipment = None,
             internal_mass: InternalMass = None,
             outdoor_air: DesignSpecificationOutdoorAir = None,
-            infiltration:SpaceInfiltrationDesignFlowRate = None):
+            infiltration: SpaceInfiltrationDesignFlowRate = None):
 
         space = Space(model)
         space.setName(name)

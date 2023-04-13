@@ -157,7 +157,13 @@ class GeometryTool:
 
     # Make Subsurface:
     @staticmethod
-    def make_fenestration(model, vertices, surface_type="FixedWindow", construction=None, surface=None):
+    def make_fenestration(
+            model,
+            vertices,
+            surface_type="FixedWindow",
+            construction=None,
+            surface=None,
+            name: str = None):
 
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
@@ -169,8 +175,12 @@ class GeometryTool:
             subsurface = SubSurface(pt_vec, model)
 
             subsurface.setSubSurfaceType(surface_type)
-            if construction is not None: subsurface.setConstruction(construction)
-            if surface is not None: subsurface.setSurface(surface)
+            if construction is not None:
+                subsurface.setConstruction(construction)
+            if surface is not None:
+                subsurface.setSurface(surface)
+            if name is not None:
+                subsurface.setName(name)
         else:
             raise ValueError("Not Enough Vertices to Create a Surface")
 
@@ -178,7 +188,7 @@ class GeometryTool:
 
     # Create a shading surface:
     @staticmethod
-    def make_shading(model, vertices, construction=None, transmittance_schedule=None):
+    def make_shading(model, vertices, construction=None, transmittance_schedule=None, name: str = None):
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
             for i in range(len(vertices)):
@@ -187,8 +197,12 @@ class GeometryTool:
                     pt_vec.append(pt)
 
             shading = ShadingSurface(pt_vec, model)
-            if construction is not None: shading.setConstruction(construction)
-            if transmittance_schedule is not None: shading.setTransmittanceSchedule(transmittance_schedule)
+            if construction is not None:
+                shading.setConstruction(construction)
+            if transmittance_schedule is not None:
+                shading.setTransmittanceSchedule(transmittance_schedule)
+            if name is not None:
+                shading.setName(name)
 
             return shading
 
@@ -307,10 +321,12 @@ class GeometryTool:
         number_of_stories = int(json_object["number_of_stories"])
         stories = GeometryTool.building_story(model, number_of_stories)
 
+        # Rooms in the building
         if len(rooms) != 0:
             office_sch = Office(model)
             cons_set = ConstructionSet(model, "Kunyu_OMG").get()
             all_surfaces = []
+            all_subsurfaces = []
             for i, room in enumerate(rooms, 1):
                 space = ZoneTool.space_simplified(
                     model,
@@ -330,12 +346,28 @@ class GeometryTool:
 
                 space.setDefaultConstructionSet(cons_set)
                 surfaces = room["surfaces"]
-                for surface in surfaces:
-                    vertices = surface["vertices"]
-                    name = surface["name"]
-                    all_surfaces.append(GeometryTool.make_surface(model, vertices, space=space, name=name))
+                for srf in surfaces:
+                    vertices = srf["vertices"]
+                    name = srf["name"]
+
+                    surface = GeometryTool.make_surface(model, vertices, space=space, name=name)
+                    all_surfaces.append(surface)
+
+                    if len(srf["fenestrations"]) != 0:
+                        for fenestration in srf["fenestrations"]:
+                            fen_srf = GeometryTool.make_fenestration(
+                                model, fenestration["vertices"], surface=surface, name=fenestration["name"])
+                            all_subsurfaces.append(fen_srf)
 
             GeometryTool.solve_adjacency(all_surfaces, True)
+
+            # Shading Objects:
+            shades = json_object["shades"]
+            all_shades = []
+            if len(shades) != 0:
+                for shade in shades:
+                    shade_srf = GeometryTool.make_shading(model, shade["vertices"], name=shade["name"])
+                    all_shades.append(shade_srf)
 
     # Newell's Algorithm (find normal vector from an arbitrary polygon)
     @staticmethod
