@@ -100,7 +100,8 @@ class PlantLoopComponent:
             capacity_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
             cop_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
             cop_plr_curve: openstudio.openstudiomodel.CurveQuadratic = None,
-            plant_loop: openstudio.openstudiomodel.PlantLoop = None):
+            plant_loop: openstudio.openstudiomodel.PlantLoop = None,
+            condenser_loop: openstudio.openstudiomodel.PlantLoop = None):
 
         """
         -Condenser_type: 1:AirCooled 2:WaterCooled 3:EvapCooled \n
@@ -114,6 +115,10 @@ class PlantLoopComponent:
         chiller.setReferenceCOP(cop)
         if name is not None:
             chiller.setName(name)
+
+        if condenser_type == 2:
+            if condenser_loop is not None:
+                condenser_loop.addDemandBranchForComponent(chiller)
 
         chiller.setCondenserType(condenser_types[condenser_type])
 

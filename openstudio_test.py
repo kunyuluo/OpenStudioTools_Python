@@ -20,7 +20,7 @@ from HVACSystem.ZoneEquipments import ZoneEquipment
 from HVACSystem.PerformanceCurves import Curve
 from HVACSystem.HVACTools import HVACTool
 from Resources.Helpers import Helper
-from RhinoGeometry.RhinoParse import load_rhino_model
+from RhinoGeometry.RhinoParse import load_rhino_model, modify_rhino_unit
 
 # vertices = []
 path_str = "D:\\Projects\\OpenStudioDev\\Model_350.osm"
@@ -38,7 +38,6 @@ ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 # **************************************************************************************
 model = Model.load(path).get()
 building = GeometryTool.building(model, "Kunyu's Tower", 34)
-# stories = GeometryTool.building_story(model, number_of_story=3)
 
 # openstudio.gbxml.GbXMLForwardTranslator().modelToGbXML(model, newPath)
 
@@ -61,121 +60,32 @@ output_variables(model, ["Chiller Electricity Energy", "Boiler NaturalGas Energy
 
 # Exterior Equipment:
 # **************************************************************************************
-ExteriorEquipments.exterior_lights(model, design_level=243)
-ExteriorEquipments.exterior_fuel(model, design_level=58)
+ExteriorEquipments.exterior_lights(model, design_level=24)
 
 # Space with load:
 # **************************************************************************************
 office_sch = Office(model)
 # resid_sch = Residential(model)
-# space_1 = ZoneTool.space_simplified(
-#     model,
-#     name="Kunyu's room 1",
-#     program="Office",
-#     lighting_power=0.7,
-#     equipment_power=1.5,
-#     people_density=0.5,
-#     outdoor_air_per_person=0.05,
-#     outdoor_air_per_floor_area=0.15,
-#     lighting_schedule=office_sch.lighting(),
-#     equipment_schedule=office_sch.equipment(),
-#     occupancy_schedule=office_sch.occupancy(),
-#     activity_schedule=office_sch.activity_level(),
-#     infiltration_schedule=office_sch.infiltration())
-#
-# space_2 = ZoneTool.space_simplified(
-#     model,
-#     name="Kunyu's room 2",
-#     program="Office",
-#     lighting_power=1.4,
-#     equipment_power=2.8,
-#     people_density=0.2,
-#     outdoor_air_per_person=0.05,
-#     outdoor_air_per_floor_area=0.15,
-#     lighting_schedule=resid_sch.lighting(),
-#     equipment_schedule=resid_sch.equipment(),
-#     occupancy_schedule=resid_sch.occupancy(),
-#     activity_schedule=resid_sch.activity_level(),
-#     infiltration_schedule=resid_sch.infiltration())
 
-# Load Definition:
-# **************************************************************************************
-# InternalLoad.add_lights(model, space_1, lighting_power=3.75, lighting_schedule=office_sch.lighting())
-# InternalLoad.add_people(
-#     model,
-#     space_1,
-#     amount=2.3,
-#     schedule=office_sch.occupancy(),
-#     activity_schedule=office_sch.activity_level(),
-#     enable_ashrae55_warning=True,
-#     mrt_calc_type="SurfaceWeighted",
-#     thermal_comfort_model_type=["AdaptiveASH55", "KSU"])
+# load = InternalLoad.internal_load_input_json(
+#     ["Office", "Conference", "Corridor"],
+#     [0.8, 1.3, 0.6],
+#     [1.2, 1.8, 0.5],
+#     [0.1, 0.3, 0.05],
+#     [200, 200, 200],
+#     [0.15, 0.15, 0.15],
+#     [0.2, 0.2, 0.2],
+#     [3, 1, 3])
+# print(json.loads(load).keys())
 
-# Thermal zones:
-# **************************************************************************************
-# thermal_zones = ZoneTool.thermal_zone_from_space(
-#     model,
-#     spaces=[space_1, space_2],
-#     cooling_setpoint_schedules=[office_sch.cooling_setpoint(), resid_sch.cooling_setpoint()],
-#     heating_setpoint_schedules=[office_sch.heating_setpoint(), resid_sch.heating_setpoint()],
-#     use_ideal_air_load=False)
 
-# Geometry tool testing:
-# **************************************************************************************
-# cons_set = ConstructionSet(model, "Kunyu_OMG").get()
-# floor_plan1 = [[7.0, 0.0, 0.0], [10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [7.0, 5.0, 0.0]]
-# floor_plan2 = [[10.0, 0.0, 0.0], [10.0, 5.0, 0.0], [14.0, 5.0, 0.0], [14.0, 0.0, 0.0]]
-# floor_plan3 = [[10.0, 0.0, 3.5], [10.0, 5.0, 3.5], [14.0, 5.0, 3.5], [14.0, 0.0, 3.5]]
-# # srfs1 = GeometryTool.space_from_extrusion(model, floor_plan1, 3.5, space=space_1, construction_set=cons_set,
-# #                                           building_story=stories[0])
-# srfs2 = GeometryTool.space_from_extrusion(model, floor_plan2, 3.5, space=space_2, construction_set=cons_set,
-#                                           building_story=stories[0])
-# srfs3 = GeometryTool.space_from_extrusion(model, floor_plan3, 3.5, space=space_1, construction_set=cons_set,
-#                                           building_story=stories[1])
-# GeometryTool.solve_adjacency(srfs3 + srfs2)
-load = InternalLoad.internal_load_input_json(
-    ["Office", "Conference", "Corridor"],
-    [0.8, 1.3],
-    [1.2, 1.8],
-    [0.1, 0.3],
-    [200, 200],
-    [0.15, 0.15],
-    [0.2, 0.2])
-print(load)
 # file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
-# GeometryTool.geometry_from_json(model, file_path)
-
-# Plant loop:
-# **************************************************************************************
-# chiller1 = PlantLoopComponent.chiller_electric(model, name="chiller 1")
-# chiller2 = PlantLoopComponent.chiller_electric(model, name="chiller 2")
-# chiller3 = PlantLoopComponent.chiller_electric(model, name="chiller 3")
-# pump1 = PlantLoopComponent.pump_variable_speed(model, name="pump 1")
-# pump2 = PlantLoopComponent.pump_variable_speed(model, name="pump 2")
-# pump3 = PlantLoopComponent.pump_variable_speed(model, name="pump 3")
-# pump4 = PlantLoopComponent.pump_constant_speed(model, name="pump 4")
-# pump5 = PlantLoopComponent.pump_constant_speed(model, name="pump 5")
-# pump6 = PlantLoopComponent.pump_constant_speed(model, name="pump 6")
-# adiabatic_pipe = PlantLoopComponent.adiabatic_pipe(model)
-# items = [[pump1, chiller1, pump4], [pump2, chiller2, pump5], [pump3, chiller3, pump6], [adiabatic_pipe]]
-# spm1 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
-# spm2 = SetpointManager.outdoor_air_reset(model, 1, 13.3, 6.67, 10, 24)
-#
-# plant_loop = PlantLoopComponent.plant_loop(
-#     model,
-#     name="Chilled Water Loop HaHaHa",
-#     common_pipe_simulation=1,
-#     supply_branches=items,
-#     setpoint_manager=spm1,
-#     setpoint_manager_secondary=spm2)
-#
-# PlantLoopComponent.sizing(model, plant_loop, 1)
+# thermal_zones = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
+unit = modify_rhino_unit("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\unit_test.3dm")
+print(unit)
 
 # Air loop:
 # **************************************************************************************
-# air_loop = AirLoopComponent.air_loop(model, "My Air Loop", thermal_zones=thermal_zones)
-# Template.vav_chiller_boiler(model, thermal_zones=thermal_zones)
-
 # terminals = []
 # for i in range(len(thermal_zones)):
 #     vrf_terminal = ZoneEquipment.vrf_terminal(
@@ -193,10 +103,10 @@ print(load)
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # Template.vav_chiller_boiler(model, thermal_zones, number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
-
-shw_loop = HVACTool.service_hot_water_loop(
-    model, "Kunyu SHW Loop", 3, 0.98,
-    water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
+#
+# shw_loop = HVACTool.service_hot_water_loop(
+#     model, "Kunyu SHW Loop", 3, 0.98,
+#     water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
 # model.save(newPath, True)

@@ -5,6 +5,7 @@ from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurfa
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
 from Schedules.Templates.Template import Office
 from Resources.ZoneTools import ZoneTool
+from Resources.InternalLoad import InternalLoad
 from Constructions.ConstructionSets import ConstructionSet
 
 
@@ -311,7 +312,8 @@ class GeometryTool:
     @staticmethod
     def geometry_from_json(
             model: openstudio.openstudiomodel.Model,
-            json_path: str):
+            json_path: str,
+            internal_load: str = None):
 
         with open(json_path, 'r') as openfile:
             # Reading from json file
@@ -321,30 +323,89 @@ class GeometryTool:
         number_of_stories = int(json_object["number_of_stories"])
         stories = GeometryTool.building_story(model, number_of_stories)
 
+        # Schedule sets:
+        office_sch = Office(model)
+        # Construction sets:
+        cons_set = ConstructionSet(model, "Kunyu_OMG").get()
+
+        # Internal load data:
+        loads = {}
+        if internal_load is not None:
+            internal_loads = json.loads(internal_load)
+            space_types = internal_loads.keys()
+
+            for i, space in enumerate(space_types):
+                load_dict = {"lighting": None, "electric_equip": None, "people": None,
+                             "gas_equip": None, "space_type": None}
+                load_of_space = internal_loads[space]
+                people_cal_method = internal_loads[space]["people_density_method"]
+
+                # Lighting Definition:
+                light = InternalLoad.light_definition(model, lighting_power=load_of_space["lighting"])
+                load_dict["lighting"] = light
+
+                # Electric Equipment Definition:
+                electric_equip = InternalLoad.electric_equipment_definition(model, power=load_of_space["equipment"])
+                load_dict["electric_equip"] = electric_equip
+
+                # People Definition:
+                match people_cal_method:
+                    case "People":
+                        people = InternalLoad.people_definition(model, 1, load_of_space["people_density"])
+                    case "Area/Person":
+                        people = InternalLoad.people_definition(model, 2, load_of_space["people_density"])
+                    case "Person/Area" | _:
+                        people = InternalLoad.people_definition(model, 3, load_of_space["people_density"])
+                load_dict["people"] = people
+
+                # Gas Equipment Definition:
+                gas_equip = InternalLoad.gas_equipment_definition(model, load_of_space["gas_power"])
+                load_dict["gas_equip"] = gas_equip
+
+                # Outdoor Air:
+                outdoor_air = InternalLoad.outdoor_air(
+                    model, outdoor_air_per_floor_area=load_of_space["outdoor_air_per_area"],
+                    outdoor_air_per_person=load_of_space["outdoor_air_per_person"],
+                    schedule=office_sch.occupancy())
+                infiltration = InternalLoad.infiltration(model)
+                space_type = ZoneTool.space_type(model, space, space, outdoor_air, infiltration)
+                load_dict["space_type"] = space_type
+
+                loads[space] = load_dict
+
         # Rooms in the building
+        thermal_zones = []
         if len(rooms) != 0:
-            office_sch = Office(model)
-            cons_set = ConstructionSet(model, "Kunyu_OMG").get()
             all_surfaces = []
             all_subsurfaces = []
             for i, room in enumerate(rooms, 1):
-                space = ZoneTool.space_simplified(
+                room_type = room["space_type"]
+
+                people = InternalLoad.people(
+                    loads[room_type]["people"],
+                    schedule=office_sch.occupancy(), activity_schedule=office_sch.activity_level())
+                electric_equip = InternalLoad.electric_equipment(
+                    loads[room_type]["electric_equip"], schedule=office_sch.equipment())
+                light = InternalLoad.light(
+                    loads[room_type]["lighting"], lighting_schedule=office_sch.lighting())
+
+                space = ZoneTool.space(
                     model,
+                    space_type=loads[room_type]["space_type"],
                     name="Kunyu Space {}".format(i),
-                    program="Office",
                     story=stories[int(room["story"])-1],
-                    lighting_power=0.7,
-                    equipment_power=1.5,
-                    people_density=0.5,
-                    outdoor_air_per_person=0.05,
-                    outdoor_air_per_floor_area=0.15,
-                    lighting_schedule=office_sch.lighting(),
-                    equipment_schedule=office_sch.equipment(),
-                    occupancy_schedule=office_sch.occupancy(),
-                    activity_schedule=office_sch.activity_level(),
-                    infiltration_schedule=office_sch.infiltration())
+                    lights=light,
+                    people=people,
+                    electric_equipment=electric_equip)
 
                 space.setDefaultConstructionSet(cons_set)
+
+                # Thermal zones:
+                thermal_zone = ZoneTool.thermal_zone_from_space(
+                    model, space, office_sch.cooling_setpoint(), office_sch.heating_setpoint())
+                thermal_zones.append(thermal_zone)
+
+                # Create surfaces and subsurfaces:
                 surfaces = room["surfaces"]
                 for srf in surfaces:
                     vertices = srf["vertices"]
@@ -368,6 +429,8 @@ class GeometryTool:
                 for shade in shades:
                     shade_srf = GeometryTool.make_shading(model, shade["vertices"], name=shade["name"])
                     all_shades.append(shade_srf)
+
+        return thermal_zones
 
     # Newell's Algorithm (find normal vector from an arbitrary polygon)
     @staticmethod

@@ -90,6 +90,54 @@ class Helper:
         """
         return u_value / 5.678263337
 
+    @staticmethod
+    def m2ppl_to_pplm2(values):
+        """
+        Convert people density from m2/people to people/m2
+        """
+        if isinstance(values, float):
+            return 1 / values
+        elif isinstance(values, list):
+            new_values = []
+            for value in values:
+                new_value = 1 / value
+                new_values.append(new_value)
+            return new_values
+        else:
+            raise TypeError("Invalid input type of values")
+
+    @staticmethod
+    def ft2ppl_to_pplm2(values):
+        """
+        Convert people density from ft2/people to people/m2
+        """
+        if isinstance(values, float):
+            return 1/values/0.0929
+        elif isinstance(values, list):
+            new_values = []
+            for value in values:
+                new_value = 1/value/0.0929
+                new_values.append(new_value)
+            return new_values
+        else:
+            raise TypeError("Invalid input type of values")
+
+    @staticmethod
+    def ppl1000ft2_to_pplm2(values):
+        """
+        Convert people density from people/1000ft2 to people/m2
+        """
+        if isinstance(values, float):
+            return values/0.0929
+        elif isinstance(values, list):
+            new_values = []
+            for value in values:
+                new_value = value/0.0929
+                new_values.append(new_value)
+            return new_values
+        else:
+            raise TypeError("Invalid input type of values")
+
     # Visualizer:
     # *************************************************************************************
     @staticmethod

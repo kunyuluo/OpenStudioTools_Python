@@ -12,6 +12,13 @@ except ImportError as e:
 tolerance = 0.01
 
 
+def modify_rhino_unit(rhino_file_path: str):
+    doc = Rhino.RhinoDoc.FromFilePath(rhino_file_path)
+    unit = doc.GetUnitSystemName(True, True, True, False)
+    # Rhino.RhinoDoc.AdjustModelUnitSystem(model)
+    return unit
+
+
 def sort_geometry_from_rhino(rhino_file_path: str, get_object: bool = False, convert_to_brep: bool = True):
     """
     :param rhino_file_path: full path of the rhino file (3dm).

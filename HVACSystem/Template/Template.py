@@ -559,41 +559,12 @@ class Template:
 
                 hot_water_loop = HVACTool.plant_loop(
                     model, "Hot Water Loop", 1,
-                    common_pipe_simulation=2,
+                    common_pipe_simulation=1,
                     setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
                     supply_branches=hot_water_supply_branches,
                     demand_branches=hot_water_demand_branches)
 
                 PlantLoopComponent.sizing(model, hot_water_loop, 2)
-
-                # Build a chilled water loop:
-                # *****************************************************************************
-                chilled_water_supply_branches = []
-                chillers = []
-                for i in range(number_of_chiller):
-                    branch = []
-
-                    pump = PlantLoopComponent.pump_variable_speed(model)
-                    chiller = PlantLoopComponent.chiller_electric(
-                        model, condenser_type=chiller_condenser_type, cop=chiller_cop)
-
-                    branch.append(pump)
-                    branch.append(chiller)
-                    chillers.append(chiller)
-
-                    chilled_water_supply_branches.append(branch)
-
-                chilled_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
-                chilled_water_supply_branches.append(chilled_water_bypass_pipe)
-
-                chilled_water_loop = HVACTool.plant_loop(
-                    model, "Chilled Water Loop", 1,
-                    common_pipe_simulation=2,
-                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
-                    supply_branches=chilled_water_supply_branches,
-                    demand_branches=cooling_coils)
-
-                PlantLoopComponent.sizing(model, chilled_water_loop, 1)
 
                 # Build a condenser water loop if needed:
                 # *****************************************************************************
@@ -617,10 +588,42 @@ class Template:
                         model, "Condenser Water Loop", 1,
                         common_pipe_simulation=1,
                         setpoint_manager=SetpointManager.follow_outdoor_air_temperature(model, ashrae_default=True),
-                        supply_branches=condenser_water_supply_branches,
-                        demand_branches=chillers)
+                        supply_branches=condenser_water_supply_branches)
 
                     PlantLoopComponent.sizing(model, condenser_water_loop, 3)
+
+                else:
+                    condenser_water_loop = None
+
+                # Build a chilled water loop:
+                # *****************************************************************************
+                chilled_water_supply_branches = []
+                chillers = []
+                for i in range(number_of_chiller):
+                    branch = []
+
+                    pump = PlantLoopComponent.pump_variable_speed(model)
+                    chiller = PlantLoopComponent.chiller_electric(
+                        model, condenser_type=chiller_condenser_type, cop=chiller_cop,
+                        condenser_loop=condenser_water_loop)
+
+                    branch.append(pump)
+                    branch.append(chiller)
+                    chillers.append(chiller)
+
+                    chilled_water_supply_branches.append(branch)
+
+                chilled_water_bypass_pipe = [PlantLoopComponent.adiabatic_pipe(model)]
+                chilled_water_supply_branches.append(chilled_water_bypass_pipe)
+
+                chilled_water_loop = HVACTool.plant_loop(
+                    model, "Chilled Water Loop", 1,
+                    common_pipe_simulation=1,
+                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
+                    supply_branches=chilled_water_supply_branches,
+                    demand_branches=cooling_coils)
+
+                PlantLoopComponent.sizing(model, chilled_water_loop, 1)
 
             else:
                 raise ValueError(Template.zone_null_message)
