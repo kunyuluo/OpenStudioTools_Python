@@ -67,7 +67,7 @@ class ZoneEquipment:
             if cooling_coil is not None:
                 equip_cooling_coil = cooling_coil
             else:
-                equip_cooling_coil = AirLoopComponent.coil_cooling_DX_single_speed(model)
+                equip_cooling_coil = AirLoopComponent.coil_cooling_dx_single_speed(model)
 
             heating_coil_type = str(type(equip_heating_coil)).split('.')[-1].split("'")[0]
             cooling_coil_type = str(type(equip_cooling_coil)).split('.')[-1].split("'")[0]
@@ -322,7 +322,7 @@ class ZoneEquipment:
             model: openstudio.openstudiomodel.Model,
             name: str = None,
             capacity_control_method: int = 0,
-            heating_coil_type: str = "Water",
+            heating_coil_type: int = 1,
             fan_pressure_rise=None,
             max_supply_air_flow_rate=None,
             low_speed_supply_air_flow_ratio=None,
@@ -346,7 +346,11 @@ class ZoneEquipment:
             2:"VariableFanConstantFlow",
             3:"CyclingFan",
             4:"MultiSpeedFan",
-            5:"ASHRAE90VariableFan"
+            5:"ASHRAE90VariableFan" \n
+
+        -Heating coil type:
+            1:Water,
+            2:Electric
         """
 
         # Create a fan object based on control method:
@@ -360,9 +364,9 @@ class ZoneEquipment:
 
         # Create a heating coil object based on control method:
         match heating_coil_type:
-            case "Water":
+            case 1:
                 heating_coil = AirLoopComponent.coil_heating_water(model)
-            case "Electric" | _:
+            case 2 | _:
                 heating_coil = AirLoopComponent.coil_heating_electric(model)
 
         # Create a cooling coil object:

@@ -1,6 +1,5 @@
 import json
 import objectpath
-from JSON.json_definition import EnergyObject
 
 js = '''{"name": "My_model", "geometry": {"geo_type": "Wall", "plane": [[0,0,0],[2,4,1]]}, "boundary": "bbb"}'''
 js2 = '''{"name": "model", "boundary": [[0,0,0],[2,4,1]]}'''

@@ -514,3 +514,54 @@ class ZoneTool:
             space.setSpaceType(space_type)
 
         return space
+
+    @staticmethod
+    def thermal_zone_by_floor(thermal_zones: list, sub_sort_by_type: bool = False):
+        """
+        :param thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.
+        :param sub_sort_by_type: set to True to sort thermal zones based on their type on each floor. Default is False.
+        :return: a dictionary of sorted thermal zones.
+        """
+
+        if thermal_zones is not None:
+            sorted_zones = {}
+            if sub_sort_by_type:
+                # First building dictionary structure:
+                for zone_dict in thermal_zones:
+                    keys = sorted_zones.keys()
+                    story = zone_dict["story"]
+                    if story not in keys:
+                        sorted_zones[story] = {}
+                story_keys = sorted_zones.keys()
+
+                # Then add thermal zone sorted by space type to each story:
+                for zone_dict in thermal_zones:
+
+                    zone = zone_dict["zone"]
+                    story = zone_dict["story"]
+                    space_type = zone_dict["space_type"]
+
+                    if story in story_keys:
+                        story_dict = sorted_zones[story]
+                        type_keys = story_dict.keys()
+
+                        if space_type not in type_keys:
+                            story_dict[space_type] = [zone]
+                        else:
+                            zones = story_dict[space_type]
+                            zones.append(zone)
+
+            else:
+                for zone_dict in thermal_zones:
+                    story_keys = sorted_zones.keys()
+
+                    zone = zone_dict["zone"]
+                    story = zone_dict["story"]
+
+                    if story not in story_keys:
+                        sorted_zones[story] = [zone]
+                    else:
+                        zones = sorted_zones[story]
+                        zones.append(zone)
+
+            return sorted_zones

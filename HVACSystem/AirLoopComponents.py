@@ -6,67 +6,67 @@ from Schedules.ScheduleTools import ScheduleTool
 
 class AirLoopComponent:
 
-    @staticmethod
-    def air_loop(
-            model: openstudio.openstudiomodel.Model,
-            name: str = None,
-            design_air_flow_rate=None,
-            design_return_air_flow_fraction=None,
-            thermal_zones: openstudio.openstudiomodel.ThermalZone = []):
-
-        loop = openstudio.openstudiomodel.AirLoopHVAC(model)
-        if name is not None: loop.setName(name)
-        if design_air_flow_rate is not None:
-            loop.setDesignSupplyAirFlowRate(design_air_flow_rate)
-        else:
-            loop.autosizeDesignSupplyAirFlowRate()
-
-        if design_return_air_flow_fraction is not None:
-            loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
-
-        supply_inlet_node = loop.supplyInletNode()
-        supply_outlet_node = loop.supplyOutletNode()
-
-        # Add outdoor air system to the loop
-        controller = openstudio.openstudiomodel.ControllerOutdoorAir(model)
-        outdoor_air_system = openstudio.openstudiomodel.AirLoopHVACOutdoorAirSystem(model, controller)
-        outdoor_air_system.addToNode(supply_inlet_node)
-
-        oa_node = outdoor_air_system.outboardOANode().get()
-        relief_node = outdoor_air_system.outboardReliefNode().get()
-
-        # Add relief fan
-        relief_fan = AirLoopComponent.fan_variable_speed(model, "kunyu relief fan")
-        relief_fan.addToNode(relief_node)
-
-        # Add heat exchanger
-        heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air(model)
-        heat_exchanger.addToNode(oa_node)
-
-        # Add cooling coil
-        coil_cooling = AirLoopComponent.coil_cooling_water(model, "kunyu's cooling coil")
-        coil_cooling.addToNode(supply_outlet_node)
-
-        # Add heating coil
-        coil_heating = AirLoopComponent.coil_heating_electric(model, efficiency=0.97)
-        coil_heating.addToNode(supply_outlet_node)
-
-        # Add fan
-        fan = AirLoopComponent.fan_variable_speed(model, "kunyu's fan")
-        fan.addToNode(supply_outlet_node)
-
-        # Add setpoint manager
-        spm = SetpointManager.scheduled(model, constant_value=12.6)
-        spm.addToNode(supply_outlet_node)
-
-        # Demand branch
-        if thermal_zones is not None and len(thermal_zones) != 0:
-            for zone in thermal_zones:
-                diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(
-                    model, ScheduleTool.always_on(model))
-                loop.addBranchForZone(zone, diffuser)
-
-        return loop
+    # @staticmethod
+    # def air_loop(
+    #         model: openstudio.openstudiomodel.Model,
+    #         name: str = None,
+    #         design_air_flow_rate=None,
+    #         design_return_air_flow_fraction=None,
+    #         thermal_zones: openstudio.openstudiomodel.ThermalZone = []):
+    #
+    #     loop = openstudio.openstudiomodel.AirLoopHVAC(model)
+    #     if name is not None: loop.setName(name)
+    #     if design_air_flow_rate is not None:
+    #         loop.setDesignSupplyAirFlowRate(design_air_flow_rate)
+    #     else:
+    #         loop.autosizeDesignSupplyAirFlowRate()
+    #
+    #     if design_return_air_flow_fraction is not None:
+    #         loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
+    #
+    #     supply_inlet_node = loop.supplyInletNode()
+    #     supply_outlet_node = loop.supplyOutletNode()
+    #
+    #     # Add outdoor air system to the loop
+    #     controller = openstudio.openstudiomodel.ControllerOutdoorAir(model)
+    #     outdoor_air_system = openstudio.openstudiomodel.AirLoopHVACOutdoorAirSystem(model, controller)
+    #     outdoor_air_system.addToNode(supply_inlet_node)
+    #
+    #     oa_node = outdoor_air_system.outboardOANode().get()
+    #     relief_node = outdoor_air_system.outboardReliefNode().get()
+    #
+    #     # Add relief fan
+    #     relief_fan = AirLoopComponent.fan_variable_speed(model, "kunyu relief fan")
+    #     relief_fan.addToNode(relief_node)
+    #
+    #     # Add heat exchanger
+    #     heat_exchanger = AirLoopComponent.heat_exchanger_air_to_air(model)
+    #     heat_exchanger.addToNode(oa_node)
+    #
+    #     # Add cooling coil
+    #     coil_cooling = AirLoopComponent.coil_cooling_water(model, "kunyu's cooling coil")
+    #     coil_cooling.addToNode(supply_outlet_node)
+    #
+    #     # Add heating coil
+    #     coil_heating = AirLoopComponent.coil_heating_electric(model, efficiency=0.97)
+    #     coil_heating.addToNode(supply_outlet_node)
+    #
+    #     # Add fan
+    #     fan = AirLoopComponent.fan_variable_speed(model, "kunyu's fan")
+    #     fan.addToNode(supply_outlet_node)
+    #
+    #     # Add setpoint manager
+    #     spm = SetpointManager.scheduled(model, constant_value=12.6)
+    #     spm.addToNode(supply_outlet_node)
+    #
+    #     # Demand branch
+    #     if thermal_zones is not None and len(thermal_zones) != 0:
+    #         for zone in thermal_zones:
+    #             diffuser = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(
+    #                 model, ScheduleTool.always_on(model))
+    #             loop.addBranchForZone(zone, diffuser)
+    #
+    #     return loop
 
     # Sizing:
     @staticmethod

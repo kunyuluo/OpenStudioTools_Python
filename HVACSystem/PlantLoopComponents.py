@@ -194,6 +194,33 @@ class PlantLoopComponent:
 
         return district
 
+    @staticmethod
+    def chiller_heater(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,):
+
+        chiller_heater = openstudio.openstudiomodel.ChillerHeaterPerformanceElectricEIR(model)
+
+        if name is not None:
+            chiller_heater.setName(name)
+
+        return chiller_heater
+
+    @staticmethod
+    def central_heat_pump(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,):
+
+        heat_pump = openstudio.openstudiomodel.CentralHeatPumpSystem(model)
+        module = openstudio.openstudiomodel.CentralHeatPumpSystemModule(model)
+
+        if name is not None:
+            heat_pump.setName(name)
+
+        heat_pump.addModule(module)
+
+        return heat_pump
+
     # ***************************************************************************************************
     # Heating Equipments
     @staticmethod

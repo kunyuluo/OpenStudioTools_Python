@@ -76,22 +76,24 @@ class ScheduleTool:
 
     # Day Schedule
     @staticmethod
-    def schedule_day(model, values=None, constant=-9999, type_limits=None, name=None):
+    def schedule_day(model, value, type_limits=None, name=None):
         schedule = openstudio.openstudiomodel.ScheduleDay(model)
 
-        if constant != -9999:
-            schedule.addValue(openstudio.Time(0, 24, 0), constant)
+        if isinstance(value, float) or isinstance(value, int):
+            schedule.addValue(openstudio.Time(0, 24, 0), value)
+        elif isinstance(value, list):
+            if len(value) == 0:
+                schedule.addValue(openstudio.Time(0, 24, 0), 0.0)
+            elif len(value) != 24:
+                schedule.addValue(openstudio.Time(0, 8, 0), 0.0)
+                schedule.addValue(openstudio.Time(0, 18, 0), 1.0)
+                schedule.addValue(openstudio.Time(0, 24, 0), 0.0)
+            else:
+                for i in range(len(value)):
+                    schedule.addValue(openstudio.Time(0, i + 1, 0), value[i])
         else:
-            if values is not None:
-                if len(values) == 0:
-                    schedule.addValue(openstudio.Time(0, 24, 0), 0.0)
-                elif len(values) != 24:
-                    schedule.addValue(openstudio.Time(0, 8, 0), 0.0)
-                    schedule.addValue(openstudio.Time(0, 18, 0), 1.0)
-                    schedule.addValue(openstudio.Time(0, 24, 0), 0.0)
-                else:
-                    for i in range(len(values)):
-                        schedule.addValue(openstudio.Time(0, i + 1, 0), values[i])
+            schedule.addValue(openstudio.Time(0, 24, 0), 0)
+            raise TypeError("Invalid input type of schedule value.")
 
         if type_limits is not None:
             schedule.setScheduleTypeLimits(type_limits)
@@ -112,6 +114,7 @@ class ScheduleTool:
             all_week=False,
             days=None,
             name=None):
+
         schedule_rule = openstudio.openstudiomodel.ScheduleRule(schedule_ruleset, schedule_day)
 
         if name is not None:
@@ -136,6 +139,62 @@ class ScheduleTool:
         schedule_rule.setEndDate(openstudio.Date(openstudio.MonthOfYear(end_m), end_d, ScheduleTool.year))
 
         return schedule_rule
+
+    @staticmethod
+    def custom_annual_schedule(
+            model: openstudio.openstudiomodel.Model,
+            unit_type: int,
+            weekday_value,
+            saturday_value,
+            sunday_value,
+            name: str = None):
+
+        """
+        -Unit_type: \n
+        1.Dimensionless
+        2.Temperature
+        3.DeltaTemperature
+        4.PrecipitationRate
+        5.Angle
+        6.Convection Coefficient
+        7.Activity Level
+        8.Velocity
+        9.Capacity
+        10.Power
+        11.Availability
+        12.Percent
+        13.Control
+        14.Mode
+        15.MassFlowRate
+        """
+
+        match unit_type:
+            case 1 | 4 | 6 | 11:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 1)
+            case 2 | 3:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 60)
+            case 7:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 300)
+            case _:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 100)
+
+        schedule = ScheduleTool.schedule_ruleset(model, type_limits=type_limit, name=name)
+
+        schedule_wd = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
+                                                name=name + "_Schedule_Weekdays")
+        schedule_sat = ScheduleTool.schedule_day(model, saturday_value, type_limits=type_limit,
+                                                 name=name + "_Schedule_Saturday")
+        schedule_sun = ScheduleTool.schedule_day(model, sunday_value, type_limits=type_limit,
+                                                 name=name + "_Schedule_Sunday")
+
+        ScheduleTool.schedule_rule(schedule, schedule_wd,
+                                   days=[True, True, True, True, True, False, False], name=name + "_Weekdays")
+        ScheduleTool.schedule_rule(schedule, schedule_sat,
+                                   days=[False, False, False, False, False, True, False], name=name + "_Saturday")
+        ScheduleTool.schedule_rule(schedule, schedule_sun,
+                                   days=[False, False, False, False, False, False, True], name=name + "_Sunday")
+
+        return schedule
 
     # Schedule Ruleset
     @staticmethod

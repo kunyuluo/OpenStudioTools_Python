@@ -39,16 +39,20 @@ class Helper:
         return hp * 745.7
 
     @staticmethod
-    def pump_power_calculator_si(head, flow, motor_efficiency=0.9, pump_efficiency=0.7):
+    def pump_power_calculator_si(head, flow, motor_efficiency=0.9, pump_efficiency=0.7, kilowatts: bool = False):
         """
         :param head: pump head in meter
         :param flow: pump water flow rate in m3/h
         :param motor_efficiency: default is 0.9
         :param pump_efficiency: default is 0.7
+        :param kilowatts: set to True if kilowatts to be output. Default is False.
         :return: pump power in watts (W)
         """
         kw = head * flow * 1000 * 9.81 / (3600000 * motor_efficiency * pump_efficiency)
-        return kw * 1000
+        if kilowatts:
+            return kw
+        else:
+            return kw * 1000
 
     # Convertor:
     # *************************************************************************************
@@ -69,12 +73,23 @@ class Helper:
         return delta * 1.8
 
     @staticmethod
+    def m3h_to_m3s(flow):
+        return flow / 3600
+
+    @staticmethod
     def cfm_to_m3s(flow):
         return flow * 0.0004719474
 
     @staticmethod
     def gpm_to_m3s(flow):
         return flow * 0.0000630902
+
+    @staticmethod
+    def mh2o_to_pa(head):
+        """
+        Convert pump head from mH2O to Pa
+        """
+        return head * 9806.65
 
     @staticmethod
     def u_ip_to_si(u_value):

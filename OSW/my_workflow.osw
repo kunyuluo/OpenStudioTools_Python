@@ -1,8 +1,8 @@
 {
-   "created_at" : "20230301T094550Z",
-   "hash" : "1039C8CF",
-   "seed_file" : "../BoxModel.osm",
+   "created_at" : "20230419T083413Z",
+   "hash" : "EC4F58C5",
+   "seed_file" : "D:/Projects/OpenStudioDev/OpenStudio_Tools/OpenStudioTools_Python/OSW/BoxModel.osm",
    "steps" : [],
-   "updated_at" : "20230301T094550Z",
-   "weather_file" : "CHN_Beijing.Beijing.545110_IWEC.epw"
+   "updated_at" : "20230419T083413Z",
+   "weather_file" : "D:/Projects/OpenStudioDev/OpenStudio_Tools/OpenStudioTools_Python/OSW/CHN_Beijing.Beijing.545110_IWEC.epw"
 }

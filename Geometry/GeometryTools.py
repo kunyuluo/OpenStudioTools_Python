@@ -389,10 +389,11 @@ class GeometryTool:
                 light = InternalLoad.light(
                     loads[room_type]["lighting"], lighting_schedule=office_sch.lighting())
 
+                name = str(room["story"]) + "F_" + room_type + "_{}".format(i)
                 space = ZoneTool.space(
                     model,
                     space_type=loads[room_type]["space_type"],
-                    name="Kunyu Space {}".format(i),
+                    name=name,
                     story=stories[int(room["story"])-1],
                     lights=light,
                     people=people,
@@ -403,7 +404,9 @@ class GeometryTool:
                 # Thermal zones:
                 thermal_zone = ZoneTool.thermal_zone_from_space(
                     model, space, office_sch.cooling_setpoint(), office_sch.heating_setpoint())
-                thermal_zones.append(thermal_zone)
+
+                thermal_zone_dict = {"zone": thermal_zone, "name": name, "story": room["story"], "space_type": room_type}
+                thermal_zones.append(thermal_zone_dict)
 
                 # Create surfaces and subsurfaces:
                 surfaces = room["surfaces"]
