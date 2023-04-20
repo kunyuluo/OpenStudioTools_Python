@@ -42,6 +42,39 @@ class ZoneEquipment:
     #     return ideal_sys
 
     @staticmethod
+    def zone_equipment_group(
+            thermal_zone: openstudio.openstudiomodel.ThermalZone,
+            zone_equipments: list,
+            load_sequence_fractions: list = None,
+            load_distribution_scheme: int = 1):
+
+        """
+        -Load_distribution_scheme: \n
+        1.SequentialLoad 2.UniformLoad 3.UniformPLR 4.SequentialUniformPLR
+        """
+
+        distribution_schemes = {1: "SequentialLoad", 2: "UniformLoad", 3: "UniformPLR", 4: "SequentialUniformPLR"}
+
+        group = openstudio.openstudiomodel.ZoneHVACEquipmentList(thermal_zone)
+
+        if len(zone_equipments) != 0:
+            fraction = 1 / len(zone_equipments)
+            for i, equipment in enumerate(zone_equipments):
+                group.addEquipment(equipment)
+
+                group.setCoolingPriority(equipment, i + 1)
+                group.setHeatingPriority(equipment, i + 1)
+
+                if load_sequence_fractions is not None and len(load_sequence_fractions) == len(zone_equipments):
+                    group.setSequentialCoolingFraction(equipment, load_sequence_fractions[i])
+                    group.setSequentialHeatingFraction(equipment, load_sequence_fractions[i])
+                else:
+                    group.setSequentialCoolingFraction(equipment, fraction)
+                    group.setSequentialHeatingFraction(equipment, fraction)
+
+        group.setLoadDistributionScheme(distribution_schemes[load_distribution_scheme])
+
+    @staticmethod
     def packaged_terminal_air_conditioner(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
@@ -438,3 +471,249 @@ class ZoneEquipment:
             hot_water_loop.addDemandBranchForComponent(heating_coil)
 
         return equipment
+
+    @staticmethod
+    def low_temperature_radiant_electric(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            max_electrical_power=None,
+            radiant_surface_type: int = 1,
+            temperature_control_type: int = 1,
+            setpoint_control_type: int = 2,
+            availability_schedule=None,
+            heating_setpoint_schedule=None,
+            heating_throttling_range=None):
+
+        """
+        Radiant_surface_type: \n
+        1.Ceilings 2.Floors 3.CeilingsAndFloors 4.AllSurfaces \n
+
+        Temperature_control_type: \n
+        1.MeanAirTemperature 2.MeanRadiantTemperature 3.OperativeTemperature
+        4.OutdoorDryBulbTemperature 5.OutdoorWetBulbTemperature 6.SurfaceFaceTemperature 7.SurfaceInteriorTemperature \n
+
+        Setpoint_control_type: \n
+        1.ZeroFlowPower 2.HalfFlowPower \n
+        """
+
+        surface_types = {1: "Ceilings", 2: "Floors", 3: "CeilingsAndFloors", 4: "AllSurfaces"}
+        temp_control_types = {1: "MeanAirTemperature", 2: "MeanRadiantTemperature", 3: "OperativeTemperature",
+                              4: "OutdoorDryBulbTemperature", 5: "OutdoorWetBulbTemperature",
+                              6: "SurfaceFaceTemperature", 7: "SurfaceInteriorTemperature"}
+        setpoint_control_types = {1: "ZeroFlowPower", 2: "HalfFlowPower"}
+
+        if availability_schedule is not None:
+            schedule = availability_schedule
+        else:
+            schedule = ScheduleTool.always_on(model)
+
+        if heating_setpoint_schedule is not None:
+            heating_schedule = heating_setpoint_schedule
+        else:
+            type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
+            heating_schedule = ScheduleTool.schedule_ruleset(model, 21, type_limit, "Low Temp Rad Elec Htg Sch")
+
+        equip = openstudio.openstudiomodel.ZoneHVACLowTemperatureRadiantElectric(model, schedule, heating_schedule)
+
+        if name is not None:
+            equip.setName(name)
+
+        if max_electrical_power is not None:
+            equip.setMaximumElectricalPowertoPanel(max_electrical_power)
+        else:
+            equip.autosizeMaximumElectricalPowertoPanel()
+
+        equip.setRadiantSurfaceType(surface_types[radiant_surface_type])
+        equip.setTemperatureControlType(temp_control_types[temperature_control_type])
+        equip.setSetpointControlType(setpoint_control_types[setpoint_control_type])
+
+        if heating_throttling_range is not None:
+            equip.setHeatingThrottlingRange(heating_throttling_range)
+
+        return equip
+
+    @staticmethod
+    def low_temperature_radiant_variable_flow(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            radiant_cooling_coil: openstudio.openstudiomodel.CoilCoolingLowTempRadiantVarFlow = None,
+            radiant_heating_coil: openstudio.openstudiomodel.CoilHeatingLowTempRadiantVarFlow = None,
+            radiant_surface_type: int = 1,
+            fluid_to_surface_heat_transfer_model: int = 1,
+            temperature_control_type: int = 1,
+            setpoint_control_type: int = 2,
+            availability_schedule=None,
+            hydronic_tube_inside_diameter=None,
+            hydronic_tube_outside_diameter=None,
+            hydronic_tube_length=None,
+            hydronic_tube_conductivity=None,
+            number_of_circuits: int = None,
+            circuit_length=None,
+            changeover_delay_schedule=None,):
+
+        """
+        Radiant_surface_type: \n
+        1.Ceilings 2.Floors 3.CeilingsAndFloors 4.AllSurfaces \n
+
+        Fluid_to_radiant_surface_heat_transfer_model: \n
+        1.ConvectionOnly 2.ISOStandard \n
+
+        Temperature_control_type: \n
+        1.MeanAirTemperature 2.MeanRadiantTemperature 3.OperativeTemperature
+        4.OutdoorDryBulbTemperature 5.OutdoorWetBulbTemperature 6.SurfaceFaceTemperature 7.SurfaceInteriorTemperature \n
+
+        Setpoint_control_type: \n
+        1.ZeroFlowPower 2.HalfFlowPower \n
+
+        Number of Circuits: \n
+        1.OnePerSurface 2.CalculateFromCircuitLength
+        """
+
+        surface_types = {1: "Ceilings", 2: "Floors", 3: "CeilingsAndFloors", 4: "AllSurfaces"}
+        heat_transfer_models = {1: "ConvectionOnly", 2: "ISOStandard"}
+        temp_control_types = {1: "MeanAirTemperature", 2: "MeanRadiantTemperature", 3: "OperativeTemperature",
+                              4: "OutdoorDryBulbTemperature", 5: "OutdoorWetBulbTemperature",
+                              6: "SurfaceFaceTemperature", 7: "SurfaceInteriorTemperature"}
+        setpoint_control_types = {1: "ZeroFlowPower", 2: "HalfFlowPower"}
+        circuits = {1: "OnePerSurface", 2: "CalculateFromCircuitLength"}
+
+        if availability_schedule is not None:
+            schedule = availability_schedule
+        else:
+            schedule = ScheduleTool.always_on(model)
+
+        if radiant_cooling_coil is not None:
+            cooling_coil = radiant_cooling_coil
+        else:
+            cooling_coil = AirLoopComponent.coil_cooling_low_temperature_radiant_variable_flow(model)
+
+        if radiant_heating_coil is not None:
+            heating_coil = radiant_heating_coil
+        else:
+            heating_coil = AirLoopComponent.coil_heating_low_temperature_radiant_variable_flow(model)
+
+        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantVarFlow(model, schedule, heating_coil, cooling_coil)
+
+        if name is not None:
+            equip.setName(name)
+
+        equip.setRadiantSurfaceType(surface_types[radiant_surface_type])
+        equip.setFluidtoRadiantSurfaceHeatTransferModel(heat_transfer_models[fluid_to_surface_heat_transfer_model])
+        equip.setTemperatureControlType(temp_control_types[temperature_control_type])
+        equip.setSetpointControlType(setpoint_control_types[setpoint_control_type])
+        if number_of_circuits is not None:
+            equip.setNumberofCircuits(circuits[number_of_circuits])
+
+        if circuit_length is not None:
+            equip.setCircuitLength(circuit_length)
+
+        if hydronic_tube_inside_diameter is not None:
+            equip.setHydronicTubingInsideDiameter(hydronic_tube_inside_diameter)
+
+        if hydronic_tube_outside_diameter is not None:
+            equip.setHydronicTubingOutsideDiameter(hydronic_tube_outside_diameter)
+
+        if hydronic_tube_length is not None:
+            equip.setHydronicTubingLength(hydronic_tube_length)
+
+        if hydronic_tube_conductivity is not None:
+            equip.setHydronicTubingConductivity(hydronic_tube_conductivity)
+
+        if changeover_delay_schedule is not None:
+            equip.setChangeoverDelayTimePeriodSchedule(changeover_delay_schedule)
+
+        return equip
+
+    @staticmethod
+    def low_temperature_radiant_constant_flow(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            radiant_cooling_coil: openstudio.openstudiomodel.CoilCoolingLowTempRadiantConstFlow = None,
+            radiant_heating_coil: openstudio.openstudiomodel.CoilHeatingLowTempRadiantConstFlow = None,
+            radiant_surface_type: int = 1,
+            fluid_to_surface_heat_transfer_model: int = 1,
+            temperature_control_type: int = 1,
+            availability_schedule=None,
+            hydronic_tube_inside_diameter=None,
+            hydronic_tube_outside_diameter=None,
+            hydronic_tube_length=None,
+            hydronic_tube_conductivity=None,
+            rated_flow_rate=None,
+            pump_flow_schedule=None,
+            rated_pump_head=None,
+            rated_power_consumption=None,
+            motor_efficiency=None,
+            fraction_of_motor_to_fluid=None,
+            number_of_circuits: int = None,
+            circuit_length=None,
+            changeover_delay_schedule=None):
+
+        """
+        Radiant_surface_type: \n
+        1.Ceilings 2.Floors 3.CeilingsAndFloors 4.AllSurfaces \n
+
+        Fluid_to_radiant_surface_heat_transfer_model: \n
+        1.ConvectionOnly 2.ISOStandard \n
+
+        Temperature_control_type: \n
+        1.MeanAirTemperature 2.MeanRadiantTemperature 3.OperativeTemperature
+        4.OutdoorDryBulbTemperature 5.OutdoorWetBulbTemperature 6.SurfaceFaceTemperature 7.SurfaceInteriorTemperature \n
+
+        Number of Circuits: \n
+        1.OnePerSurface 2.CalculateFromCircuitLength
+        """
+
+        surface_types = {1: "Ceilings", 2: "Floors", 3: "CeilingsAndFloors", 4: "AllSurfaces"}
+        heat_transfer_models = {1: "ConvectionOnly", 2: "ISOStandard"}
+        temp_control_types = {1: "MeanAirTemperature", 2: "MeanRadiantTemperature", 3: "OperativeTemperature",
+                              4: "OutdoorDryBulbTemperature", 5: "OutdoorWetBulbTemperature",
+                              6: "SurfaceFaceTemperature", 7: "SurfaceInteriorTemperature"}
+        circuits = {1: "OnePerSurface", 2: "CalculateFromCircuitLength"}
+
+        if availability_schedule is not None:
+            schedule = availability_schedule
+        else:
+            schedule = ScheduleTool.always_on(model)
+
+        if radiant_cooling_coil is not None:
+            cooling_coil = radiant_cooling_coil
+        else:
+            cooling_coil = AirLoopComponent.coil_cooling_low_temperature_radiant_constant_flow(model)
+
+        if radiant_heating_coil is not None:
+            heating_coil = radiant_heating_coil
+        else:
+            heating_coil = AirLoopComponent.coil_heating_low_temperature_radiant_constant_flow(model)
+
+        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantVarFlow(model, schedule, heating_coil, cooling_coil)
+
+        if name is not None:
+            equip.setName(name)
+
+        equip.setRadiantSurfaceType(surface_types[radiant_surface_type])
+        equip.setFluidtoRadiantSurfaceHeatTransferModel(heat_transfer_models[fluid_to_surface_heat_transfer_model])
+        equip.setTemperatureControlType(temp_control_types[temperature_control_type])
+        if number_of_circuits is not None:
+            equip.setNumberofCircuits(circuits[number_of_circuits])
+
+        if circuit_length is not None:
+            equip.setCircuitLength(circuit_length)
+
+        if hydronic_tube_inside_diameter is not None:
+            equip.setHydronicTubingInsideDiameter(hydronic_tube_inside_diameter)
+
+        if hydronic_tube_outside_diameter is not None:
+            equip.setHydronicTubingOutsideDiameter(hydronic_tube_outside_diameter)
+
+        if hydronic_tube_length is not None:
+            equip.setHydronicTubingLength(hydronic_tube_length)
+
+        if hydronic_tube_conductivity is not None:
+            equip.setHydronicTubingConductivity(hydronic_tube_conductivity)
+
+        if changeover_delay_schedule is not None:
+            equip.setChangeoverDelayTimePeriodSchedule(changeover_delay_schedule)
+
+        return equip
+
+

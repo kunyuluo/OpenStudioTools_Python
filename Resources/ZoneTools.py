@@ -565,3 +565,26 @@ class ZoneTool:
                         zones.append(zone)
 
             return sorted_zones
+
+    @staticmethod
+    def thermal_zone_by_type(thermal_zones: list):
+        """
+        :param thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.
+        :return: a dictionary of sorted thermal zones.
+        """
+
+        if thermal_zones is not None:
+            sorted_zones = {}
+            for zone_dict in thermal_zones:
+                type_keys = sorted_zones.keys()
+
+                zone = zone_dict["zone"]
+                space_type = zone_dict["space_type"]
+
+                if space_type not in type_keys:
+                    sorted_zones[space_type] = [zone]
+                else:
+                    zones = sorted_zones[space_type]
+                    zones.append(zone)
+
+            return sorted_zones

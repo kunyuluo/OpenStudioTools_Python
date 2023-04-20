@@ -67,23 +67,21 @@ ExteriorEquipments.exterior_lights(model, design_level=24)
 office_sch = Office(model)
 # resid_sch = Residential(model)
 
-load = InternalLoad.internal_load_input_json(
-    ["Office", "Conference", "Corridor"],
-    [0.8, 1.3, 0.6],
-    [1.2, 1.8, 0.5],
-    [0.1, 0.3, 0.05],
-    [200, 200, 200],
-    [0.15, 0.15, 0.15],
-    [0.2, 0.2, 0.2],
-    [3, 1, 3])
-# print(json.loads(load).keys())
-
-
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
-thermal_zones = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
-sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
-
-print(len(sorted_zones[2]["Office"]))
+# load = InternalLoad.internal_load_input_json(
+#     ["Office", "Conference", "Corridor"],
+#     [0.8, 1.3, 0.6],
+#     [1.2, 1.8, 0.5],
+#     [0.1, 0.3, 0.05],
+#     [200, 200, 200],
+#     [0.15, 0.15, 0.15],
+#     [0.2, 0.2, 0.2],
+#     [3, 1, 3])
+#
+# file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
+# thermal_zones = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
+# sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
+#
+# print(len(sorted_zones[2]["Office"]))
 
 # Air loop:
 # **************************************************************************************

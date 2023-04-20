@@ -637,3 +637,63 @@ class Curve:
                               name="HeatRecoveryCapModifier_Heating")
 
         return curves
+
+    @staticmethod
+    def chiller_heater_curve_set_1(model: openstudio.openstudiomodel.Model):
+
+        """
+        1.Cooling Mode Cooling Capacity Function of Temperature Curve \n
+        2.Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve \n
+        3.Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve \n
+        4.Heating Mode Cooling Capacity Function of Temperature Curve \n
+        5.Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve \n
+        6.Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        """
+
+        curves = {}
+
+        # Cooling
+        # ******************************************************************************
+        # Cooling Mode Cooling Capacity Function of Temperature Curve
+        curves[1] = \
+            Curve.biquadratic(model, 0.950829, 3.42E-02, 2.67E-04, -1.73E-03, -1.76E-04, -3.69E-05,
+                              4.44, 12.78, 12.78, 29.44,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="ClgCapTempCurve_Cooling")
+
+        # Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve
+        curves[2] = \
+            Curve.biquadratic(model, 0.7362431, 2.14E-02, 3.64E-04, -4.28E-03, 3.39E-04, -3.63E-04,
+                              4.44, 12.78, 12.78, 29.44,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="ElectricInputOutputRatioTempCurve_Cooling")
+
+        # Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        curves[3] = \
+            Curve.cubic(model, 0, 1.22895, -0.751383, 0.517396, 0.2, 1.2,
+                        name="ElectricInputOutputRatioPLRCurve_Cooling")
+
+        # Heating
+        # ******************************************************************************
+        # Heating Mode Cooling Capacity Function of Temperature Curve
+        curves[4] = \
+            Curve.biquadratic(model, 0.9415266, 5.53E-02, 3.57E-04, 1.26E-03, -6.42E-05, -5.35E-04,
+                              4.44, 15.56, 35, 57.22,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="ClgCapTempCurve_Heating")
+
+        # Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve
+        curves[5] = \
+            Curve.biquadratic(model, 0.2286246, 2.50E-02, -1.27E-05, 9.33E-03, 5.89E-05, -3.27E-04,
+                              4.44, 15.56, 35, 57.22,
+                              input_unit_type_x="Temperature", input_unit_type_y="Temperature",
+                              name="ElectricInputOutputRatioTempCurve_Heating")
+
+        # Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio Curve
+        curves[6] = \
+            Curve.cubic(model, 0, 1.12853, -0.0264962, -0.103811, 0.2, 1.2,
+                        name="ElectricInputOutputRatioPLRCurve_Heating")
+
+        return curves
+
+

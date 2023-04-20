@@ -494,6 +494,146 @@ class AirLoopComponent:
         return coil
 
     @staticmethod
+    def coil_cooling_low_temperature_radiant_variable_flow(
+            model: openstudio.openstudiomodel.Model,
+            cooling_control_temp_schedule=None,
+            capacity_method: int = 1,
+            design_capacity=None,
+            capacity_per_floor_area=None,
+            fraction_of_autosized_capacity=None,
+            max_cold_water_flow=None,
+            cooling_control_throttling_range=None,
+            condensation_control_type: int = 1,
+            condensation_control_dewpoint_offset=None,
+            name: str = None):
+
+        """
+        -Capacity_method: \n
+        1.CoolingDesignCapacity 2.CapacityPerFloorArea 3.FractionOfAutosizedCoolingCapacity \n
+
+        -Condensation_control_type: \n
+        1.Off 2.SimpleOff 3.VariableOff
+        """
+
+        cap_methods = {1: "CoolingDesignCapacity", 2: "CapacityPerFloorArea", 3: "FractionOfAutosizedCoolingCapacity"}
+        condensations = {1: "Off", 2: "SimpleOff", 3: "VariableOff"}
+
+        if cooling_control_temp_schedule is not None:
+            schedule = cooling_control_temp_schedule
+        else:
+            type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
+            schedule = ScheduleTool.schedule_ruleset(model, 21, type_limit, "Var Vol Rad Clg Air Temp Sch")
+
+        coil = openstudio.openstudiomodel.CoilCoolingLowTempRadiantVarFlow(model, schedule)
+
+        coil.setCoolingDesignCapacityMethod(cap_methods[capacity_method])
+
+        if design_capacity is not None:
+            coil.setCoolingDesignCapacity(design_capacity)
+        else:
+            coil.autosizeCoolingDesignCapacity()
+
+        if capacity_per_floor_area is not None:
+            coil.setCoolingDesignCapacityPerFloorArea(capacity_per_floor_area)
+
+        if fraction_of_autosized_capacity is not None:
+            coil.setFractionofAutosizedCoolingDesignCapacity(fraction_of_autosized_capacity)
+
+        if max_cold_water_flow is not None:
+            coil.setMaximumColdWaterFlow(max_cold_water_flow)
+        else:
+            coil.autosizedMaximumColdWaterFlow()
+
+        if cooling_control_throttling_range is not None:
+            coil.setCoolingControlThrottlingRange(cooling_control_throttling_range)
+
+        coil.setCondensationControlType(condensations[condensation_control_type])
+
+        if condensation_control_dewpoint_offset is not None:
+            coil.setCondensationControlDewpointOffset(condensation_control_dewpoint_offset)
+
+        if name is not None:
+            coil.setName(name)
+
+        return coil
+
+    @staticmethod
+    def coil_cooling_low_temperature_radiant_constant_flow(
+            model: openstudio.openstudiomodel.Model,
+            cooling_high_water_temp_schedule=None,
+            cooling_low_water_temp_schedule=None,
+            cooling_high_control_temp_schedule=None,
+            cooling_low_control_temp_schedule=None,
+            cooling_high_water_temp=None,
+            cooling_low_water_temp=None,
+            cooling_high_control_temp=None,
+            cooling_low_control_temp=None,
+            condensation_control_type: int = 1,
+            condensation_control_dewpoint_offset=None,
+            name: str = None):
+
+        """
+        -Condensation_control_type: \n
+        1.Off 2.SimpleOff 3.VariableOff
+        """
+
+        condensations = {1: "Off", 2: "SimpleOff", 3: "VariableOff"}
+
+        type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
+        if cooling_high_water_temp_schedule is not None:
+            high_water_temp_schedule = cooling_high_water_temp_schedule
+        else:
+            if cooling_high_water_temp is not None:
+                high_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, cooling_high_water_temp, type_limit, "Const Vol Rad Clg Hi Wtr Temp Sch")
+            else:
+                high_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 15, type_limit, "Const Vol Rad Clg Hi Wtr Temp Sch")
+
+        if cooling_low_water_temp_schedule is not None:
+            low_water_temp_schedule = cooling_low_water_temp_schedule
+        else:
+            if cooling_low_water_temp is not None:
+                low_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, cooling_low_water_temp, type_limit, "Const Vol Rad Clg Low Wtr Temp Sch")
+            else:
+                low_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 10, type_limit, "Const Vol Rad Clg Low Wtr Temp Sch")
+
+        if cooling_high_control_temp_schedule is not None:
+            high_air_temp_schedule = cooling_high_control_temp_schedule
+        else:
+            if cooling_high_control_temp is not None:
+                high_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, cooling_high_control_temp, type_limit, "Const Vol Rad Clg Hi Air Temp Sch")
+            else:
+                high_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 25, type_limit, "Const Vol Rad Clg Hi Air Temp Sch")
+
+        if cooling_low_control_temp_schedule is not None:
+            low_air_temp_schedule = cooling_low_control_temp_schedule
+        else:
+            if cooling_low_control_temp is not None:
+                low_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, cooling_low_control_temp, type_limit, "Const Vol Rad Clg Low Air Temp Sch")
+            else:
+                low_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 21, type_limit, "Const Vol Rad Clg Low Air Temp Sch")
+
+        coil = openstudio.openstudiomodel.CoilCoolingLowTempRadiantConstFlow(
+            model, high_water_temp_schedule, low_water_temp_schedule, high_air_temp_schedule, low_air_temp_schedule)
+
+        coil.setCondensationControlType(condensations[condensation_control_type])
+
+        if condensation_control_dewpoint_offset is not None:
+            coil.setCondensationControlDewpointOffset(condensation_control_dewpoint_offset)
+
+        if name is not None:
+            coil.setName(name)
+
+        return coil
+
+    @staticmethod
     def coil_heating_water(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
@@ -759,6 +899,121 @@ class AirLoopComponent:
             coil.setBeamHeatingCapacityAirFlowModificationFactorCurve(capacity_air_flow_factor_curve)
         if capacity_hot_water_flow_factor_curve is not None:
             coil.setBeamHeatingCapacityHotWaterFlowModificationFactorCurve(capacity_hot_water_flow_factor_curve)
+
+        return coil
+
+    @staticmethod
+    def coil_heating_low_temperature_radiant_variable_flow(
+            model: openstudio.openstudiomodel.Model,
+            heating_control_temp_schedule=None,
+            capacity_method: int = 1,
+            design_capacity=None,
+            capacity_per_floor_area=None,
+            fraction_of_autosized_capacity=None,
+            max_hot_water_flow=None,
+            heating_control_throttling_range=None,
+            name: str = None):
+
+        """
+        -Capacity_method: \n
+        1.CoolingDesignCapacity 2.CapacityPerFloorArea 3.FractionOfAutosizedCoolingCapacity \n
+        """
+
+        cap_methods = {1: "CoolingDesignCapacity", 2: "CapacityPerFloorArea", 3: "FractionOfAutosizedCoolingCapacity"}
+
+        if heating_control_temp_schedule is not None:
+            schedule = heating_control_temp_schedule
+        else:
+            type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
+            schedule = ScheduleTool.schedule_ruleset(model, 15, type_limit, "Var Vol Rad Htg Air Temp Sch")
+
+        coil = openstudio.openstudiomodel.CoilHeatingLowTempRadiantVarFlow(model, schedule)
+
+        coil.setHeatingDesignCapacityMethod(cap_methods[capacity_method])
+
+        if design_capacity is not None:
+            coil.setHeatingDesignCapacity(design_capacity)
+        else:
+            coil.autosizeHeatingDesignCapacity()
+
+        if capacity_per_floor_area is not None:
+            coil.setHeatingDesignCapacityPerFloorArea(capacity_per_floor_area)
+
+        if fraction_of_autosized_capacity is not None:
+            coil.setFractionofAutosizedHeatingDesignCapacity(fraction_of_autosized_capacity)
+
+        if max_hot_water_flow is not None:
+            coil.setMaximumHotWaterFlow(max_hot_water_flow)
+        else:
+            coil.autosizedMaximumHotWaterFlow()
+
+        if heating_control_throttling_range is not None:
+            coil.setHeatingControlThrottlingRange(heating_control_throttling_range)
+
+        if name is not None:
+            coil.setName(name)
+
+        return coil
+
+    @staticmethod
+    def coil_heating_low_temperature_radiant_constant_flow(
+            model: openstudio.openstudiomodel.Model,
+            heating_high_water_temp_schedule=None,
+            heating_low_water_temp_schedule=None,
+            heating_high_control_temp_schedule=None,
+            heating_low_control_temp_schedule=None,
+            heating_high_water_temp=None,
+            heating_low_water_temp=None,
+            heating_high_control_temp=None,
+            heating_low_control_temp=None,
+            name: str = None):
+
+        type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
+        if heating_high_water_temp_schedule is not None:
+            high_water_temp_schedule = heating_high_water_temp_schedule
+        else:
+            if heating_high_water_temp is not None:
+                high_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, heating_high_water_temp, type_limit, "Const Vol Rad Htg Hi Wtr Temp Sch")
+            else:
+                high_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 50, type_limit, "Const Vol Rad Htg Hi Wtr Temp Sch")
+
+        if heating_low_water_temp_schedule is not None:
+            low_water_temp_schedule = heating_low_water_temp_schedule
+        else:
+            if heating_low_water_temp is not None:
+                low_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, heating_low_water_temp, type_limit, "Const Vol Rad Htg Low Wtr Temp Sch")
+            else:
+                low_water_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 30, type_limit, "Const Vol Rad Htg Low Wtr Temp Sch")
+
+        if heating_high_control_temp_schedule is not None:
+            high_air_temp_schedule = heating_high_control_temp_schedule
+        else:
+            if heating_high_control_temp is not None:
+                high_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, heating_high_control_temp, type_limit, "Const Vol Rad Htg Hi Air Temp Sch")
+            else:
+                high_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 20, type_limit, "Const Vol Rad Htg Hi Air Temp Sch")
+
+        if heating_low_control_temp_schedule is not None:
+            low_air_temp_schedule = heating_low_control_temp_schedule
+        else:
+            if heating_low_control_temp is not None:
+                low_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, heating_low_control_temp, type_limit, "Const Vol Rad Htg Low Air Temp Sch")
+            else:
+                low_air_temp_schedule = ScheduleTool.schedule_ruleset(
+                    model, 17, type_limit, "Const Vol Rad Htg Low Air Temp Sch")
+
+        coil = openstudio.openstudiomodel.CoilHeatingLowTempRadiantConstFlow(
+            model, high_water_temp_schedule, low_water_temp_schedule, high_air_temp_schedule, low_air_temp_schedule)
+
+        if name is not None:
+            coil.setName(name)
 
         return coil
 

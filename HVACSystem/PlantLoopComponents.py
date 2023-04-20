@@ -197,18 +197,173 @@ class PlantLoopComponent:
     @staticmethod
     def chiller_heater(
             model: openstudio.openstudiomodel.Model,
-            name: str = None,):
+            cooling_capacity=None,
+            cooling_cop=None,
+            cooling_leaving_chilled_water_temp=None,
+            cooling_entering_condenser_water_temp=None,
+            cooling_leaving_condenser_water_temp=None,
+            heating_capacity_ratio=None,
+            heating_power_ratio=None,
+            heating_leaving_chilled_water_temp=None,
+            heating_entering_condenser_water_temp=None,
+            heating_leaving_condenser_water_temp=None,
+            heating_entering_chilled_water_temp_low_limit=None,
+            chilled_water_flow_mode: int = 2,
+            design_chilled_water_flow_rate=None,
+            design_condenser_water_flow_rate=None,
+            design_hot_water_flow_rate=None,
+            compressor_motor_efficiency=None,
+            cooling_temp_curve_condenser_water_independent_variable: int = 1,
+            cooling_capacity_optimum_part_load_ratio=None,
+            heating_temp_curve_condenser_water_independent_variable: int = 2,
+            heating_capacity_optimum_part_load_ratio=None,
+            sizing_factor=None,
+            performance_curve_set=None,
+            name: str = None):
+
+        """
+        -Chilled_water_flow_mode: \n
+        1.ConstantFlow 2.VariableFlow (Default is 2) \n
+
+        -Temperature Curve Condenser Water Independent Variable: \n
+        1.EnteringCondenser 2.LeavingCondenser
+        """
+
+        flow_modes = {1: "ConstantFlow", 2: "VariableFlow"}
+        independent_variables = {1: "EnteringCondenser", 2: "LeavingCondenser"}
 
         chiller_heater = openstudio.openstudiomodel.ChillerHeaterPerformanceElectricEIR(model)
 
         if name is not None:
             chiller_heater.setName(name)
 
+        if cooling_capacity is not None:
+            chiller_heater.setReferenceCoolingModeEvaporatorCapacity(cooling_capacity)
+        else:
+            chiller_heater.autosizeReferenceCoolingModeEvaporatorCapacity()
+
+        if cooling_cop is not None:
+            chiller_heater.setReferenceCoolingModeCOP(cooling_cop)
+
+        if cooling_leaving_chilled_water_temp is not None:
+            chiller_heater.setReferenceCoolingModeLeavingChilledWaterTemperature(cooling_leaving_chilled_water_temp)
+
+        if cooling_entering_condenser_water_temp is not None:
+            chiller_heater.setReferenceCoolingModeEnteringCondenserFluidTemperature(
+                cooling_entering_condenser_water_temp)
+
+        if cooling_leaving_condenser_water_temp is not None:
+            chiller_heater.setReferenceCoolingModeLeavingCondenserWaterTemperature(cooling_leaving_condenser_water_temp)
+
+        if heating_capacity_ratio is not None:
+            chiller_heater.setReferenceHeatingModeCoolingCapacityRatio(heating_capacity_ratio)
+
+        if heating_power_ratio is not None:
+            chiller_heater.setReferenceHeatingModeCoolingPowerInputRatio(heating_power_ratio)
+
+        if heating_leaving_chilled_water_temp is not None:
+            chiller_heater.setReferenceHeatingModeLeavingChilledWaterTemperature(heating_leaving_chilled_water_temp)
+
+        if heating_entering_condenser_water_temp is not None:
+            chiller_heater.setReferenceHeatingModeEnteringCondenserFluidTemperature(
+                heating_entering_condenser_water_temp)
+
+        if heating_leaving_condenser_water_temp is not None:
+            chiller_heater.setReferenceHeatingModeLeavingCondenserWaterTemperature(heating_leaving_condenser_water_temp)
+
+        if heating_entering_chilled_water_temp_low_limit is not None:
+            chiller_heater.setHeatingModeEnteringChilledWaterTemperatureLowLimit(
+                heating_entering_chilled_water_temp_low_limit)
+
+        chiller_heater.setChilledWaterFlowModeType(flow_modes[chilled_water_flow_mode])
+
+        if design_chilled_water_flow_rate is not None:
+            chiller_heater.setDesignChilledWaterFlowRate(design_chilled_water_flow_rate)
+        else:
+            chiller_heater.autosizeDesignChilledWaterFlowRate()
+
+        if design_condenser_water_flow_rate is not None:
+            chiller_heater.setDesignCondenserWaterFlowRate(design_condenser_water_flow_rate)
+        else:
+            chiller_heater.autosizeDesignCondenserWaterFlowRate()
+
+        if design_hot_water_flow_rate is not None:
+            chiller_heater.setDesignHotWaterFlowRate(design_hot_water_flow_rate)
+
+        if compressor_motor_efficiency is not None:
+            chiller_heater.setCompressorMotorEfficiency(compressor_motor_efficiency)
+
+        chiller_heater.setCoolingModeTemperatureCurveCondenserWaterIndependentVariable(
+            independent_variables[cooling_temp_curve_condenser_water_independent_variable])
+
+        if cooling_capacity_optimum_part_load_ratio is not None:
+            chiller_heater.setCoolingModeCoolingCapacityOptimumPartLoadRatio(cooling_capacity_optimum_part_load_ratio)
+
+        chiller_heater.setHeatingModeTemperatureCurveCondenserWaterIndependentVariable(
+            independent_variables[heating_temp_curve_condenser_water_independent_variable])
+
+        if heating_capacity_optimum_part_load_ratio is not None:
+            chiller_heater.setHeatingModeCoolingCapacityOptimumPartLoadRatio(heating_capacity_optimum_part_load_ratio)
+
+        if sizing_factor is not None:
+            chiller_heater.setSizingFactor(sizing_factor)
+
+        # Apply performance curves if available
+        if performance_curve_set is not None:
+            if isinstance(performance_curve_set, dict):
+                if len(performance_curve_set) != 0:
+                    # Cooling
+                    # ***********************************************************************************
+                    try:
+                        chiller_heater.setCoolingModeCoolingCapacityFunctionOfTemperatureCurve(
+                            performance_curve_set[1])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Mode Cooling Capacity Function of Temperature Curve' key")
+                    try:
+                        chiller_heater.setCoolingModeElectricInputToCoolingOutputRatioFunctionOfTemperatureCurve(
+                            performance_curve_set[2])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Mode Electric Input to Cooling Output Ratio Function of Temperature Curve' key")
+                    try:
+                        chiller_heater.setCoolingModeElectricInputToCoolingOutputRatioFunctionOfPartLoadRatioCurve(
+                            performance_curve_set[3])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Cooling Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio "
+                              "Curve' key")
+
+                    # Heating
+                    # ***********************************************************************************
+                    try:
+                        chiller_heater.setHeatingModeCoolingCapacityFunctionOfTemperatureCurve(
+                            performance_curve_set[4])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Mode Cooling Capacity Function of Temperature Curve' key")
+                    try:
+                        chiller_heater.setHeatingModeElectricInputToCoolingOutputRatioFunctionOfTemperatureCurve(
+                            performance_curve_set[5])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Mode Electric Input to Cooling Output Ratio Function of Temperature Curve' key")
+                    try:
+                        chiller_heater.setHeatingModeElectricInputToCoolingOutputRatioFunctionOfPartLoadRatioCurve(
+                            performance_curve_set[6])
+                    except KeyError:
+                        print("Cannot find element with the "
+                              "'Heating Mode Electric Input to Cooling Output Ratio Function of Part Load Ratio "
+                              "Curve' key")
+
         return chiller_heater
 
     @staticmethod
     def central_heat_pump(
             model: openstudio.openstudiomodel.Model,
+            chiller_heater: openstudio.openstudiomodel.ChillerHeaterPerformanceElectricEIR,
+            number_of_chiller_heater_modules: int = 1,
+            chiller_heater_control_schedule=None,
             name: str = None,):
 
         heat_pump = openstudio.openstudiomodel.CentralHeatPumpSystem(model)
@@ -216,6 +371,13 @@ class PlantLoopComponent:
 
         if name is not None:
             heat_pump.setName(name)
+            module.setName(name + "_Module")
+
+        module.setChillerHeaterModulesPerformanceComponent(chiller_heater)
+        module.setNumberofChillerHeaterModules(number_of_chiller_heater_modules)
+
+        if chiller_heater_control_schedule is not None:
+            module.setChillerHeaterModulesControlSchedule(chiller_heater_control_schedule)
 
         heat_pump.addModule(module)
 
