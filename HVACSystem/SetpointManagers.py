@@ -31,9 +31,9 @@ class SetpointManager:
 
         match control_variable:
             case 1 | 2 | 3:
-                type_limits = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 100)
+                type_limits = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 60)
             case 4 | 5 | 6:
-                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 10)
+                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
             case 7 | 8 | 9:
                 type_limits = ScheduleTool.schedule_type_limits(model, 15, 1, 0, 100)
             case _:

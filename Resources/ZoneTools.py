@@ -3,9 +3,8 @@ from openstudio.openstudiomodel import Space, SpaceType, ThermalZone, BuildingSt
 from openstudio.openstudiomodel import Lights, ElectricEquipment, People
 from openstudio.openstudiomodel import GasEquipment, InternalMass
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
-from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefinition
+from openstudio.openstudiomodel import GasEquipmentDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
-from Schedules.Templates.Template import Office
 
 
 class ZoneTool:

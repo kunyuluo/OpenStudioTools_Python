@@ -185,7 +185,7 @@ class HVACTool:
             design_return_air_flow_fraction=None,
             air_terminal_type: int = 1,
             air_terminal_reheat_type: int = 3,
-            thermal_zones=[]):
+            thermal_zones: list = None):
 
         """
         -Air Terminal Type: \n
@@ -206,8 +206,6 @@ class HVACTool:
         2.Gas
         3.Electric
         """
-
-        terminal_types = {1: "SingleDuctConstantVolumeNoReheat"}
 
         loop = openstudio.openstudiomodel.AirLoopHVAC(model)
         reheat_water_coils = []

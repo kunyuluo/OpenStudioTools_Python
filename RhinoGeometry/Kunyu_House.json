@@ -3,7 +3,7 @@
     "number_of_stories": 2,
     "rooms": [
         {
-            "identifier": "dadb8589-f9dd-4568-b6a2-03d8138db24b",
+            "identifier": "50b0f9bf-ad9b-4c65-a685-b4f7ec34a0f0",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -11,6 +11,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423293,
@@ -37,6 +42,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -63,6 +73,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -89,6 +104,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -115,6 +135,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -141,6 +166,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             61.895084984710216,
@@ -167,6 +197,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             61.895084984710216,
@@ -193,6 +228,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -219,6 +259,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_9",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423293,
@@ -245,7 +290,7 @@
             ]
         },
         {
-            "identifier": "124acc5b-8aaa-4c32-afc2-7a0729d50f3a",
+            "identifier": "6bfb2401-5a1b-4f47-8483-63752a89a2e9",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -253,6 +298,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -279,6 +329,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -305,6 +360,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -331,6 +391,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -357,6 +422,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        3.552713678800501e-15,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -383,6 +453,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -409,6 +484,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -435,6 +515,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -461,7 +546,7 @@
             ]
         },
         {
-            "identifier": "62e26f38-7e1f-468e-8cea-cabc6c042918",
+            "identifier": "ecd0989a-c889-499e-a315-6c372767067f",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -469,6 +554,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -495,6 +585,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -521,6 +616,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -547,6 +647,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -573,6 +678,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -599,6 +709,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -625,6 +740,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -651,6 +771,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -677,7 +802,7 @@
             ]
         },
         {
-            "identifier": "ec3cb1ae-e5a0-470c-81d3-cbf91160daa9",
+            "identifier": "4d8efda7-79db-4432-827f-bc4a3c1b04cb",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -685,6 +810,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -711,6 +841,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -737,6 +872,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -763,6 +903,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -4.440892098500642e-16,
+                        1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -789,6 +934,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -815,6 +965,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -841,6 +996,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -867,6 +1027,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -893,6 +1058,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_9",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -919,7 +1089,7 @@
             ]
         },
         {
-            "identifier": "e6b5a4b3-234b-482b-9862-7020830876f3",
+            "identifier": "6300cd48-93b9-44c8-802b-9e75f4d89c20",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -927,6 +1097,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -953,6 +1128,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -979,6 +1159,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1005,6 +1190,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1031,6 +1221,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -1057,6 +1252,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -1083,6 +1283,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -1109,7 +1314,7 @@
             ]
         },
         {
-            "identifier": "4d93e11e-2e25-4df8-9857-3309a7906315",
+            "identifier": "e14be8fa-c3c8-4bcb-923c-6c8feed709d2",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1117,6 +1322,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1143,6 +1353,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1169,6 +1384,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -1195,6 +1415,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1221,6 +1446,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -1247,6 +1477,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -1273,6 +1508,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1299,7 +1539,7 @@
             ]
         },
         {
-            "identifier": "454317d4-96c6-4832-9c6e-ca1954e2bcf3",
+            "identifier": "ab875eb0-8046-4d01-9b2b-60c5a0314b5a",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1307,6 +1547,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252407,
@@ -1333,6 +1578,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1359,6 +1609,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1385,6 +1640,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -1411,6 +1671,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -1438,6 +1703,11 @@
                     "fenestrations": [
                         {
                             "name": "surface_6_window_1",
+                            "normal": [
+                                0.0,
+                                1.0,
+                                -0.0
+                            ],
                             "vertices": [
                                 [
                                     88.80348703962244,
@@ -1463,6 +1733,11 @@
                         }
                     ],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -1489,6 +1764,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -1515,6 +1795,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252407,
@@ -1541,7 +1826,7 @@
             ]
         },
         {
-            "identifier": "06cf212e-be36-49cf-9304-eccb67194c4d",
+            "identifier": "12ff1c01-23c4-4434-9c0a-7e4b9950d62e",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -1549,6 +1834,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        1.0,
+                        3.552713678800501e-15,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -1575,6 +1865,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1601,6 +1896,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1627,6 +1927,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -1653,6 +1958,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1679,6 +1989,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -1705,6 +2020,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1731,6 +2051,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -1757,7 +2082,7 @@
             ]
         },
         {
-            "identifier": "4c9327ac-7d37-4787-ae54-151cd1b54592",
+            "identifier": "a1e73399-681c-4ec0-91b5-6b1ecf2979ae",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -1765,6 +2090,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252404,
@@ -1791,6 +2121,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1817,6 +2152,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1843,6 +2183,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1869,6 +2214,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -1895,6 +2245,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -1921,6 +2276,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252404,
@@ -1947,7 +2307,7 @@
             ]
         },
         {
-            "identifier": "5131a752-4e42-4d75-9f71-fecd3c126a4b",
+            "identifier": "aaa4c2c9-006d-486f-93fe-8bc7cf4cccaf",
             "name": "Conference",
             "space_type": "Conference",
             "story": 2,
@@ -1955,6 +2315,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -1981,6 +2346,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -2007,6 +2377,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -2033,6 +2408,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -2059,6 +2439,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -2085,6 +2470,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -2111,6 +2501,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -2137,6 +2532,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -4.440892098500642e-16,
+                        1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -2163,6 +2563,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_9",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -2189,7 +2594,7 @@
             ]
         },
         {
-            "identifier": "d7b95f32-9291-4f93-97af-c3177d930814",
+            "identifier": "3e93a831-9b24-4619-8159-eb3432e8ed0d",
             "name": "Conference",
             "space_type": "Conference",
             "story": 1,
@@ -2197,6 +2602,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640278,
@@ -2223,6 +2633,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -2249,6 +2664,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640278,
@@ -2275,6 +2695,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640277,
@@ -2301,6 +2726,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             97.0298789579264,
@@ -2327,6 +2757,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -2353,6 +2788,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640277,
@@ -2379,6 +2819,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640278,
@@ -2405,7 +2850,7 @@
             ]
         },
         {
-            "identifier": "1f90665b-e7cd-4200-9783-419d2e8a1799",
+            "identifier": "7a31b81c-11ac-4ac6-bf06-8607cd58b321",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -2413,6 +2858,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640278,
@@ -2439,6 +2889,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -2465,6 +2920,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663291,
@@ -2491,6 +2951,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640278,
@@ -2517,6 +2982,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             97.02987895792641,
@@ -2543,6 +3013,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663291,
@@ -2569,6 +3044,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             86.36917023640277,
@@ -2595,6 +3075,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             86.3691702364028,
@@ -2621,7 +3106,7 @@
             ]
         },
         {
-            "identifier": "10dd4dcc-5334-489d-8060-35d6e20e4a48",
+            "identifier": "08309a18-9fc1-49fa-8008-f436c0c68b40",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -2629,6 +3114,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -2655,6 +3145,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             61.89508498471023,
@@ -2681,6 +3176,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996299,
@@ -2707,6 +3207,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423293,
@@ -2733,6 +3238,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423293,
@@ -2759,6 +3269,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             58.58355762655018,
@@ -2785,6 +3300,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             58.58355762655018,
@@ -2811,6 +3331,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             61.89508498471023,
@@ -2837,7 +3362,7 @@
             ]
         },
         {
-            "identifier": "64c22752-00c8-4c92-a624-075781db66ed",
+            "identifier": "74be141a-5d4d-4d6b-b2fd-4c130076e52e",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -2845,6 +3370,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -2871,6 +3401,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -2897,6 +3432,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             95.38482333074427,
@@ -2924,6 +3464,11 @@
                     "fenestrations": [
                         {
                             "name": "surface_4_window_1",
+                            "normal": [
+                                0.0,
+                                1.0,
+                                -0.0
+                            ],
                             "vertices": [
                                 [
                                     89.27849620429834,
@@ -2949,6 +3494,11 @@
                         }
                     ],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             95.38482333074427,
@@ -2975,6 +3525,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252404,
@@ -3001,6 +3556,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             87.88418925252404,
@@ -3027,6 +3587,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             90.5239072353462,
@@ -3053,6 +3618,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             92.66965642663293,
@@ -3079,7 +3649,7 @@
             ]
         },
         {
-            "identifier": "2f4de563-54b5-43ce-9823-b70f001a4189",
+            "identifier": "0e5ecd18-9eda-4a09-83e8-913595a27900",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3087,6 +3657,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3113,6 +3688,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3139,6 +3719,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3165,6 +3750,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3191,6 +3781,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3217,6 +3812,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3243,6 +3843,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3269,6 +3874,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3295,7 +3905,7 @@
             ]
         },
         {
-            "identifier": "58c76047-afec-4dcc-9628-a56123ab4741",
+            "identifier": "0a5c395e-d8d0-471d-a901-da3cb5d3091b",
             "name": "Conference",
             "space_type": "Conference",
             "story": 2,
@@ -3303,6 +3913,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        1.0,
+                        3.552713678800501e-15,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3329,6 +3944,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423295,
@@ -3355,6 +3975,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3381,6 +4006,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996298,
@@ -3407,6 +4037,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996298,
@@ -3433,6 +4068,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             68.06319512423295,
@@ -3459,6 +4099,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996298,
@@ -3485,6 +4130,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             65.11684289996298,
@@ -3511,7 +4161,7 @@
             ]
         },
         {
-            "identifier": "fe7af4f7-8c23-4c8a-9181-86c7257fa061",
+            "identifier": "77d38289-ea63-4c9a-b5a0-d771f897af9b",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -3519,6 +4169,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3545,6 +4200,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3571,6 +4231,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3597,6 +4262,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3623,6 +4293,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3649,6 +4324,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_6",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3675,6 +4355,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3701,6 +4386,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_8",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             71.37472248239297,
@@ -3727,7 +4417,7 @@
             ]
         },
         {
-            "identifier": "9d058f00-700a-48d0-92e0-6fe2a1bece75",
+            "identifier": "8d2741e7-2d07-479c-81f3-8830470843ad",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3735,6 +4425,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_1",
+                    "normal": [
+                        0.0,
+                        -1.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3761,6 +4456,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_2",
+                    "normal": [
+                        -1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3787,6 +4487,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_3",
+                    "normal": [
+                        -0.0,
+                        -0.0,
+                        -1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3813,6 +4518,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_4",
+                    "normal": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -3840,6 +4550,11 @@
                     "fenestrations": [
                         {
                             "name": "surface_5_window_1",
+                            "normal": [
+                                0.0,
+                                1.0,
+                                -0.0
+                            ],
                             "vertices": [
                                 [
                                     82.58123297195927,
@@ -3865,6 +4580,11 @@
                         }
                     ],
                     "name": "surface_5",
+                    "normal": [
+                        0.0,
+                        1.0,
+                        -0.0
+                    ],
                     "vertices": [
                         [
                             83.02327315712597,
@@ -3892,6 +4612,11 @@
                     "fenestrations": [
                         {
                             "name": "surface_6_window_1",
+                            "normal": [
+                                -1.0,
+                                0.0,
+                                0.0
+                            ],
                             "vertices": [
                                 [
                                     77.94246648118717,
@@ -3917,6 +4642,11 @@
                         },
                         {
                             "name": "surface_6_window_2",
+                            "normal": [
+                                -1.0,
+                                0.0,
+                                0.0
+                            ],
                             "vertices": [
                                 [
                                     77.94246648118717,
@@ -3942,6 +4672,11 @@
                         }
                     ],
                     "name": "surface_6",
+                    "normal": [
+                        -1.0,
+                        -0.0,
+                        0.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,
@@ -3968,6 +4703,11 @@
                 {
                     "fenestrations": [],
                     "name": "surface_7",
+                    "normal": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ],
                     "vertices": [
                         [
                             77.94246648118718,

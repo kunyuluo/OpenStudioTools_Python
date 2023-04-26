@@ -176,4 +176,238 @@ class ConstructionTool:
         if molecular_weight is not None:
             gas.setMolecularWeight(molecular_weight)
 
+    @staticmethod
+    def construction_set(
+            model: openstudio.openstudiomodel.Model,
+            exterior_wall: openstudio.openstudiomodel.Construction = None,
+            exterior_roof: openstudio.openstudiomodel.Construction = None,
+            exterior_floor: openstudio.openstudiomodel.Construction = None,
+            exterior_fixed_window: openstudio.openstudiomodel.Construction = None,
+            exterior_operable_window: openstudio.openstudiomodel.Construction = None,
+            interior_wall: openstudio.openstudiomodel.Construction = None,
+            interior_roof: openstudio.openstudiomodel.Construction = None,
+            interior_floor: openstudio.openstudiomodel.Construction = None,
+            underground_wall: openstudio.openstudiomodel.Construction = None,
+            underground_roof: openstudio.openstudiomodel.Construction = None,
+            underground_floor: openstudio.openstudiomodel.Construction = None,
+            name: str = None):
 
+        sets = openstudio.openstudiomodel.DefaultConstructionSet(model)
+
+        if name is not None:
+            sets.setName(name)
+
+        # Exterior Surfaces:
+        # *******************************************************************************************************
+        exterior_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+
+        if exterior_wall is not None:
+            exterior_surfaces.setWallConstruction(exterior_wall)
+
+        if exterior_roof is not None:
+            exterior_surfaces.setRoofCeilingConstruction(exterior_roof)
+
+        if exterior_floor is not None:
+            exterior_surfaces.setFloorConstruction(exterior_floor)
+
+        sets.setDefaultExteriorSurfaceConstructions(exterior_surfaces)
+
+        # Interior Surfaces:
+        # *******************************************************************************************************
+        interior_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+
+        if interior_wall is not None:
+            interior_surfaces.setWallConstruction(interior_wall)
+
+        if interior_roof is not None:
+            interior_surfaces.setRoofCeilingConstruction(interior_roof)
+
+        if interior_floor is not None:
+            interior_surfaces.setFloorConstruction(interior_floor)
+
+        sets.setDefaultInteriorSurfaceConstructions(interior_surfaces)
+
+        # Exterior SubSurfaces:
+        # *******************************************************************************************************
+        exterior_subsurfaces = openstudio.openstudiomodel.DefaultSubSurfaceConstructions(model)
+
+        if exterior_fixed_window is not None:
+            exterior_subsurfaces.setFixedWindowConstruction(exterior_fixed_window)
+
+        if exterior_operable_window is not None:
+            exterior_subsurfaces.setOperableWindowConstruction(exterior_operable_window)
+
+        sets.setDefaultExteriorSubSurfaceConstructions(exterior_subsurfaces)
+
+        # Underground Surfaces:
+        # *******************************************************************************************************
+        underground_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+
+        if underground_wall is not None:
+            underground_surfaces.setWallConstruction(underground_wall)
+
+        if interior_roof is not None:
+            underground_surfaces.setRoofCeilingConstruction(underground_roof)
+
+        if interior_floor is not None:
+            underground_surfaces.setFloorConstruction(underground_floor)
+
+        sets.setDefaultInteriorSurfaceConstructions(underground_surfaces)
+
+        return sets
+
+    @staticmethod
+    def construction_set_simple(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            unit_r_or_u: bool = True,
+            ext_wall_r_value=10,
+            ext_roof_r_value=10,
+            ext_floor_r_value=10,
+            win_u_value=2.0,
+            win_shgc=0.5,
+            win_transmittance=0.5,
+            int_wall_r_value=10,
+            int_roof_r_value=10,
+            int_floor_r_value=10,
+            ground_wall_r_value=10,
+            ground_roof_r_value=10,
+            ground_floor_r_value=10):
+
+        """
+        Unit_r_or_u:
+        set to True if all input values below are R-value (thermal resistance).
+        Otherwise, they will be U-value (conductivity).
+        """
+
+        sets = openstudio.openstudiomodel.DefaultConstructionSet(model)
+
+        if name is not None:
+            sets.setName(name)
+
+        # Exterior Surfaces:
+        # *******************************************************************************************************
+        exterior_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+
+        # Wall:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            exterior_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtWall".format(ext_wall_r_value), ext_wall_r_value)
+        else:
+            exterior_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtWall".format(1 / ext_wall_r_value), 1 / ext_wall_r_value)
+        exterior_surfaces.setWallConstruction(exterior_wall_cons)
+
+        # Roof:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            exterior_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtRoof".format(ext_roof_r_value), ext_roof_r_value)
+        else:
+            exterior_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtRoof".format(1 / ext_roof_r_value), 1 / ext_roof_r_value)
+        exterior_surfaces.setRoofCeilingConstruction(exterior_roof_cons)
+
+        # Floor:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            exterior_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtFloor".format(ext_floor_r_value), ext_floor_r_value)
+        else:
+            exterior_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} ExtFloor".format(1 / ext_floor_r_value), 1 / ext_floor_r_value)
+        exterior_surfaces.setFloorConstruction(exterior_floor_cons)
+
+        sets.setDefaultExteriorSurfaceConstructions(exterior_surfaces)
+
+        # Interior Surfaces:
+        # *******************************************************************************************************
+        interior_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+        # Wall:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            interior_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntWall".format(int_wall_r_value), int_wall_r_value)
+        else:
+            interior_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntWall".format(1 / int_wall_r_value), 1 / int_wall_r_value)
+        interior_surfaces.setWallConstruction(interior_wall_cons)
+
+        # Ceiling:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntRoof".format(int_roof_r_value), int_roof_r_value)
+        else:
+            interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntRoof".format(1 / int_roof_r_value), 1 / int_roof_r_value)
+        interior_surfaces.setRoofCeilingConstruction(interior_roof_cons)
+
+        # Floor:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            interior_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntFloor".format(int_floor_r_value), int_floor_r_value)
+        else:
+            interior_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} IntFloor".format(1 / int_floor_r_value), 1 / int_floor_r_value)
+        interior_surfaces.setFloorConstruction(interior_floor_cons)
+
+        sets.setDefaultInteriorSurfaceConstructions(interior_surfaces)
+
+        # Exterior SubSurfaces:
+        # *******************************************************************************************************
+        exterior_subsurfaces = openstudio.openstudiomodel.DefaultSubSurfaceConstructions(model)
+        # Fixed window:
+        # ***************************************************************************************
+        exterior_fixed_window_cons = ConstructionTool.simple_glazing_cons(
+            model, "Fixed_Window", win_u_value, win_shgc, win_transmittance)
+        exterior_subsurfaces.setFixedWindowConstruction(exterior_fixed_window_cons)
+
+        # Operable window:
+        # ***************************************************************************************
+        exterior_operable_window_cons = ConstructionTool.simple_glazing_cons(
+            model, "Operable_Window", win_u_value, win_shgc, win_transmittance)
+        exterior_subsurfaces.setOperableWindowConstruction(exterior_operable_window_cons)
+
+        sets.setDefaultExteriorSubSurfaceConstructions(exterior_subsurfaces)
+
+        # Ground Surfaces:
+        # *******************************************************************************************************
+        ground_surfaces = openstudio.openstudiomodel.DefaultSurfaceConstructions(model)
+        # Wall:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            ground_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Wall".format(ground_wall_r_value), ground_wall_r_value)
+        else:
+            ground_wall_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Wall".format(1 / ground_wall_r_value), 1 / ground_wall_r_value)
+        ground_surfaces.setWallConstruction(ground_wall_cons)
+
+        # Ceiling:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            ground_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Roof".format(ground_roof_r_value), ground_roof_r_value)
+        else:
+            ground_roof_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Roof".format(1 / ground_roof_r_value), 1 / ground_roof_r_value)
+        ground_surfaces.setRoofCeilingConstruction(ground_roof_cons)
+
+        # Floor:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            ground_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Floor".format(ground_floor_r_value), ground_floor_r_value)
+        else:
+            ground_floor_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Underground_Floor".format(1 / ground_floor_r_value), 1 / ground_floor_r_value)
+        ground_surfaces.setFloorConstruction(ground_floor_cons)
+
+        sets.setDefaultGroundContactSurfaceConstructions(ground_surfaces)
+
+        # Output:
+        # *******************************************************************************************************
+        return sets

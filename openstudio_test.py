@@ -7,20 +7,8 @@ from OutputData.OutputData import output_variables
 from Resources.ExteriorEquipments import ExteriorEquipments
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
-from Schedules.Templates.Template import Office, Residential
-from Schedules.ScheduleTools import ScheduleTool
-from Constructions.ConstructionSets import ConstructionSet
-from HVACSystem.PlantLoopComponents import PlantLoopComponent
-from HVACSystem.SetpointManagers import SetpointManager
-from HVACSystem.AirLoopComponents import AirLoopComponent
-from HVACSystem.AirTerminals import AirTerminal
-from HVACSystem.Template.ASHRAE import ASHRAEBaseline
-from HVACSystem.Template.Template import Template
-from HVACSystem.ZoneEquipments import ZoneEquipment
-from HVACSystem.PerformanceCurves import Curve
-from HVACSystem.HVACTools import HVACTool
-from Resources.Helpers import Helper
-from RhinoGeometry.RhinoParse import load_rhino_model, modify_rhino_unit
+from Schedules.Template import Office
+from RhinoGeometry.RhinoParse import load_rhino_model
 
 # vertices = []
 path_str = "D:\\Projects\\OpenStudioDev\\Model_350.osm"
@@ -32,7 +20,7 @@ newPath = openstudioutilitiescore.toPath(newPath_str)
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
 
 ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
-ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
+# ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 
 # Get the model:
 # **************************************************************************************
@@ -67,21 +55,25 @@ ExteriorEquipments.exterior_lights(model, design_level=24)
 office_sch = Office(model)
 # resid_sch = Residential(model)
 
-# load = InternalLoad.internal_load_input_json(
-#     ["Office", "Conference", "Corridor"],
-#     [0.8, 1.3, 0.6],
-#     [1.2, 1.8, 0.5],
-#     [0.1, 0.3, 0.05],
-#     [200, 200, 200],
-#     [0.15, 0.15, 0.15],
-#     [0.2, 0.2, 0.2],
-#     [3, 1, 3])
-#
-# file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
-# thermal_zones = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
-# sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
-#
-# print(len(sorted_zones[2]["Office"]))
+load = InternalLoad.internal_load_input_json(
+    ["Office", "Conference", "Corridor"],
+    [0.8, 1.3, 0.6],
+    [1.2, 1.8, 0.5],
+    [0.1, 0.3, 0.05],
+    [200, 200, 200],
+    [0.15, 0.15, 0.15],
+    [0.2, 0.2, 0.2],
+    [3, 1, 3])
+
+file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
+geometries = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
+thermal_zones = geometries[0]
+sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
+
+oriented_walls = geometries[1]
+oriented_windows = geometries[2]
+print(len(sorted_zones[2]["Office"]))
+print(len(oriented_walls["south"]))
 
 # Air loop:
 # **************************************************************************************

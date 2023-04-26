@@ -11,7 +11,8 @@ class ConstructionSet:
 
     def get(self):
         cons_set = openstudio.openstudiomodel.DefaultConstructionSet(self._model)
-        if self._name is not None: cons_set.setName(self._name)
+        if self._name is not None:
+            cons_set.setName(self._name)
 
         # Exterior Surfaces:
         # *******************************************************************************************************

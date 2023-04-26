@@ -3,10 +3,10 @@ import openstudio
 import json
 from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurface
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
-from Schedules.Templates.Template import Office
+from Schedules.Template import Office
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
-from Constructions.ConstructionSets import ConstructionSet
+from Constructions.ConstructionTools import ConstructionTool
 
 
 class GeometryTool:
@@ -313,7 +313,9 @@ class GeometryTool:
     def geometry_from_json(
             model: openstudio.openstudiomodel.Model,
             json_path: str,
-            internal_load: str = None):
+            internal_load: str = None,
+            construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None,
+            schedule_sets: openstudio.openstudiomodel.DefaultScheduleSet = None):
 
         with open(json_path, 'r') as openfile:
             # Reading from json file
@@ -324,9 +326,19 @@ class GeometryTool:
         stories = GeometryTool.building_story(model, number_of_stories)
 
         # Schedule sets:
-        office_sch = Office(model)
+        if schedule_sets is not None:
+            schedule_set = schedule_sets
+        else:
+            schedule_set = Office(model)
+
         # Construction sets:
-        cons_set = ConstructionSet(model, "Kunyu_OMG").get()
+        if construction_sets is not None:
+            cons_set = construction_sets
+        else:
+            # cons_set = ConstructionSet(model, "ASHRAE Default Set").get()
+            cons_set = ConstructionTool.construction_set_simple(
+                model, "Chinese Code Compliance Set", False,
+                0.6, 0.4, 0.7, 2.2, 0.35, 0.8, 0.6, 0.4, 0.7, 0.6, 0.4, 0.7)
 
         # Internal load data:
         loads = {}
@@ -375,6 +387,8 @@ class GeometryTool:
 
         # Rooms in the building
         thermal_zones = []
+        oriented_walls = {"east": [], "west": [], "north": [], "south": [], "other": []}
+        oriented_subsurfaces = {"east": [], "west": [], "north": [], "south": [], "other": []}
         if len(rooms) != 0:
             all_surfaces = []
             all_subsurfaces = []
@@ -423,7 +437,41 @@ class GeometryTool:
                                 model, fenestration["vertices"], surface=surface, name=fenestration["name"])
                             all_subsurfaces.append(fen_srf)
 
-            GeometryTool.solve_adjacency(all_surfaces, True)
+                            win_normal = fenestration["normal"]
+                            win_orient = GeometryTool.check_orientation(
+                                Vector3d(win_normal[0], win_normal[1], win_normal[2]))
+
+                            match win_orient:
+                                case "east":
+                                    oriented_subsurfaces["east"].append(fen_srf)
+                                case "west":
+                                    oriented_subsurfaces["west"].append(fen_srf)
+                                case "north":
+                                    oriented_subsurfaces["north"].append(fen_srf)
+                                case "south":
+                                    oriented_subsurfaces["south"].append(fen_srf)
+                                case _:
+                                    oriented_subsurfaces["other"].append(fen_srf)
+
+            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces, True)
+
+            for srf in updated_surfaces:
+                srf_type = srf.surfaceType()
+                boundary = srf.outsideBoundaryCondition()
+                if srf_type == "Wall" and boundary == "Outdoors":
+                    srf_orient = GeometryTool.check_orientation(GeometryTool.newell_method(srf))
+
+                    match srf_orient:
+                        case "east":
+                            oriented_walls["east"].append(srf)
+                        case "west":
+                            oriented_walls["west"].append(srf)
+                        case "north":
+                            oriented_walls["north"].append(srf)
+                        case "south":
+                            oriented_walls["south"].append(srf)
+                        case _:
+                            oriented_walls["other"].append(srf)
 
             # Shading Objects:
             shades = json_object["shades"]
@@ -433,7 +481,7 @@ class GeometryTool:
                     shade_srf = GeometryTool.make_shading(model, shade["vertices"], name=shade["name"])
                     all_shades.append(shade_srf)
 
-        return thermal_zones
+        return thermal_zones, oriented_walls, oriented_subsurfaces
 
     # Newell's Algorithm (find normal vector from an arbitrary polygon)
     @staticmethod
@@ -476,6 +524,7 @@ class GeometryTool:
     @staticmethod
     def solve_adjacency(surfaces, adiabatic=False):
         surfaces_adj = []
+        updated_surfaces = []
 
         if len(surfaces) < 2:
             raise ValueError("Not enough surfaces to solve adjacency")
@@ -509,3 +558,29 @@ class GeometryTool:
                         srf_curr.setWindExposure("NoWind")
                         srf_rest.setWindExposure("NoWind")
 
+                updated_surfaces.append(srf_curr)
+
+        return updated_surfaces
+
+    @staticmethod
+    def check_orientation(normal: Vector3d):
+
+        angle_threshold = math.pi / 4
+        orientation = "east"
+
+        orient_vectors = {
+            "east": Vector3d(1, 0, 0),
+            "west": Vector3d(-1, 0, 0),
+            "north": Vector3d(0, 1, 0),
+            "south": Vector3d(0, -1, 0)}
+
+        for key in orient_vectors.keys():
+            angle = math.acos(normal.dot(orient_vectors[key]) / (normal.length() * orient_vectors[key].length()))
+
+            if angle <= angle_threshold:
+                orientation = key
+                break
+            else:
+                orientation = "other"
+
+        return orientation

@@ -446,7 +446,7 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
                 surfaces = []
                 faces = brep.Faces
                 for j, face in enumerate(faces, 1):
-                    surface_dict = {"name": None, "vertices": None, "fenestrations": None}
+                    surface_dict = {"name": None, "normal": None, "vertices": None, "fenestrations": None}
 
                     srf_vertices = get_brep_face_vertex(face)
 
@@ -456,6 +456,9 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
                     normal_z = get_surface_center(face)[1].Z
                     if abs(center_z - story_z) < 0.0001 and normal_z > 0:
                         srf_vertices.reverse()
+                        normal.Reverse()
+
+                    surface_dict["normal"] = [normal.X, normal.Y, normal.Z]
 
                     # Wall geometry:
                     points = []
@@ -473,7 +476,7 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
                         children = find_child_surface(face, apertures)
                         if len(children) != 0:
                             for k, child in enumerate(children, 1):
-                                fenestration = {"name": None, "vertices": None}
+                                fenestration = {"name": None, "normal": None, "vertices": None}
 
                                 srf_vertices = get_brep_face_vertex(child.Faces[0])
 
@@ -482,6 +485,9 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
                                 angle = Rhino.Geometry.Vector3d.VectorAngle(normal, fen_normal)
                                 if abs(angle - math.pi) < tolerance:
                                     srf_vertices.reverse()
+                                    fen_normal.Reverse()
+
+                                fenestration["normal"] = [fen_normal.X, fen_normal.Y, fen_normal.Z]
 
                                 points = []
                                 for vertice in srf_vertices:

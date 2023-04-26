@@ -212,6 +212,58 @@ class ScheduleTool:
         return schedule_ruleset
 
     @staticmethod
+    def schedule_set(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            occupancy_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            num_of_people_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            people_activity_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            lighting_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            electric_equipment_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            gas_equipment_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            hot_water_equipment_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            steam_equipment_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            other_equipment_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            infiltration_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        sets = openstudio.openstudiomodel.DefaultScheduleSet(model)
+
+        if name is not None:
+            sets.setName(name)
+
+        if occupancy_schedule is not None:
+            sets.setHoursofOperationSchedule(occupancy_schedule)
+
+        if num_of_people_schedule is not None:
+            sets.setNumberofPeopleSchedule(num_of_people_schedule)
+
+        if people_activity_schedule is not None:
+            sets.setPeopleActivityLevelSchedule(people_activity_schedule)
+
+        if lighting_schedule is not None:
+            sets.setLightingSchedule(lighting_schedule)
+
+        if electric_equipment_schedule is not None:
+            sets.setElectricEquipmentSchedule(electric_equipment_schedule)
+
+        if gas_equipment_schedule is not None:
+            sets.setGasEquipmentSchedule(gas_equipment_schedule)
+
+        if hot_water_equipment_schedule is not None:
+            sets.setHotWaterEquipmentSchedule(hot_water_equipment_schedule)
+
+        if steam_equipment_schedule is not None:
+            sets.setSteamEquipmentSchedule(steam_equipment_schedule)
+
+        if other_equipment_schedule is not None:
+            sets.setOtherEquipmentSchedule(other_equipment_schedule)
+
+        if infiltration_schedule is not None:
+            sets.setInfiltrationSchedule(infiltration_schedule)
+
+        return sets
+
+    @staticmethod
     def always_on(model):
         type_limit = ScheduleTool.schedule_type_limits(model, 11, 2, 0, 1, "always on limits")
         schedule = ScheduleTool.schedule_ruleset(model, 1, type_limits=type_limit, name="AlwaysOn")

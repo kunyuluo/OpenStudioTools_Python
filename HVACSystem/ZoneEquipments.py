@@ -685,7 +685,7 @@ class ZoneEquipment:
         else:
             heating_coil = AirLoopComponent.coil_heating_low_temperature_radiant_constant_flow(model)
 
-        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantVarFlow(model, schedule, heating_coil, cooling_coil)
+        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantConstFlow(model, schedule, heating_coil, cooling_coil)
 
         if name is not None:
             equip.setName(name)
@@ -693,6 +693,27 @@ class ZoneEquipment:
         equip.setRadiantSurfaceType(surface_types[radiant_surface_type])
         equip.setFluidtoRadiantSurfaceHeatTransferModel(heat_transfer_models[fluid_to_surface_heat_transfer_model])
         equip.setTemperatureControlType(temp_control_types[temperature_control_type])
+
+        if rated_flow_rate is not None:
+            equip.setRatedFlowRate(rated_flow_rate)
+        else:
+            equip.autosizeRatedFlowRate()
+
+        if pump_flow_schedule is not None:
+            equip.setPumpFlowRateSchedule(pump_flow_schedule)
+
+        if rated_pump_head is not None:
+            equip.setRatedPumpHead(rated_pump_head)
+
+        if rated_power_consumption is not None:
+            equip.setRatedPowerConsumption(rated_power_consumption)
+
+        if motor_efficiency is not None:
+            equip.setMotorEfficiency(motor_efficiency)
+
+        if fraction_of_motor_to_fluid is not None:
+            equip.setFractionofMotorInefficienciestoFluidStream(fraction_of_motor_to_fluid)
+
         if number_of_circuits is not None:
             equip.setNumberofCircuits(circuits[number_of_circuits])
 

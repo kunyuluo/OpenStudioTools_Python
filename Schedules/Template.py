@@ -2,6 +2,10 @@ import openstudio
 from Schedules.ScheduleTools import ScheduleTool
 
 
+# class OfficeSets:
+#     @staticmethod
+#     def occupancySchedule():
+
 class Office:
     # Data Source: Title 24 Appendix 5.4B
     _occupancy = None
