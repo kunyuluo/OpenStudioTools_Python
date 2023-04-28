@@ -13,10 +13,14 @@ class InternalLoad:
     @staticmethod
     def gas_equipment_definition(
             model: openstudio.openstudiomodel.Model,
-            gas_power: float = 0):
+            gas_power: float = 0,
+            name: str = None):
 
         gas_def = GasEquipmentDefinition(model)
         gas_def.setWattsperSpaceFloorArea(gas_power)
+
+        if name is not None:
+            gas_def.setName(name)
 
         return gas_def
 
@@ -59,7 +63,8 @@ class InternalLoad:
             model: openstudio.openstudiomodel.Model,
             area_calc_method: int = 1,
             surface_area: float = None,
-            construction=None):
+            construction=None,
+            name: str = None):
 
         """
         Area_calc_method: \n
@@ -87,6 +92,9 @@ class InternalLoad:
 
         if construction is not None:
             mass_def.setConstruction(construction)
+
+        if name is not None:
+            mass_def.setName(name)
 
         return mass_def
 
@@ -139,7 +147,8 @@ class InternalLoad:
     def light_definition(
             model: openstudio.openstudiomodel.Model,
             power_calc_method: int = 3,
-            lighting_power: float = 0):
+            lighting_power: float = 0,
+            name: str = None):
 
         """
         -Power_calc_method: \n
@@ -156,6 +165,9 @@ class InternalLoad:
                 lighting_def.setWattsperPerson(lighting_power)
             case 3 | _:
                 lighting_def.setWattsperSpaceFloorArea(lighting_power)
+
+        if name is not None:
+            lighting_def.setName(name)
 
         return lighting_def
 
@@ -213,7 +225,8 @@ class InternalLoad:
     def electric_equipment_definition(
             model: openstudio.openstudiomodel.Model,
             power_calc_method: int = 3,
-            power: float = 0):
+            power: float = 0,
+            name: str = None):
 
         """
         -Power_calc_method: \n
@@ -230,6 +243,9 @@ class InternalLoad:
                 equip_def.setWattsperPerson(power)
             case 3 | _:
                 equip_def.setWattsperSpaceFloorArea(power)
+
+        if name is not None:
+            equip_def.setName(name)
 
         return equip_def
 
@@ -367,7 +383,8 @@ class InternalLoad:
             co2_generation_rate=None,
             enable_ashrae55_warning=False,
             mrt_calc_type: int = 1,
-            thermal_comfort_model_type=None):
+            thermal_comfort_model_type=None,
+            name: str = None):
 
         """
         -ppl_calc_method: \n
@@ -415,6 +432,9 @@ class InternalLoad:
                 raise TypeError("Invalid input type of thermal_comfort_model_type."
                                 "It must be a single integer or a list of integer")
 
+        if name is not None:
+            ppl_def.setName(name)
+
         return ppl_def
 
     @staticmethod
@@ -443,7 +463,8 @@ class InternalLoad:
             space_type: openstudio.openstudiomodel.SpaceType = None,
             calculation_methods: int = 5,
             flow_rate: float = 0.000226568446,
-            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         """
         -Calculation_methods: \n
@@ -471,6 +492,9 @@ class InternalLoad:
         if schedule is not None:
             infiltration.setSchedule(schedule)
 
+        if name is not None:
+            infiltration.setName(name)
+
         return infiltration
 
     @staticmethod
@@ -479,13 +503,18 @@ class InternalLoad:
             space_type: openstudio.openstudiomodel.SpaceType = None,
             outdoor_air_per_floor_area: float = 0,
             outdoor_air_per_person: float = 0,
-            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         outdoor_air = DesignSpecificationOutdoorAir(model)
         if space_type is not None:
             outdoor_air.setName(space_type.nameString() + "_DSOA")
         else:
-            outdoor_air.setName("DSOA")
+            if name is not None:
+                outdoor_air.setName(name)
+            else:
+                outdoor_air.setName("DSOA")
+
         outdoor_air.setOutdoorAirMethod("Sum")
         outdoor_air.setOutdoorAirFlowperFloorArea(outdoor_air_per_floor_area)
         outdoor_air.setOutdoorAirFlowperPerson(outdoor_air_per_person)
@@ -504,7 +533,8 @@ class InternalLoad:
             peak_flow_rate: float = 0.000525,
             target_temp: float = 135,
             space: openstudio.openstudiomodel.Space = None,
-            flow_rate_fraction_schedule=None):
+            flow_rate_fraction_schedule=None,
+            name: str = None):
 
         water_use_def = WaterUseEquipmentDefinition(model)
         water_use_def.setPeakFlowRate(peak_flow_rate)
@@ -530,6 +560,10 @@ class InternalLoad:
 
         if space is not None:
             water_use.setSpace(space)
+
+        if name is not None:
+            water_use_def.setName(name + "_Definition")
+            water_use.setName(name)
 
         return water_use
 

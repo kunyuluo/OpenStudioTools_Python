@@ -3,7 +3,7 @@
     "number_of_stories": 2,
     "rooms": [
         {
-            "identifier": "50b0f9bf-ad9b-4c65-a685-b4f7ec34a0f0",
+            "identifier": "71533fd1-72a2-4462-acf8-ad08360c648b",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -290,7 +290,7 @@
             ]
         },
         {
-            "identifier": "6bfb2401-5a1b-4f47-8483-63752a89a2e9",
+            "identifier": "6d00881f-c4ea-4535-a6ec-b029e1d082c7",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -546,7 +546,7 @@
             ]
         },
         {
-            "identifier": "ecd0989a-c889-499e-a315-6c372767067f",
+            "identifier": "c9e59f78-6ef2-480c-a65f-88d2bdf2feb9",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -802,7 +802,7 @@
             ]
         },
         {
-            "identifier": "4d8efda7-79db-4432-827f-bc4a3c1b04cb",
+            "identifier": "06310c9e-4514-428c-ab0c-c87c45bd6817",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1089,7 +1089,7 @@
             ]
         },
         {
-            "identifier": "6300cd48-93b9-44c8-802b-9e75f4d89c20",
+            "identifier": "b5290abc-a5ad-456c-b8ca-cba7f2bf9bdc",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1314,7 +1314,7 @@
             ]
         },
         {
-            "identifier": "e14be8fa-c3c8-4bcb-923c-6c8feed709d2",
+            "identifier": "7894cc27-1e19-458f-a406-3153e56ccc16",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1539,7 +1539,7 @@
             ]
         },
         {
-            "identifier": "ab875eb0-8046-4d01-9b2b-60c5a0314b5a",
+            "identifier": "892ed923-9244-4bcc-85f6-120bc69f0657",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -1826,7 +1826,7 @@
             ]
         },
         {
-            "identifier": "12ff1c01-23c4-4434-9c0a-7e4b9950d62e",
+            "identifier": "c306a009-9d33-4a2b-81ef-51c0050a2b19",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -2082,7 +2082,7 @@
             ]
         },
         {
-            "identifier": "a1e73399-681c-4ec0-91b5-6b1ecf2979ae",
+            "identifier": "11287b76-92fa-481c-ab83-c03bdeda8e38",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -2307,7 +2307,7 @@
             ]
         },
         {
-            "identifier": "aaa4c2c9-006d-486f-93fe-8bc7cf4cccaf",
+            "identifier": "d6ff8193-8b3a-4129-8fa9-4ed9bce625b9",
             "name": "Conference",
             "space_type": "Conference",
             "story": 2,
@@ -2594,7 +2594,7 @@
             ]
         },
         {
-            "identifier": "3e93a831-9b24-4619-8159-eb3432e8ed0d",
+            "identifier": "7e17b788-d2c8-4082-9a9f-63cd212f62d8",
             "name": "Conference",
             "space_type": "Conference",
             "story": 1,
@@ -2850,7 +2850,7 @@
             ]
         },
         {
-            "identifier": "7a31b81c-11ac-4ac6-bf06-8607cd58b321",
+            "identifier": "1a3f5a19-4d61-42bb-aa23-17bc9eb19e24",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3106,7 +3106,7 @@
             ]
         },
         {
-            "identifier": "08309a18-9fc1-49fa-8008-f436c0c68b40",
+            "identifier": "17b92f77-cd20-4eeb-bc03-32a3961519b0",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3362,7 +3362,7 @@
             ]
         },
         {
-            "identifier": "74be141a-5d4d-4d6b-b2fd-4c130076e52e",
+            "identifier": "68bf0ca3-ef21-4b41-80eb-cbc4f7d31dad",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3649,7 +3649,7 @@
             ]
         },
         {
-            "identifier": "0e5ecd18-9eda-4a09-83e8-913595a27900",
+            "identifier": "90136d0b-2fb0-4f0a-ad5f-e704f53536d2",
             "name": "Office",
             "space_type": "Office",
             "story": 2,
@@ -3905,7 +3905,7 @@
             ]
         },
         {
-            "identifier": "0a5c395e-d8d0-471d-a901-da3cb5d3091b",
+            "identifier": "7c930b62-66d4-44a5-b9e3-9a923f173740",
             "name": "Conference",
             "space_type": "Conference",
             "story": 2,
@@ -4161,7 +4161,7 @@
             ]
         },
         {
-            "identifier": "77d38289-ea63-4c9a-b5a0-d771f897af9b",
+            "identifier": "f921a622-afe7-4a4f-bdac-901e071bb73a",
             "name": "Office",
             "space_type": "Office",
             "story": 1,
@@ -4417,7 +4417,7 @@
             ]
         },
         {
-            "identifier": "8d2741e7-2d07-479c-81f3-8830470843ad",
+            "identifier": "679765d8-bcb4-404f-81b1-6edbfdf9a7b5",
             "name": "Office",
             "space_type": "Office",
             "story": 2,

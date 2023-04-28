@@ -292,3 +292,401 @@ class ScheduleTool:
         occ_wd_schrule = ScheduleTool.schedule_rule(schedule, schedule_day, all_week=True)
 
         return schedule
+
+    @staticmethod
+    def schedule_set_input_json(space_type=None, schedule_set=None):
+
+        """
+        schedule_set: a single ScheduleSets object or a list of ScheduleSets
+        """
+
+        schedule_sets = {}
+
+        if space_type is not None and isinstance(space_type, list):
+            if schedule_set is not None:
+                if isinstance(schedule_set, ScheduleSets):
+                    for i, space in enumerate(space_type):
+                        schedule_sets[space] = schedule_set.get_schedule_sets()
+                elif isinstance(schedule_set, list):
+                    if len(schedule_set) == len(space_type):
+                        for i, space in enumerate(space_type):
+                            schedule_sets[space] = schedule_set[i].get_schedule_sets()
+                    else:
+                        raise IndexError("Number of space types and number of schedule sets don't match.")
+                else:
+                    raise TypeError("Invalid input type of schedule set.")
+
+        return schedule_sets
+
+
+class ScheduleSets:
+    def __init__(
+            self,
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            occupancy: openstudio.openstudiomodel.ScheduleRuleset = None,
+            lighting: openstudio.openstudiomodel.ScheduleRuleset = None,
+            electric_equipment: openstudio.openstudiomodel.ScheduleRuleset = None,
+            gas_equipment: openstudio.openstudiomodel.ScheduleRuleset = None,
+            hot_water_equipment: openstudio.openstudiomodel.ScheduleRuleset = None,
+            steam_equipment: openstudio.openstudiomodel.ScheduleRuleset = None,
+            other_equipment: openstudio.openstudiomodel.ScheduleRuleset = None,
+            infiltration: openstudio.openstudiomodel.ScheduleRuleset = None,
+            cooling_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
+            heating_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
+            hvac_availability: openstudio.openstudiomodel.ScheduleRuleset = None,
+            dcv: openstudio.openstudiomodel.ScheduleRuleset = None,
+            activity_level: openstudio.openstudiomodel.ScheduleRuleset = None, ):
+
+        self._model = model
+        self._name = name
+        self._occupancy = occupancy
+        self._lighting = lighting
+        self._electric_equipment = electric_equipment
+        self._gas_equipment = gas_equipment
+        self._hot_water_equipment = hot_water_equipment
+        self._steam_equipment = steam_equipment
+        self._other_equipment = other_equipment
+        self._infiltration = infiltration
+        self._cooling_setpoint = cooling_setpoint
+        self._heating_setpoint = heating_setpoint
+        self._hvac_availability = hvac_availability
+        self._dcv = dcv
+        self._activity_level = activity_level
+
+    # ***********************************************************************************************
+    # Occupancy schedule getter:
+    def occupancy(self):
+        return self._occupancy
+
+    # Occupancy schedule setter:
+    def set_occupancy(
+            self,
+            occ_wd_values: list = None,
+            occ_sat_values: list = None,
+            occ_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            occ_schedule = schedule
+        else:
+            if occ_wd_values is not None and occ_sat_values is not None and occ_sun_values is not None:
+                occ_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, occ_wd_values, occ_sat_values, occ_sun_values, self._name + "_Occupancy")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._occupancy = occ_schedule
+
+    # ***********************************************************************************************
+    # Lighting schedule getter:
+    def lighting(self):
+        return self._lighting
+
+    # Lighting schedule setter:
+    def set_lighting(
+            self,
+            ltg_wd_values: list = None,
+            ltg_sat_values: list = None,
+            ltg_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            ltg_schedule = schedule
+        else:
+            if ltg_wd_values is not None and ltg_sat_values is not None and ltg_sun_values is not None:
+                ltg_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, ltg_wd_values, ltg_sat_values, ltg_sun_values, self._name + "_Lighting")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._lighting = ltg_schedule
+
+    # ***********************************************************************************************
+    # electric equipment schedule getter:
+    def electric_equipment(self):
+        return self._electric_equipment
+
+    # equipment schedule setter:
+    def set_electric_equipment(
+            self,
+            equip_wd_values: list = None,
+            equip_sat_values: list = None,
+            equip_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            equip_schedule = schedule
+        else:
+            if equip_wd_values is not None and equip_sat_values is not None and equip_sun_values is not None:
+                equip_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, equip_wd_values, equip_sat_values, equip_sun_values,
+                    self._name + "_ElectricEquipment")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._electric_equipment = equip_schedule
+
+    # ***********************************************************************************************
+    # electric equipment schedule getter:
+    def gas_equipment(self):
+        return self._gas_equipment
+
+    # equipment schedule setter:
+    def set_gas_equipment(
+            self,
+            equip_wd_values: list = None,
+            equip_sat_values: list = None,
+            equip_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            equip_schedule = schedule
+        else:
+            if equip_wd_values is not None and equip_sat_values is not None and equip_sun_values is not None:
+                equip_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, equip_wd_values, equip_sat_values, equip_sun_values,
+                    self._name + "_GasEquipment")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._gas_equipment = equip_schedule
+
+    # ***********************************************************************************************
+    # electric equipment schedule getter:
+    def hot_water_equipment(self):
+        return self._hot_water_equipment
+
+    # equipment schedule setter:
+    def set_hot_water_equipment(
+            self,
+            equip_wd_values: list = None,
+            equip_sat_values: list = None,
+            equip_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            equip_schedule = schedule
+        else:
+            if equip_wd_values is not None and equip_sat_values is not None and equip_sun_values is not None:
+                equip_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, equip_wd_values, equip_sat_values, equip_sun_values,
+                    self._name + "_HotWaterEquipment")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._hot_water_equipment = equip_schedule
+
+    # ***********************************************************************************************
+    # electric equipment schedule getter:
+    def steam_equipment(self):
+        return self._steam_equipment
+
+    # equipment schedule setter:
+    def set_steam_equipment(
+            self,
+            equip_wd_values: list = None,
+            equip_sat_values: list = None,
+            equip_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            equip_schedule = schedule
+        else:
+            if equip_wd_values is not None and equip_sat_values is not None and equip_sun_values is not None:
+                equip_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, equip_wd_values, equip_sat_values, equip_sun_values,
+                    self._name + "_SteamEquipment")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._steam_equipment = equip_schedule
+
+    # ***********************************************************************************************
+    # electric equipment schedule getter:
+    def other_equipment(self):
+        return self._other_equipment
+
+    # equipment schedule setter:
+    def set_other_equipment(
+            self,
+            equip_wd_values: list = None,
+            equip_sat_values: list = None,
+            equip_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            equip_schedule = schedule
+        else:
+            if equip_wd_values is not None and equip_sat_values is not None and equip_sun_values is not None:
+                equip_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, equip_wd_values, equip_sat_values, equip_sun_values,
+                    self._name + "_OtherEquipment")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._other_equipment = equip_schedule
+
+    # ***********************************************************************************************
+    # infiltration schedule getter:
+    def infiltration(self):
+        return self._infiltration
+
+    # infiltration schedule setter:
+    def set_infiltration(
+            self,
+            inf_wd_values: list = None,
+            inf_sat_values: list = None,
+            inf_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            inf_schedule = schedule
+        else:
+            if inf_wd_values is not None and inf_sat_values is not None and inf_sun_values is not None:
+                inf_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 1, inf_wd_values, inf_sat_values, inf_sun_values, self._name + "_Infiltration")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._infiltration = inf_schedule
+
+    # ***********************************************************************************************
+    # cooling_set point schedule getter:
+    def cooling_setpoint(self):
+        return self._cooling_setpoint
+
+    # cooling_set point schedule setter:
+    def set_cooling_setpoint(
+            self,
+            cooling_wd_values: list = None,
+            cooling_sat_values: list = None,
+            cooling_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            cooling_schedule = schedule
+        else:
+            if cooling_wd_values is not None and cooling_sat_values is not None and cooling_sun_values is not None:
+                cooling_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 2, cooling_wd_values, cooling_sat_values, cooling_sun_values,
+                    self._name + "_CoolingSetPt")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._cooling_setpoint = cooling_schedule
+
+    # ***********************************************************************************************
+    # heating_set point schedule getter:
+    def heating_setpoint(self):
+        return self._heating_setpoint
+
+    # heating_set point schedule setter:
+    def set_heating_setpoint(
+            self,
+            heating_wd_values: list = None,
+            heating_sat_values: list = None,
+            heating_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            heating_schedule = schedule
+        else:
+            if heating_wd_values is not None and heating_sat_values is not None and heating_sun_values is not None:
+                heating_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 2, heating_wd_values, heating_sat_values, heating_sun_values,
+                    self._name + "_HeatingSetPt")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._heating_setpoint = heating_schedule
+
+    # ***********************************************************************************************
+    # hvac_availability schedule getter:
+    def hvac_availability(self):
+        return self._hvac_availability
+
+    # hvac_availability schedule setter:
+    def set_hvac_availability(
+            self,
+            avail_wd_values: list = None,
+            avail_sat_values: list = None,
+            avail_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            avail_schedule = schedule
+        else:
+            if avail_wd_values is not None and avail_sat_values is not None and avail_sun_values is not None:
+                avail_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 11, avail_wd_values, avail_sat_values, avail_sun_values, self._name + "_Availability")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._hvac_availability = avail_schedule
+
+    # ***********************************************************************************************
+    # dcv schedule getter:
+    def dcv(self):
+        return self._dcv
+
+    # dcv schedule setter:
+    def set_dcv(
+            self,
+            dcv_wd_values: list = None,
+            dcv_sat_values: list = None,
+            dcv_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            dcv = schedule
+        else:
+            if dcv_wd_values is not None and dcv_sat_values is not None and dcv_sun_values is not None:
+                dcv = ScheduleTool.custom_annual_schedule(
+                    self._model, 11, dcv_wd_values, dcv_sat_values, dcv_sun_values, self._name + "_DCV")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._dcv = dcv
+
+    # ***********************************************************************************************
+    # activity_level schedule getter:
+    def activity_level(self):
+        return self._activity_level
+
+    # activity_level schedule setter:
+    def set_activity_level(
+            self,
+            activity_value: float = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            activity = schedule
+        else:
+            if activity_value is not None:
+                type_limit = ScheduleTool.schedule_type_limits(self._model, 7, 1, 0, 250)
+                activity = ScheduleTool.schedule_ruleset(self._model, 200, type_limit, self._name + "_Activity")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._activity_level = activity
+
+    # ***********************************************************************************************
+    # Get Schedule Set:
+    def get_schedule_sets(self):
+
+        """
+        keys: \n
+        "occupancy", "lighting", "electric_equipment", "gas_equipment", "hot_water_equipment", "steam_equipment",
+        "other_equipment", "infiltration", "activity", "cooling_setpoint", "heating_setpoint", "hvac_availability",
+        "dcv"
+        """
+
+        sets = {"occupancy": self._occupancy, "lighting": self._lighting,
+                "electric_equipment": self._electric_equipment, "gas_equipment": self._gas_equipment,
+                "hot_water_equipment": self._hot_water_equipment, "steam_equipment": self._steam_equipment,
+                "other_equipment": self._other_equipment, "infiltration": self._infiltration,
+                "cooling_setpoint": self._cooling_setpoint, "heating_setpoint": self._heating_setpoint,
+                "dcv": self._dcv, "activity": self._activity_level, "hvac_availability": self._hvac_availability}
+
+        return sets

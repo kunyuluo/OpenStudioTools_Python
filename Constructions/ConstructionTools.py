@@ -293,30 +293,30 @@ class ConstructionTool:
         # ***************************************************************************************
         if unit_r_or_u:
             exterior_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtWall".format(ext_wall_r_value), ext_wall_r_value)
+                model, "R-{} ExtWall".format(round(ext_wall_r_value, 1)), ext_wall_r_value)
         else:
             exterior_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtWall".format(1 / ext_wall_r_value), 1 / ext_wall_r_value)
+                model, "R-{} ExtWall".format(round(1 / ext_wall_r_value, 1)), 1 / ext_wall_r_value)
         exterior_surfaces.setWallConstruction(exterior_wall_cons)
 
         # Roof:
         # ***************************************************************************************
         if unit_r_or_u:
             exterior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtRoof".format(ext_roof_r_value), ext_roof_r_value)
+                model, "R-{} ExtRoof".format(round(ext_roof_r_value, 1)), ext_roof_r_value)
         else:
             exterior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtRoof".format(1 / ext_roof_r_value), 1 / ext_roof_r_value)
+                model, "R-{} ExtRoof".format(round(1 / ext_roof_r_value, 1)), 1 / ext_roof_r_value)
         exterior_surfaces.setRoofCeilingConstruction(exterior_roof_cons)
 
         # Floor:
         # ***************************************************************************************
         if unit_r_or_u:
             exterior_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtFloor".format(ext_floor_r_value), ext_floor_r_value)
+                model, "R-{} ExtFloor".format(round(ext_floor_r_value, 1)), ext_floor_r_value)
         else:
             exterior_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} ExtFloor".format(1 / ext_floor_r_value), 1 / ext_floor_r_value)
+                model, "R-{} ExtFloor".format(round(1 / ext_floor_r_value, 1)), 1 / ext_floor_r_value)
         exterior_surfaces.setFloorConstruction(exterior_floor_cons)
 
         sets.setDefaultExteriorSurfaceConstructions(exterior_surfaces)
@@ -328,30 +328,30 @@ class ConstructionTool:
         # ***************************************************************************************
         if unit_r_or_u:
             interior_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntWall".format(int_wall_r_value), int_wall_r_value)
+                model, "R-{} IntWall".format(round(int_wall_r_value, 1)), int_wall_r_value)
         else:
             interior_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntWall".format(1 / int_wall_r_value), 1 / int_wall_r_value)
+                model, "R-{} IntWall".format(round(1 / int_wall_r_value, 1)), 1 / int_wall_r_value)
         interior_surfaces.setWallConstruction(interior_wall_cons)
 
         # Ceiling:
         # ***************************************************************************************
         if unit_r_or_u:
             interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntRoof".format(int_roof_r_value), int_roof_r_value)
+                model, "R-{} IntRoof".format(round(int_roof_r_value, 1)), int_roof_r_value)
         else:
             interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntRoof".format(1 / int_roof_r_value), 1 / int_roof_r_value)
+                model, "R-{} IntRoof".format(round(1 / int_roof_r_value, 1)), 1 / int_roof_r_value)
         interior_surfaces.setRoofCeilingConstruction(interior_roof_cons)
 
         # Floor:
         # ***************************************************************************************
         if unit_r_or_u:
             interior_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntFloor".format(int_floor_r_value), int_floor_r_value)
+                model, "R-{} IntFloor".format(round(int_floor_r_value, 1)), int_floor_r_value)
         else:
             interior_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntFloor".format(1 / int_floor_r_value), 1 / int_floor_r_value)
+                model, "R-{} IntFloor".format(round(1 / int_floor_r_value, 1)), 1 / int_floor_r_value)
         interior_surfaces.setFloorConstruction(interior_floor_cons)
 
         sets.setDefaultInteriorSurfaceConstructions(interior_surfaces)
@@ -380,30 +380,30 @@ class ConstructionTool:
         # ***************************************************************************************
         if unit_r_or_u:
             ground_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Wall".format(ground_wall_r_value), ground_wall_r_value)
+                model, "R-{} Underground_Wall".format(round(ground_wall_r_value, 1)), ground_wall_r_value)
         else:
             ground_wall_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Wall".format(1 / ground_wall_r_value), 1 / ground_wall_r_value)
+                model, "R-{} Underground_Wall".format(round(1 / ground_wall_r_value, 1)), 1 / ground_wall_r_value)
         ground_surfaces.setWallConstruction(ground_wall_cons)
 
         # Ceiling:
         # ***************************************************************************************
         if unit_r_or_u:
             ground_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Roof".format(ground_roof_r_value), ground_roof_r_value)
+                model, "R-{} Underground_Roof".format(round(ground_roof_r_value, 1)), ground_roof_r_value)
         else:
             ground_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Roof".format(1 / ground_roof_r_value), 1 / ground_roof_r_value)
+                model, "R-{} Underground_Roof".format(round(1 / ground_roof_r_value, 1)), 1 / ground_roof_r_value)
         ground_surfaces.setRoofCeilingConstruction(ground_roof_cons)
 
         # Floor:
         # ***************************************************************************************
         if unit_r_or_u:
             ground_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Floor".format(ground_floor_r_value), ground_floor_r_value)
+                model, "R-{} Underground_Floor".format(round(ground_floor_r_value, 1)), ground_floor_r_value)
         else:
             ground_floor_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} Underground_Floor".format(1 / ground_floor_r_value), 1 / ground_floor_r_value)
+                model, "R-{} Underground_Floor".format(round(1 / ground_floor_r_value, 1)), 1 / ground_floor_r_value)
         ground_surfaces.setFloorConstruction(ground_floor_cons)
 
         sets.setDefaultGroundContactSurfaceConstructions(ground_surfaces)

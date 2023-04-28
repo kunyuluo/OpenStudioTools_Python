@@ -3,25 +3,26 @@ import openstudio
 import json
 from openstudio.openstudiomodelgeometry import Surface, SubSurface, ShadingSurface
 from openstudio.openstudioutilitiesgeometry import Vector3d, Point3dVector, Point3d
-from Schedules.Template import Office
+from Schedules.Template import schedule_sets_office
+from Schedules.ScheduleTools import ScheduleSets
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
 from Constructions.ConstructionTools import ConstructionTool
 
 
 class GeometryTool:
+
     roof_threshold = math.pi / 4
     tolerance = 0.0001
-
-    # def __init__(self, roof_threshold = math.pi/4):
-    #     self._roof_threshold = roof_threshold
 
     # Set up building:
     @staticmethod
     def building(model: openstudio.openstudiomodel.Model, name=None, north_axis=0):
         bldg = model.getBuilding()
-        if name is not None: bldg.setName(name)
-        if north_axis != 0: bldg.setNorthAxis(north_axis)
+        if name is not None:
+            bldg.setName(name)
+        if north_axis != 0:
+            bldg.setNorthAxis(north_axis)
         return bldg
 
     # Make a Building Story
@@ -315,7 +316,15 @@ class GeometryTool:
             json_path: str,
             internal_load: str = None,
             construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None,
-            schedule_sets: openstudio.openstudiomodel.DefaultScheduleSet = None):
+            schedule_sets=None):
+
+        """
+        :param model: an openstudio model object.
+        :param json_path: a file path of json. Use output from method "load_from_rhino" here.
+        :param internal_load: a json file. Use output from method "internal_load_input_json" here.
+        :param construction_sets: a DefaultConstructionSet object.
+        :param schedule_sets: a dictionary. Use output from method "schedule_set_input_json" here.
+        """
 
         with open(json_path, 'r') as openfile:
             # Reading from json file
@@ -324,12 +333,6 @@ class GeometryTool:
         rooms = json_object["rooms"]
         number_of_stories = int(json_object["number_of_stories"])
         stories = GeometryTool.building_story(model, number_of_stories)
-
-        # Schedule sets:
-        if schedule_sets is not None:
-            schedule_set = schedule_sets
-        else:
-            schedule_set = Office(model)
 
         # Construction sets:
         if construction_sets is not None:
@@ -342,44 +345,65 @@ class GeometryTool:
 
         # Internal load data:
         loads = {}
+        schedules = {}
         if internal_load is not None:
             internal_loads = json.loads(internal_load)
             space_types = internal_loads.keys()
 
             for i, space in enumerate(space_types):
+                # space = space.lower()
                 load_dict = {"lighting": None, "electric_equip": None, "people": None,
                              "gas_equip": None, "space_type": None}
                 load_of_space = internal_loads[space]
                 people_cal_method = internal_loads[space]["people_density_method"]
 
-                # Lighting Definition:
-                light = InternalLoad.light_definition(model, lighting_power=load_of_space["lighting"])
+                # Schedule set for this space type:
+                if schedule_sets is not None:
+                    if isinstance(schedule_sets, ScheduleSets):
+                        schedules[space] = schedule_sets.get_schedule_sets()
+                    elif isinstance(schedule_sets, dict):
+                        schedules[space] = schedule_sets[space].get_schedule_sets()
+                    else:
+                        schedules[space] = schedule_sets_office(model)
+                else:
+                    schedules[space] = schedule_sets_office(model)
+
+                    # Lighting Definition:
+                light = InternalLoad.light_definition(
+                    model, lighting_power=load_of_space["lighting"], name=space + "_Light_Definition")
                 load_dict["lighting"] = light
 
                 # Electric Equipment Definition:
-                electric_equip = InternalLoad.electric_equipment_definition(model, power=load_of_space["equipment"])
+                electric_equip = InternalLoad.electric_equipment_definition(
+                    model, power=load_of_space["equipment"], name=space + "_Equipment_Definition")
                 load_dict["electric_equip"] = electric_equip
 
                 # People Definition:
                 match people_cal_method:
                     case "People":
-                        people = InternalLoad.people_definition(model, 1, load_of_space["people_density"])
+                        people = InternalLoad.people_definition(
+                            model, 1, load_of_space["people_density"], name=space + "_People_Definition")
                     case "Area/Person":
-                        people = InternalLoad.people_definition(model, 2, load_of_space["people_density"])
+                        people = InternalLoad.people_definition(
+                            model, 2, load_of_space["people_density"], name=space + "_People_Definition")
                     case "Person/Area" | _:
-                        people = InternalLoad.people_definition(model, 3, load_of_space["people_density"])
+                        people = InternalLoad.people_definition(
+                            model, 3, load_of_space["people_density"], name=space + "_People_Definition")
                 load_dict["people"] = people
 
                 # Gas Equipment Definition:
-                gas_equip = InternalLoad.gas_equipment_definition(model, load_of_space["gas_power"])
+                gas_equip = InternalLoad.gas_equipment_definition(
+                    model, load_of_space["gas_power"], name=space + "_Gas_Definition")
                 load_dict["gas_equip"] = gas_equip
 
                 # Outdoor Air:
                 outdoor_air = InternalLoad.outdoor_air(
                     model, outdoor_air_per_floor_area=load_of_space["outdoor_air_per_area"],
                     outdoor_air_per_person=load_of_space["outdoor_air_per_person"],
-                    schedule=office_sch.occupancy())
-                infiltration = InternalLoad.infiltration(model)
+                    schedule=schedules[space]["occupancy"], name=space + "_DSOA")
+
+                infiltration = InternalLoad.infiltration(model, name=space + "_Infiltration")
+
                 space_type = ZoneTool.space_type(model, space, space, outdoor_air, infiltration)
                 load_dict["space_type"] = space_type
 
@@ -389,21 +413,29 @@ class GeometryTool:
         thermal_zones = []
         oriented_walls = {"east": [], "west": [], "north": [], "south": [], "other": []}
         oriented_subsurfaces = {"east": [], "west": [], "north": [], "south": [], "other": []}
+
         if len(rooms) != 0:
+
             all_surfaces = []
             all_subsurfaces = []
+
             for i, room in enumerate(rooms, 1):
                 room_type = room["space_type"]
 
+                # Define internal load object for each space:
                 people = InternalLoad.people(
                     loads[room_type]["people"],
-                    schedule=office_sch.occupancy(), activity_schedule=office_sch.activity_level())
+                    schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
+
                 electric_equip = InternalLoad.electric_equipment(
-                    loads[room_type]["electric_equip"], schedule=office_sch.equipment())
+                    loads[room_type]["electric_equip"], schedule=schedules[room_type]["electric_equipment"])
+
                 light = InternalLoad.light(
-                    loads[room_type]["lighting"], lighting_schedule=office_sch.lighting())
+                    loads[room_type]["lighting"], lighting_schedule=schedules[room_type]["lighting"])
 
                 name = str(room["story"]) + "F_" + room_type + "_{}".format(i)
+
+                # Create space object:
                 space = ZoneTool.space(
                     model,
                     space_type=loads[room_type]["space_type"],
@@ -417,9 +449,10 @@ class GeometryTool:
 
                 # Thermal zones:
                 thermal_zone = ZoneTool.thermal_zone_from_space(
-                    model, space, office_sch.cooling_setpoint(), office_sch.heating_setpoint())
+                    model, space, schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
 
-                thermal_zone_dict = {"zone": thermal_zone, "name": name, "story": room["story"], "space_type": room_type}
+                thermal_zone_dict = {
+                    "zone": thermal_zone, "name": name, "story": room["story"], "space_type": room_type}
                 thermal_zones.append(thermal_zone_dict)
 
                 # Create surfaces and subsurfaces:
