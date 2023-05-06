@@ -183,6 +183,7 @@ class HVACTool:
             name: str = None,
             design_air_flow_rate=None,
             design_return_air_flow_fraction=None,
+            supply_components: list = [],
             air_terminal_type: int = 1,
             air_terminal_reheat_type: int = 3,
             thermal_zones: list = None):
@@ -340,4 +341,12 @@ class HVACTool:
         results = (loop, reheat_water_coils, beam_cool_coils, beam_heat_coils)
 
         return results
+
+    @staticmethod
+    def air_loop_supply_component():
+
+        components = {"oa_controller": None, "heat_recovery": None, "cooling_coil": None, "humidity_control": None,
+                      "heating_coil": None, "supply_fan": None, "return_fan": None, "temperature_control": None}
+
+        return components
 

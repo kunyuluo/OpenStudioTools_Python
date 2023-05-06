@@ -175,12 +175,12 @@ class InternalLoad:
     def light(
             light_definition: LightsDefinition,
             space: openstudio.openstudiomodel.Space = None,
-            lighting_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
 
         light = Lights(light_definition)
 
-        if lighting_schedule is not None:
-            light.setSchedule(lighting_schedule)
+        if schedule is not None:
+            light.setSchedule(schedule)
 
         if space is not None:
             light.setSpace(space)

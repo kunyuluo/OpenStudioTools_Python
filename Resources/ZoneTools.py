@@ -5,6 +5,7 @@ from openstudio.openstudiomodel import GasEquipment, InternalMass
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
 from openstudio.openstudiomodel import GasEquipmentDefinition
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
+from openstudio.openstudiomodel import Construction
 
 
 class ZoneTool:
@@ -587,3 +588,56 @@ class ZoneTool:
                     zones.append(zone)
 
             return sorted_zones
+
+    @staticmethod
+    def thermal_zone_by_name(thermal_zones: list, name_to_search: str):
+        """
+        :param thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.
+        :param name_to_search: zone name to search for.
+        :return: a list of target thermal zones.
+        """
+
+        target_zones = []
+        for zone_dict in thermal_zones:
+            zone_name = zone_dict["name"]
+
+            if name_to_search in zone_name:
+                target_zones.append(zone_dict["zone"])
+
+        return target_zones
+
+    @staticmethod
+    def construction_by_orientation(
+            sorted_surfaces: dict,
+            construction_east: Construction = None,
+            construction_west: Construction = None,
+            construction_north: Construction = None,
+            construction_south: Construction = None,
+            construction_default: Construction = None):
+
+        """
+        sorted_surfaces: A dictionary of surfaces. Use output from "geometry_from_json" here.
+        """
+
+        for key in sorted_surfaces.keys():
+            match key:
+                case "east":
+                    if construction_east is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            srf.setConstruction(construction_east)
+                case "west":
+                    if construction_west is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            srf.setConstruction(construction_west)
+                case "north":
+                    if construction_north is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            srf.setConstruction(construction_north)
+                case "south":
+                    if construction_south is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            srf.setConstruction(construction_south)
+                case _:
+                    if construction_default is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            srf.setConstruction(construction_default)

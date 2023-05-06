@@ -7,7 +7,6 @@ from OutputData.OutputData import output_variables
 from Resources.ExteriorEquipments import ExteriorEquipments
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
-from Schedules.Template import Office
 from RhinoGeometry.RhinoParse import load_rhino_model
 
 # vertices = []
@@ -40,7 +39,7 @@ SiteLocationTool.set_site_and_design_days(model, ddy_path_str)
 # Run period:
 # **************************************************************************************
 SimulationSettingTool.set_run_period(model)
-SimulationSettingTool.simulation_controls(model, "FullExterior")
+SimulationSettingTool.simulation_controls(model)
 
 # Output variables:
 # **************************************************************************************
@@ -52,7 +51,7 @@ ExteriorEquipments.exterior_lights(model, design_level=24)
 
 # Space with load:
 # **************************************************************************************
-office_sch = Office(model)
+# office_sch = Office(model)
 # resid_sch = Residential(model)
 
 load = InternalLoad.internal_load_input_json(

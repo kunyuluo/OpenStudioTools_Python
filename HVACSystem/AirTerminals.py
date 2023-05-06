@@ -161,7 +161,7 @@ class AirTerminal:
             max_hot_water_flow_rate=None,
             min_hot_water_flow_rate=None,
             convergence_tolerance=None,
-            reheat_control_strategy: str = "SingleMaximum",
+            reheat_control_strategy: int = 1,
             damper_heating_action: str = None,
             max_flow_per_area_reheat=None,
             max_flow_fraction_reheat=None,
@@ -173,10 +173,13 @@ class AirTerminal:
         -Zone minimum Air Flow Input Method: \n
         1.Constant \n
         2.FixedFlowRate \n
-        3.Scheduled
+        3.Scheduled \n
 
         -Reheat_coil_type:  \n
-        1.Water 2.Gas 3.Electric
+        1.Water 2.Gas 3.Electric \n
+
+        -Reheat_control_strategy:  \n
+        1.SingleMaximum 2.DualMaximum
         """
 
         if model is not None:
@@ -232,9 +235,9 @@ class AirTerminal:
                 terminal.setConvergenceTolerance(convergence_tolerance)
 
             if reheat_control_strategy is not None:
-                if reheat_control_strategy == "SingleMaximum":
+                if reheat_control_strategy == 1:
                     terminal.setDamperHeatingAction("Normal")
-                elif reheat_control_strategy == "DualMaximum":
+                elif reheat_control_strategy == 2:
                     terminal.setDamperHeatingAction("ReverseWithLimits")
                 else:
                     pass

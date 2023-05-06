@@ -368,7 +368,7 @@ class GeometryTool:
                 else:
                     schedules[space] = schedule_sets_office(model)
 
-                    # Lighting Definition:
+                # Lighting Definition:
                 light = InternalLoad.light_definition(
                     model, lighting_power=load_of_space["lighting"], name=space + "_Light_Definition")
                 load_dict["lighting"] = light
@@ -397,12 +397,21 @@ class GeometryTool:
                 load_dict["gas_equip"] = gas_equip
 
                 # Outdoor Air:
-                outdoor_air = InternalLoad.outdoor_air(
-                    model, outdoor_air_per_floor_area=load_of_space["outdoor_air_per_area"],
-                    outdoor_air_per_person=load_of_space["outdoor_air_per_person"],
-                    schedule=schedules[space]["occupancy"], name=space + "_DSOA")
+                if schedules[space]["occupancy"] is not None:
+                    outdoor_air = InternalLoad.outdoor_air(
+                        model, outdoor_air_per_floor_area=load_of_space["outdoor_air_per_area"],
+                        outdoor_air_per_person=load_of_space["outdoor_air_per_person"],
+                        schedule=schedules[space]["occupancy"], name=space + "_DSOA")
+                else:
+                    outdoor_air = InternalLoad.outdoor_air(
+                        model, outdoor_air_per_floor_area=load_of_space["outdoor_air_per_area"],
+                        outdoor_air_per_person=load_of_space["outdoor_air_per_person"], name=space + "_DSOA")
 
-                infiltration = InternalLoad.infiltration(model, name=space + "_Infiltration")
+                if schedules[space]["infiltration"] is not None:
+                    infiltration = InternalLoad.infiltration(
+                        model, schedule=schedules[space]["infiltration"], name=space + "_Infiltration")
+                else:
+                    infiltration = InternalLoad.infiltration(model, name=space + "_Infiltration")
 
                 space_type = ZoneTool.space_type(model, space, space, outdoor_air, infiltration)
                 load_dict["space_type"] = space_type
@@ -423,15 +432,27 @@ class GeometryTool:
                 room_type = room["space_type"]
 
                 # Define internal load object for each space:
-                people = InternalLoad.people(
-                    loads[room_type]["people"],
-                    schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
+                # People:
+                if schedules[room_type]["occupancy"] is not None and schedules[room_type]["activity"] is not None:
+                    people = InternalLoad.people(
+                        loads[room_type]["people"],
+                        schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
+                else:
+                    people = InternalLoad.people(loads[room_type]["people"])
 
-                electric_equip = InternalLoad.electric_equipment(
-                    loads[room_type]["electric_equip"], schedule=schedules[room_type]["electric_equipment"])
+                # Electric Equipment:
+                if schedules[room_type]["electric_equipment"] is not None:
+                    electric_equip = InternalLoad.electric_equipment(
+                        loads[room_type]["electric_equip"], schedule=schedules[room_type]["electric_equipment"])
+                else:
+                    electric_equip = InternalLoad.electric_equipment(loads[room_type]["electric_equip"])
 
-                light = InternalLoad.light(
-                    loads[room_type]["lighting"], lighting_schedule=schedules[room_type]["lighting"])
+                # Light:
+                if schedules[room_type]["lighting"] is not None:
+                    light = InternalLoad.light(
+                        loads[room_type]["lighting"], schedule=schedules[room_type]["lighting"])
+                else:
+                    light = InternalLoad.light(loads[room_type]["lighting"])
 
                 name = str(room["story"]) + "F_" + room_type + "_{}".format(i)
 
@@ -448,8 +469,13 @@ class GeometryTool:
                 space.setDefaultConstructionSet(cons_set)
 
                 # Thermal zones:
-                thermal_zone = ZoneTool.thermal_zone_from_space(
-                    model, space, schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
+                if schedules[room_type]["cooling_setpoint"] is not None and \
+                        schedules[room_type]["heating_setpoint"] is not None:
+                    thermal_zone = ZoneTool.thermal_zone_from_space(
+                        model, space,
+                        schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
+                else:
+                    thermal_zone = ZoneTool.thermal_zone_from_space(model, space)
 
                 thermal_zone_dict = {
                     "zone": thermal_zone, "name": name, "story": room["story"], "space_type": room_type}
@@ -530,6 +556,7 @@ class GeometryTool:
             nz += (p0.x() - p1.x()) * (p0.y() + p1.y())
 
         normal = Vector3d(nx, ny, nz)
+        normal.normalize()
 
         return normal
 
@@ -571,7 +598,15 @@ class GeometryTool:
                 for j, srf_rest in enumerate(surfaces[i+1:]):
                     normal_rest = GeometryTool.newell_method(srf_rest)
                     centroid_rest = GeometryTool.centroid(srf_rest)
-                    angle = math.acos(normal_curr.dot(normal_rest) / (normal_curr.length() * normal_rest.length()))
+                    dot = normal_curr.dot(normal_rest) / (normal_curr.length() * normal_rest.length())
+
+                    # Normalize the dot value to avoid ValueError of math.acos:
+                    if dot > 1.0:
+                        dot = 1.0
+                    if dot < -1.0:
+                        dot = -1.0
+
+                    angle = math.acos(dot)
                     dist = GeometryTool.distance(centroid_curr, centroid_rest)
 
                     if math.fabs(angle - math.pi) < GeometryTool.tolerance and dist < GeometryTool.tolerance:

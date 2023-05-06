@@ -358,7 +358,7 @@ def find_child_surface(surface, sub_surfaces):
                     subsurface.ToBrep(), surface.ToBrep(), tolerance)[1]
 
             try:
-                if len(curves) > 1:
+                if len(curves) >= 1:
                     children.append(subsurface)
             except ValueError:
                 if len(curves) > 0:

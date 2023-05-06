@@ -106,6 +106,20 @@ class Helper:
         return u_value / 5.678263337
 
     @staticmethod
+    def r_ip_to_si(r_value):
+        """
+        Convert R-Values in IP (hft2F/BTU) to R-Values in SI (Km2/W)
+        """
+        return r_value / 5.678263337
+
+    @staticmethod
+    def r_si_to_ip(r_value):
+        """
+        Convert R-Values in SI (Km2/W) to R-Values in IP (hft2F/BTU)
+        """
+        return r_value * 5.678263337
+
+    @staticmethod
     def m2ppl_to_pplm2(values):
         """
         Convert people density from m2/people to people/m2
