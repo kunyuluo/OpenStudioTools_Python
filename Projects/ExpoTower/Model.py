@@ -7,6 +7,8 @@ from RhinoGeometry.RhinoParse import load_rhino_model, find_child_surface
 from Geometry.GeometryTools import GeometryTool
 from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
+from HVACSystem.Template.Template import Template
+from Projects.ExpoTower.Systems import hvac_system
 
 # Weather file:
 # **************************************************************************************
@@ -68,25 +70,31 @@ load = InternalLoad.internal_load_input_json(
 
 # Load geometry from Rhino:
 # **************************************************************************************
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo.3dm", "Kunyu_House")
+file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
 geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_1F, schedule_1)
 
 # Get all thermal zones for HVAC arrangement:
 # **************************************************************************************
-# thermal_zones = geometries[0]
+thermal_zones = geometries[0]
 # sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
 
 # Get all exterior wall surfaces for construction assignment:
 # **************************************************************************************
-# ext_walls = geometries[1]
-# ZoneTool.construction_by_orientation(
-#     ext_walls, construction_east=ext_wall_east, construction_south=ext_wall_south)
+ext_walls = geometries[1]
+ZoneTool.construction_by_orientation(
+    ext_walls, construction_east=ext_wall_east, construction_south=ext_wall_south)
 
 # Get all fenestration surfaces for construction assignment:
 # **************************************************************************************
 windows = geometries[2]
 ZoneTool.construction_by_orientation(
     windows, glazing_east_5F, glazing_west_5F, glazing_north_5F, glazing_south_5F)
+
+# Build HVAC system:
+# **************************************************************************************
+hvac_system(model, thermal_zones)
+# Template.vav_chiller_boiler(model, ZoneTool.get_thermal_zone(thermal_zones), air_loop_dehumidification_control=True,
+#                             number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
 
 # Save the model to the pre-defined path:
 # **************************************************************************************

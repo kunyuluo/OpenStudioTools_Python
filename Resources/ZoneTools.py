@@ -516,6 +516,18 @@ class ZoneTool:
         return space
 
     @staticmethod
+    def get_thermal_zone(thermal_zones: list):
+        """
+        -thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.
+        """
+
+        zones = []
+        for zone_dict in thermal_zones:
+            zones.append(zone_dict["zone"])
+
+        return zones
+
+    @staticmethod
     def thermal_zone_by_floor(thermal_zones: list, sub_sort_by_type: bool = False):
         """
         :param thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.

@@ -677,5 +677,8 @@ class InternalLoad:
 
         return internal_load_json
 
+    # @staticmethod
+    # def internal_load_from_file():
+
 
 

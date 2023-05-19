@@ -7,7 +7,9 @@ from OutputData.OutputData import output_variables
 from Resources.ExteriorEquipments import ExteriorEquipments
 from Resources.ZoneTools import ZoneTool
 from Resources.InternalLoad import InternalLoad
-from RhinoGeometry.RhinoParse import load_rhino_model
+# from RhinoGeometry.RhinoParse import load_rhino_model
+from Resources.Helpers import Helper
+from HVACSystem.PerformanceCurves import Curve
 
 # vertices = []
 path_str = "D:\\Projects\\OpenStudioDev\\Model_350.osm"
@@ -54,25 +56,25 @@ ExteriorEquipments.exterior_lights(model, design_level=24)
 # office_sch = Office(model)
 # resid_sch = Residential(model)
 
-load = InternalLoad.internal_load_input_json(
-    ["Office", "Conference", "Corridor"],
-    [0.8, 1.3, 0.6],
-    [1.2, 1.8, 0.5],
-    [0.1, 0.3, 0.05],
-    [200, 200, 200],
-    [0.15, 0.15, 0.15],
-    [0.2, 0.2, 0.2],
-    [3, 1, 3])
-
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
-geometries = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
-thermal_zones = geometries[0]
-sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
-
-oriented_walls = geometries[1]
-oriented_windows = geometries[2]
-print(len(sorted_zones[2]["Office"]))
-print(len(oriented_walls["south"]))
+# load = InternalLoad.internal_load_input_json(
+#     ["Office", "Conference", "Corridor"],
+#     [0.8, 1.3, 0.6],
+#     [1.2, 1.8, 0.5],
+#     [0.1, 0.3, 0.05],
+#     [200, 200, 200],
+#     [0.15, 0.15, 0.15],
+#     [0.2, 0.2, 0.2],
+#     [3, 1, 3])
+#
+# file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
+# geometries = GeometryTool.geometry_from_json(model, file_path, internal_load=load)
+# thermal_zones = geometries[0]
+# sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
+#
+# oriented_walls = geometries[1]
+# oriented_windows = geometries[2]
+# print(len(sorted_zones[2]["Office"]))
+# print(len(oriented_walls["south"]))
 
 # Air loop:
 # **************************************************************************************
@@ -90,7 +92,7 @@ print(len(oriented_walls["south"]))
 #     normalize=False, variable_1=variable_1, variable_2=29.44,
 #     reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
 
-# Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
+Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # Template.vav_chiller_boiler(model, thermal_zones, number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
 #

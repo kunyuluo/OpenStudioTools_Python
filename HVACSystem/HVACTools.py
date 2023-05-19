@@ -183,23 +183,36 @@ class HVACTool:
             name: str = None,
             design_air_flow_rate=None,
             design_return_air_flow_fraction=None,
+            economizer_type: int = 0,
+            heat_recovery_efficiency: float = 0,
+            relief_fan_pressure: float = 0,
             supply_components: list = [],
             air_terminal_type: int = 1,
             air_terminal_reheat_type: int = 3,
             thermal_zones: list = None):
 
         """
+        -Economizer Control Type: \n
+        1.NoEconomizer
+        2.FixedDryBulb
+        3.FixedDewPointAndDryBulb
+        4.FixedEnthalpy \n
+        5.DifferentialDryBulb
+        6.DifferentialEnthalpy
+        7.DifferentialDryBulbAndEnthalpy
+        8.ElectronicEnthalpy
+
         -Air Terminal Type: \n
-        1.SingleDuctConstantVolumeNoReheat \n
-        2.SingleDuctConstantVolumeReheat \n
+        1.SingleDuctConstantVolumeNoReheat
+        2.SingleDuctConstantVolumeReheat
         3.SingleDuctVAVNoReheat \n
-        4.SingleDuctVAVReheat \n
-        5.SingleDuctVAVHeatAndCoolNoReheat \n
+        4.SingleDuctVAVReheat
+        5.SingleDuctVAVHeatAndCoolNoReheat
         6.SingleDuctVAVHeatAndCoolReheat \n
-        7.SingleDuctSeriesPIUReheat \n
-        8.SingleDuctParallelPIUReheat \n
+        7.SingleDuctSeriesPIUReheat
+        8.SingleDuctParallelPIUReheat
         9.SingleDuctConstantVolumeFourPipeInduction \n
-        10.SingleDuctConstantVolumeFourPipeBeam \n
+        10.SingleDuctConstantVolumeFourPipeBeam
         11.SingleDuctConstantVolumeFourCooledBeam
 
         -Air Terminal Reheat Type: \n
@@ -209,7 +222,8 @@ class HVACTool:
         """
 
         loop = openstudio.openstudiomodel.AirLoopHVAC(model)
-        reheat_water_coils = []
+        cooling_water_coils = []
+        heat_water_coils = []
         beam_cool_coils = []
         beam_heat_coils = []
 
@@ -223,7 +237,49 @@ class HVACTool:
         if design_return_air_flow_fraction is not None:
             loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
 
+        # Supply branch
+        # **********************************************************************************************
+        supply_inlet_node = loop.supplyInletNode()
+        supply_outlet_node = loop.supplyOutletNode()
+
+        # Add an OA Controller:
+        controller = AirLoopComponent.controller_outdoor_air(model, economizer_control_type=economizer_type)
+        outdoor_air_system = openstudio.openstudiomodel.AirLoopHVACOutdoorAirSystem(model, controller)
+        outdoor_air_system.addToNode(supply_inlet_node)
+
+        oa_node = outdoor_air_system.outboardOANode().get()
+        relief_node = outdoor_air_system.outboardReliefNode().get()
+
+        # Add a heat recovery if needed:
+        if heat_recovery_efficiency != 0:
+            heat_recovery = AirLoopComponent.heat_exchanger_air_to_air_simplified(
+                model, efficiency=heat_recovery_efficiency)
+            if economizer_type != 0:
+                heat_recovery.setEconomizerLockout(True)
+            heat_recovery.addToNode(oa_node)
+
+        # Add a relief fan if needed:
+        if relief_fan_pressure != 0:
+            relief_fan = AirLoopComponent.fan_variable_speed(model, pressure_rise=relief_fan_pressure)
+            relief_fan.addToNode(relief_node)
+
+        # Add other components to supply side:
+        if len(supply_components) != 0:
+            for i, component in enumerate(supply_components):
+                # if i != len(supply_components) - 1 and \
+                #         isinstance(supply_components[i], openstudio.openstudiomodel.SetpointManagerScheduled):
+                #     supply_components[i].setControlVariable("Temperature")
+                #     supply_components[i].addToNode(supply_outlet_node)
+                #     # supply_components[i].setControlVariable("MaximumHumidityRatio")
+                # else:
+                component.addToNode(supply_outlet_node)
+                if isinstance(component, openstudio.openstudiomodel.CoilCoolingWater):
+                    cooling_water_coils.append(component)
+                if isinstance(component, openstudio.openstudiomodel.CoilHeatingWater):
+                    heat_water_coils.append(component)
+
         # Demand branch
+        # **********************************************************************************************
         if thermal_zones is not None and len(thermal_zones) != 0:
 
             for zone in thermal_zones:
@@ -235,7 +291,7 @@ class HVACTool:
                         match air_terminal_reheat_type:
                             case 1:  # Water
                                 reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
+                                heat_water_coils.append(reheat_coil)
                             case 2:  # Gas
                                 reheat_coil = AirLoopComponent.coil_heating_gas(model)
                             case 3 | _:  # Electric
@@ -249,7 +305,7 @@ class HVACTool:
                         match air_terminal_reheat_type:
                             case 1:  # Water
                                 reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
+                                heat_water_coils.append(reheat_coil)
                             case 2:  # Gas
                                 reheat_coil = AirLoopComponent.coil_heating_gas(model)
                             case 3 | _:  # Electric
@@ -264,7 +320,7 @@ class HVACTool:
                         match air_terminal_reheat_type:
                             case 1:  # Water
                                 reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
+                                heat_water_coils.append(reheat_coil)
                             case 2:  # Gas
                                 reheat_coil = AirLoopComponent.coil_heating_gas(model)
                             case 3 | _:  # Electric
@@ -277,7 +333,7 @@ class HVACTool:
                         match air_terminal_reheat_type:
                             case 1:  # Water
                                 reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
+                                heat_water_coils.append(reheat_coil)
                             case 2:  # Gas
                                 reheat_coil = AirLoopComponent.coil_heating_gas(model)
                             case 3 | _:  # Electric
@@ -291,7 +347,7 @@ class HVACTool:
                         match air_terminal_reheat_type:
                             case 1:  # Water
                                 reheat_coil = AirLoopComponent.coil_heating_water(model)
-                                reheat_water_coils.append(reheat_coil)
+                                heat_water_coils.append(reheat_coil)
                             case 2:  # Gas
                                 reheat_coil = AirLoopComponent.coil_heating_gas(model)
                             case 3 | _:  # Electric
@@ -338,15 +394,6 @@ class HVACTool:
                 except ValueError:
                     print("Cannot add zone and terminal pair to the air loop branch.")
 
-        results = (loop, reheat_water_coils, beam_cool_coils, beam_heat_coils)
+        results = (loop, cooling_water_coils, heat_water_coils, beam_cool_coils, beam_heat_coils)
 
         return results
-
-    @staticmethod
-    def air_loop_supply_component():
-
-        components = {"oa_controller": None, "heat_recovery": None, "cooling_coil": None, "humidity_control": None,
-                      "heating_coil": None, "supply_fan": None, "return_fan": None, "temperature_control": None}
-
-        return components
-

@@ -1353,6 +1353,7 @@ class AirLoopComponent:
             model: openstudio.openstudiomodel.Model,
             name: str = None,
             supply_air_flow_rate=None,
+            sensible_only: bool = False,
             sensible_effectiveness_100_heating=None,
             latent_effectiveness_100_heating=None,
             sensible_effectiveness_75_heating=None,
@@ -1363,12 +1364,21 @@ class AirLoopComponent:
             latent_effectiveness_75_cooling=None,
             nominal_electric_power=None,
             supply_air_outlet_temp_control: bool = False,
-            heat_exchanger_type=None,
-            frost_control_type=None,
+            heat_exchanger_type: int = 0,
+            frost_control_type:int = 0,
             threshold_temp=None,
             initial_defrost_time_fraction=None,
             rate_of_defrost_time_fraction_increase=None,
             economizer_lockout: bool = False):
+
+        """
+        -Heat_exchanger_type: 1.Plate 2.Rotary \n
+        -Frost_control_type: \n
+        1.None 2.ExhaustAirRecirculation 3.ExhaustOnly 4.MinimumExhaustTemperature
+        """
+
+        types = {0: "Plate", 1: "Rotary"}
+        frost_types = {0: "None", 1: "ExhaustAirRecirculation", 2: "ExhaustOnly", 3: "MinimumExhaustTemperature"}
 
         heat_exchanger = openstudio.openstudiomodel.HeatExchangerAirToAirSensibleAndLatent(model)
         if name is not None:
@@ -1382,26 +1392,38 @@ class AirLoopComponent:
         if sensible_effectiveness_100_heating is not None:
             heat_exchanger.setSensibleEffectivenessat100HeatingAirFlow(sensible_effectiveness_100_heating)
 
-        if latent_effectiveness_100_heating is not None:
-            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(latent_effectiveness_100_heating)
+        if sensible_only:
+            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(0)
+        else:
+            if latent_effectiveness_100_heating is not None:
+                heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(latent_effectiveness_100_heating)
 
         if sensible_effectiveness_75_heating is not None:
             heat_exchanger.setSensibleEffectivenessat75HeatingAirFlow(sensible_effectiveness_75_heating)
 
-        if latent_effectiveness_75_heating is not None:
-            heat_exchanger.setLatentEffectivenessat75HeatingAirFlow(latent_effectiveness_75_heating)
+        if sensible_only:
+            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(0)
+        else:
+            if latent_effectiveness_75_heating is not None:
+                heat_exchanger.setLatentEffectivenessat75HeatingAirFlow(latent_effectiveness_75_heating)
 
         if sensible_effectiveness_100_cooling is not None:
             heat_exchanger.setSensibleEffectivenessat100CoolingAirFlow(sensible_effectiveness_100_cooling)
 
-        if latent_effectiveness_100_cooling is not None:
-            heat_exchanger.setLatentEffectivenessat100CoolingAirFlow(latent_effectiveness_100_cooling)
+        if sensible_only:
+            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(0)
+        else:
+            if latent_effectiveness_100_cooling is not None:
+                heat_exchanger.setLatentEffectivenessat100CoolingAirFlow(latent_effectiveness_100_cooling)
 
         if sensible_effectiveness_75_cooling is not None:
             heat_exchanger.setSensibleEffectivenessat75CoolingAirFlow(sensible_effectiveness_75_cooling)
 
-        if latent_effectiveness_75_cooling is not None:
-            heat_exchanger.setLatentEffectivenessat75CoolingAirFlow(latent_effectiveness_75_cooling)
+        if sensible_only:
+            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(0)
+        else:
+            if latent_effectiveness_75_cooling is not None:
+                heat_exchanger.setLatentEffectivenessat75CoolingAirFlow(latent_effectiveness_75_cooling)
 
         if nominal_electric_power is not None:
             heat_exchanger.setNominalElectricPower(nominal_electric_power)
@@ -1410,13 +1432,10 @@ class AirLoopComponent:
             heat_exchanger.setSupplyAirOutletTemperatureControl(supply_air_outlet_temp_control)
 
         if heat_exchanger_type is not None:
-            heat_exchanger.setHeatExchangerType(heat_exchanger_type)
+            heat_exchanger.setHeatExchangerType(types[heat_exchanger_type])
 
         if frost_control_type is not None:
-            heat_exchanger.setFrostControlType(frost_control_type)
-
-        if threshold_temp is not None:
-            heat_exchanger.setThresholdTemperature(threshold_temp)
+            heat_exchanger.setFrostControlType(frost_types[frost_control_type])
 
         if initial_defrost_time_fraction is not None:
             heat_exchanger.setInitialDefrostTimeFraction(initial_defrost_time_fraction)
@@ -1427,6 +1446,27 @@ class AirLoopComponent:
         if economizer_lockout is not None:
             heat_exchanger.setEconomizerLockout(economizer_lockout)
 
+        # Default value for threshold temperature:
+        if threshold_temp is not None:
+            temp = threshold_temp
+        else:
+            if frost_control_type == 2:
+                if heat_exchanger_type == 0:
+                    temp = -1.1 if sensible_only else -12.2
+                else:
+                    temp = -12.2 if sensible_only else -23.3
+            elif frost_control_type == 3:
+                if heat_exchanger_type == 0:
+                    temp = -1.1 if sensible_only else -12.2
+                else:
+                    temp = -12.2 if sensible_only else -23.3
+            elif frost_control_type == 4:
+                temp = 1.7
+            else:
+                temp = 1.7
+
+        heat_exchanger.setThresholdTemperature(temp)
+
         return heat_exchanger
 
     @staticmethod
@@ -1434,12 +1474,21 @@ class AirLoopComponent:
             model: openstudio.openstudiomodel.Model,
             name: str = None,
             supply_air_flow_rate=None,
+            sensible_only: bool = False,
             efficiency=None,
             nominal_electric_power=None,
             supply_air_outlet_temp_control: bool = False,
             heat_exchanger_type=None,
-            frost_control_type=None,
+            frost_control_type: int = 3,
+            threshold_temp=None,
             economizer_lockout: bool = False):
+
+        """
+        -frost_control_type: \n
+        1.None 2.ExhaustAirRecirculation 3.ExhaustOnly 4.MinimumExhaustTemperature
+        """
+
+        frost_types = {0: "None", 1: "ExhaustAirRecirculation", 2: "ExhaustOnly", 3: "MinimumExhaustTemperature"}
 
         heat_exchanger = openstudio.openstudiomodel.HeatExchangerAirToAirSensibleAndLatent(model)
         if name is not None:
@@ -1451,14 +1500,24 @@ class AirLoopComponent:
             heat_exchanger.autosizeNominalSupplyAirFlowRate()
 
         if efficiency is not None:
-            heat_exchanger.setSensibleEffectivenessat100HeatingAirFlow(efficiency)
-            heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(efficiency)
-            heat_exchanger.setSensibleEffectivenessat75HeatingAirFlow(efficiency)
-            heat_exchanger.setLatentEffectivenessat75HeatingAirFlow(efficiency)
-            heat_exchanger.setSensibleEffectivenessat100CoolingAirFlow(efficiency)
-            heat_exchanger.setLatentEffectivenessat100CoolingAirFlow(efficiency)
-            heat_exchanger.setSensibleEffectivenessat75CoolingAirFlow(efficiency)
-            heat_exchanger.setLatentEffectivenessat75CoolingAirFlow(efficiency)
+            if sensible_only:
+                heat_exchanger.setSensibleEffectivenessat100HeatingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(0)
+                heat_exchanger.setSensibleEffectivenessat75HeatingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat75HeatingAirFlow(0)
+                heat_exchanger.setSensibleEffectivenessat100CoolingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat100CoolingAirFlow(0)
+                heat_exchanger.setSensibleEffectivenessat75CoolingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat75CoolingAirFlow(0)
+            else:
+                heat_exchanger.setSensibleEffectivenessat100HeatingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat100HeatingAirFlow(efficiency)
+                heat_exchanger.setSensibleEffectivenessat75HeatingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat75HeatingAirFlow(efficiency)
+                heat_exchanger.setSensibleEffectivenessat100CoolingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat100CoolingAirFlow(efficiency)
+                heat_exchanger.setSensibleEffectivenessat75CoolingAirFlow(efficiency)
+                heat_exchanger.setLatentEffectivenessat75CoolingAirFlow(efficiency)
 
         if nominal_electric_power is not None:
             heat_exchanger.setNominalElectricPower(nominal_electric_power)
@@ -1470,10 +1529,31 @@ class AirLoopComponent:
             heat_exchanger.setHeatExchangerType(heat_exchanger_type)
 
         if frost_control_type is not None:
-            heat_exchanger.setFrostControlType(frost_control_type)
+            heat_exchanger.setFrostControlType(frost_types[frost_control_type])
 
         if economizer_lockout is not None:
             heat_exchanger.setEconomizerLockout(economizer_lockout)
+
+        # Default value for threshold temperature:
+        if threshold_temp is not None:
+            temp = threshold_temp
+        else:
+            if frost_control_type == 2:
+                if heat_exchanger_type == 0:
+                    temp = -1.1 if sensible_only else -12.2
+                else:
+                    temp = -12.2 if sensible_only else -23.3
+            elif frost_control_type == 3:
+                if heat_exchanger_type == 0:
+                    temp = -1.1 if sensible_only else -12.2
+                else:
+                    temp = -12.2 if sensible_only else -23.3
+            elif frost_control_type == 4:
+                temp = 1.7
+            else:
+                temp = 1.7
+
+        heat_exchanger.setThresholdTemperature(temp)
 
         return heat_exchanger
 
@@ -1537,7 +1617,7 @@ class AirLoopComponent:
             min_outdoor_air_flow_rate=None,
             max_outdoor_air_flow_rate=None,
             economizer_control_type: int = 0,
-            economizer_control_action_type: str = None,
+            economizer_control_action_type: int = 0,
             max_limit_dry_bulb_temp=None,
             max_limit_enthalpy=None,
             max_limit_dewpoint_temp=None,
@@ -1559,8 +1639,17 @@ class AirLoopComponent:
         5.DifferentialDryBulb \n
         6.DifferentialEnthalpy \n
         7.DifferentialDryBulbAndEnthalpy \n
-        8.ElectronicEnthalpy
+        8.ElectronicEnthalpy \n
+
+        -Economizer Control Action Type: \n
+        1.ModulateFlow \n
+        2.MinimumFlowWithBypass
         """
+
+        economizer_types = {0: "NoEconomizer", 1: "FixedDryBulb", 2: "FixedDewPointAndDryBulb", 3: "FixedEnthalpy",
+                            4: "FixedEnthalpy", 5: "DifferentialDryBulb", 6: "DifferentialEnthalpy",
+                            7: "DifferentialDryBulbAndEnthalpy", 8: "ElectronicEnthalpy"}
+        economizer_action_types = {0: "ModulateFlow", 1: "MinimumFlowWithBypass"}
 
         controller = openstudio.openstudiomodel.ControllerOutdoorAir(model)
         if name is not None:
@@ -1575,15 +1664,11 @@ class AirLoopComponent:
             controller.setMaximumOutdoorAirFlowRate(max_outdoor_air_flow_rate)
         else:
             controller.autosizeMaximumOutdoorAirFlowRate()
-
-        economizer_types = {0: "NoEconomizer", 1: "FixedDryBulb", 2: "FixedDewPointAndDryBulb", 3: "FixedEnthalpy",
-                            4: "FixedEnthalpy", 5: "DifferentialDryBulb", 6: "DifferentialEnthalpy",
-                            7: "DifferentialDryBulbAndEnthalpy", 8: "ElectronicEnthalpy"}
         if economizer_control_type != 0:
             controller.setEconomizerControlType(economizer_types[economizer_control_type])
 
         if economizer_control_action_type is not None:
-            controller.setEconomizerControlActionType(economizer_control_action_type)
+            controller.setEconomizerControlActionType(economizer_action_types[economizer_control_action_type])
 
         if max_limit_dry_bulb_temp is not None:
             controller.setEconomizerMaximumLimitDryBulbTemperature(max_limit_dry_bulb_temp)
@@ -1626,7 +1711,25 @@ class AirLoopComponent:
             name: str = None,
             schedule=None,
             demand_control_ventilation: bool = False,
-            system_outdoor_air_method: str = None):
+            system_outdoor_air_method: int = 0):
+
+        """
+        -system_outdoor_air_method: \n
+        1.ZoneSum
+        2.Standard62.1VentilationRateProcedure
+        3.Standard62.1VentilationRateProcedureWithLimit
+        4.IndoorAirQualityProcedure
+        5.ProportionalControlBasedOnOccupancySchedule
+        6.ProportionalControlBasedOnDesignOccupancy
+        7.ProportionalControlBasedOnDesignOARate
+        8.IndoorAirQualityProcedureGenericContaminant
+        """
+
+        oa_methods = {0: "ZoneSum", 1: "Standard62.1VentilationRateProcedure",
+                      2: "Standard62.1VentilationRateProcedureWithLimit", 3: "IndoorAirQualityProcedure",
+                      4: "IndoorAirQualityProcedure", 5: "ProportionalControlBasedOnOccupancySchedule",
+                      6: "ProportionalControlBasedOnDesignOccupancy", 7: "ProportionalControlBasedOnDesignOARate",
+                      8: "IndoorAirQualityProcedureGenericContaminant"}
 
         controller = openstudio.openstudiomodel.ControllerMechanicalVentilation(model)
 
@@ -1638,18 +1741,7 @@ class AirLoopComponent:
 
         controller.setDemandControlledVentilation(demand_control_ventilation)
 
-        # System outdoor sir method:
-        # ***************************************************************************
-        # ZoneSum
-        # Standard62.1VentilationRateProcedure
-        # Standard62.1VentilationRateProcedureWithLimit
-        # IndoorAirQualityProcedure
-        # ProportionalControlBasedOnOccupancySchedule
-        # ProportionalControlBasedOnDesignOccupancy
-        # ProportionalControlBasedOnDesignOARate
-        # IndoorAirQualityProcedureGenericContaminant
-
         if system_outdoor_air_method is not None:
-            controller.setSystemOutdoorAirMethod(system_outdoor_air_method)
+            controller.setSystemOutdoorAirMethod(oa_methods[system_outdoor_air_method])
 
         return controller

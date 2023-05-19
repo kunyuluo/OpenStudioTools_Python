@@ -383,6 +383,69 @@ class PlantLoopComponent:
 
         return heat_pump
 
+    @staticmethod
+    def heat_pump_plant_cooling(
+            model: openstudio.openstudiomodel.Model,
+            condenser_type: int = 1,
+            capacity=None,
+            cop=None,
+            load_side_flow_rate=None,
+            source_side_flow_rate=None,
+            sizing_factor=None,
+            companion_heat_pump: openstudio.openstudiomodel.HeatPumpPlantLoopEIRHeating = None,
+            capacity_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            cop_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            cop_plr_curve: openstudio.openstudiomodel.CurveQuadratic = None,
+            name: str = None):
+
+        """
+        -Condenser_type: 1.AirSource 2.WaterSource
+        """
+
+        condenser_types = {1: "AirSource", 2: "WaterSource"}
+
+        heatpump = openstudio.openstudiomodel.HeatPumpPlantLoopEIRCooling(model)
+
+        if name is not None:
+            heatpump.setName(name)
+
+        heatpump.setCondenserType(condenser_types[condenser_type])
+
+        if capacity is not None:
+            heatpump.setReferenceCapacity(capacity)
+        else:
+            heatpump.autosizeReferenceCapacity()
+
+        if cop is not None:
+            heatpump.setReferenceCoefficientofPerformance(cop)
+
+        if load_side_flow_rate is not None:
+            heatpump.setLoadSideReferenceFlowRate(load_side_flow_rate)
+        else:
+            heatpump.autosizeLoadSideReferenceFlowRate()
+
+        if source_side_flow_rate is not None:
+            heatpump.setSourceSideReferenceFlowRate(source_side_flow_rate)
+        else:
+            heatpump.autosizeSourceSideReferenceFlowRate()
+
+        if sizing_factor is not None:
+            heatpump.setSizingFactor(sizing_factor)
+
+        if companion_heat_pump is not None:
+            heatpump.setCompanionHeatingHeatPump(companion_heat_pump)
+
+        if capacity_temperature_curve is not None:
+            heatpump.setCapacityModifierFunctionofTemperatureCurve(capacity_temperature_curve)
+
+        if cop_temperature_curve is not None:
+            heatpump.setElectricInputtoOutputRatioModifierFunctionofTemperatureCurve(cop_temperature_curve)
+
+        if cop_plr_curve is not None:
+            heatpump.setElectricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve(cop_plr_curve)
+
+        return heatpump
+
     # ***************************************************************************************************
     # Heating Equipments
     @staticmethod
@@ -499,6 +562,69 @@ class PlantLoopComponent:
             district.autosizeNominalCapacity()
 
         return district
+
+    @staticmethod
+    def heat_pump_plant_heating(
+            model: openstudio.openstudiomodel.Model,
+            condenser_type: int = 1,
+            capacity=None,
+            cop=None,
+            load_side_flow_rate=None,
+            source_side_flow_rate=None,
+            sizing_factor=None,
+            companion_heat_pump: openstudio.openstudiomodel.HeatPumpPlantLoopEIRCooling = None,
+            capacity_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            cop_temperature_curve: openstudio.openstudiomodel.CurveBiquadratic = None,
+            cop_plr_curve: openstudio.openstudiomodel.CurveQuadratic = None,
+            name: str = None):
+
+        """
+        -Condenser_type: 1.AirSource 2.WaterSource
+        """
+
+        condenser_types = {1: "AirSource", 2: "WaterSource"}
+
+        heatpump = openstudio.openstudiomodel.HeatPumpPlantLoopEIRHeating(model)
+
+        if name is not None:
+            heatpump.setName(name)
+
+        heatpump.setCondenserType(condenser_types[condenser_type])
+
+        if capacity is not None:
+            heatpump.setReferenceCapacity(capacity)
+        else:
+            heatpump.autosizeReferenceCapacity()
+
+        if cop is not None:
+            heatpump.setReferenceCoefficientofPerformance(cop)
+
+        if load_side_flow_rate is not None:
+            heatpump.setLoadSideReferenceFlowRate(load_side_flow_rate)
+        else:
+            heatpump.autosizeLoadSideReferenceFlowRate()
+
+        if source_side_flow_rate is not None:
+            heatpump.setSourceSideReferenceFlowRate(source_side_flow_rate)
+        else:
+            heatpump.autosizeSourceSideReferenceFlowRate()
+
+        if sizing_factor is not None:
+            heatpump.setSizingFactor(sizing_factor)
+
+        if companion_heat_pump is not None:
+            heatpump.setCompanionCoolingHeatPump(companion_heat_pump)
+
+        if capacity_temperature_curve is not None:
+            heatpump.setCapacityModifierFunctionofTemperatureCurve(capacity_temperature_curve)
+
+        if cop_temperature_curve is not None:
+            heatpump.setElectricInputtoOutputRatioModifierFunctionofTemperatureCurve(cop_temperature_curve)
+
+        if cop_plr_curve is not None:
+            heatpump.setElectricInputtoOutputRatioModifierFunctionofPartLoadRatioCurve(cop_plr_curve)
+
+        return heatpump
 
     # ***************************************************************************************************
     # Service Hot Water Equipments
