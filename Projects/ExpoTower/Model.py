@@ -9,6 +9,8 @@ from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
 from HVACSystem.Template.Template import Template
 from Projects.ExpoTower.Systems import hvac_system
+from Projects.ExpoTower.Schedule import add_schedules
+from Projects.ExpoTower.InternalLoads import get_internal_load
 
 # Weather file:
 # **************************************************************************************
@@ -41,37 +43,16 @@ ext_wall_south = ConstructionTool.opaque_no_mass_cons(model, "South R-19 Wall", 
 # Schedules:
 # **************************************************************************************
 schedule_template = schedule_sets_office(model)
-
-schedule_1 = ScheduleSets(model)
-schedule_1.set_occupancy(schedule=schedule_template["occupancy"])
-schedule_1.set_lighting(schedule=schedule_template["lighting"])
-schedule_1.set_electric_equipment(schedule=schedule_template["electric_equipment"])
-schedule_1.set_infiltration(schedule=schedule_template["infiltration"])
-schedule_1.set_cooling_setpoint(schedule=schedule_template["cooling_setpoint"])
-schedule_1.set_heating_setpoint(schedule=schedule_template["heating_setpoint"])
+schedule_sets = add_schedules(model)
 
 # Internal Load:
 # **************************************************************************************
-space_types = ["Restroom", "Stair", "Elevator", "Electrical", "ElevatorLobby", "Office_Pri_1", "Office_Pri_2",
-               "Office_Pri_3", "Office_Pri_4", "Office_Int_1", "Office_Int_2", "Office_Int_3", "Office_Int_4",
-               "Cafeteria_1F", "Cafeteria_Pri_1", "Cafeteria_Pri_2", "Cafeteria_Pri_3", "Cafeteria_Pri_4",
-               "Cafeteria_Int_1", "Cafeteria_Int_2", "Cafeteria_Int_3", "Cafeteria_Int_4", "Lobby", "Corridor",
-               "Exhibition"]
-
-load = InternalLoad.internal_load_input_json(
-    ["Office", "Conference", "Corridor"],
-    [0.8, 1.3, 0.6],
-    [1.2, 1.8, 0.5],
-    [0.1, 0.3, 0.05],
-    [200, 200, 200],
-    [0.15, 0.15, 0.15],
-    [0.2, 0.2, 0.2],
-    [3, 1, 3])
+load = get_internal_load("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "ExpoTower")
 
 # Load geometry from Rhino:
 # **************************************************************************************
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
-geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_1F, schedule_1)
+file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo.3dm", "Kunyu_House")
+geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_1F, schedule_template)
 
 # Get all thermal zones for HVAC arrangement:
 # **************************************************************************************
@@ -92,7 +73,7 @@ ZoneTool.construction_by_orientation(
 
 # Build HVAC system:
 # **************************************************************************************
-hvac_system(model, thermal_zones)
+# hvac_system(model, thermal_zones)
 # Template.vav_chiller_boiler(model, ZoneTool.get_thermal_zone(thermal_zones), air_loop_dehumidification_control=True,
 #                             number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
 

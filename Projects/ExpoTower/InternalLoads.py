@@ -1,4 +1,6 @@
 import psycopg2
+import pandas as pd
+from Resources.InternalLoad import InternalLoad
 
 
 def insert_data_into_database(
@@ -59,17 +61,42 @@ def insert_data_into_database(
     connect.close()
 
 
-project_spaces = ["Lobby", "Lounge", "Exhibition", "MultiFunctional", "BreakRoom", "SmallConference", "Cafeteria",
-                  "OpenOffice", "ClosedOffice", "BigConference", "Gym", "DocumentRoom"]
-project_people_density = [10, 3, 3, 240, 5, 6, 500, 200, 2, 2, 5, 5]
-project_lighting = [5.6, 7, 7, 8, 10, 8, 8, 8, 8, 8, 8, 3.5]
-project_electric_equipment = [20, 80, 80, 50, 10, 35, 30, 60, 45, 45, 30, 10]
-project_outdoor_air_per_area = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-project_outdoor_air_per_person = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-project_people_density_unit = [2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1]
-project_people_activity = [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
-project_gas_equipment = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+def get_internal_load(file_path: str, sheet_name: str = None):
 
-insert_data_into_database(
-    project_spaces, project_people_density, project_lighting, project_electric_equipment, project_outdoor_air_per_area,
-    project_outdoor_air_per_person, project_people_density_unit, project_people_activity, project_gas_equipment)
+    if sheet_name is not None:
+        sheet = sheet_name
+    else:
+        sheet = "Sheet1"
+
+    df = pd.read_excel(file_path, sheet_name=sheet)
+
+    load = InternalLoad.internal_load_input_json(
+        df["space"].values.tolist(),
+        df["lighting"].values.tolist(),
+        df["electric"].values.tolist(),
+        df["ppl_density"].values.tolist(),
+        df["activity"].values.tolist(),
+        df["OA_per_area"].values.tolist(),
+        df["OA_per_ppl"].values.tolist(),
+        df["people_unit"].values.tolist())
+
+    return load
+
+# project_spaces = ["Lobby", "Lounge", "Exhibition", "MultiFunctional", "BreakRoom", "SmallConference", "Cafeteria",
+#                   "OpenOffice", "ClosedOffice", "BigConference", "Gym", "DocumentRoom"]
+# project_people_density = [10, 3, 3, 240, 5, 6, 500, 200, 2, 2, 5, 5]
+# project_lighting = [5.6, 7, 7, 8, 10, 8, 8, 8, 8, 8, 8, 3.5]
+# project_electric_equipment = [20, 80, 80, 50, 10, 35, 30, 60, 45, 45, 30, 10]
+# project_outdoor_air_per_area = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# project_outdoor_air_per_person = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# project_people_density_unit = [2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1]
+# project_people_activity = [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
+# project_gas_equipment = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+# insert_data_into_database(
+#     project_spaces, project_people_density, project_lighting, project_electric_equipment, project_outdoor_air_per_area,
+#     project_outdoor_air_per_person, project_people_density_unit, project_people_activity, project_gas_equipment)
+
+
+# df = pd.read_excel("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "ExpoTower")
+# print(df["space"].values.tolist())

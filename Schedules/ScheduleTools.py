@@ -198,14 +198,44 @@ class ScheduleTool:
 
     # Schedule Ruleset
     @staticmethod
-    def schedule_ruleset(model, value=-9999, type_limits=None, name=None):
+    def schedule_ruleset(model, unit_type: int, value=-9999, name=None):
+
+        """
+        -Unit_type: \n
+        1.Dimensionless
+        2.Temperature
+        3.DeltaTemperature
+        4.PrecipitationRate
+        5.Angle
+        6.Convection Coefficient
+        7.Activity Level
+        8.Velocity
+        9.Capacity
+        10.Power
+        11.Availability
+        12.Percent
+        13.Control
+        14.Mode
+        15.MassFlowRate
+        """
+
+        match unit_type:
+            case 1 | 4 | 6 | 11:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 1)
+            case 2 | 3:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 60)
+            case 7:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 300)
+            case _:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 100)
+
         if value != -9999:
             schedule_ruleset = openstudio.openstudiomodel.ScheduleRuleset(model, value)
         else:
             schedule_ruleset = openstudio.openstudiomodel.ScheduleRuleset(model)
 
-        if type_limits is not None:
-            schedule_ruleset.setScheduleTypeLimits(type_limits)
+        schedule_ruleset.setScheduleTypeLimits(type_limit)
+
         if name is not None:
             schedule_ruleset.setName(name)
 
