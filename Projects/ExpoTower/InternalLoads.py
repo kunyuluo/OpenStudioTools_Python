@@ -72,6 +72,7 @@ def get_internal_load(file_path: str, sheet_name: str = None):
 
     load = InternalLoad.internal_load_input_json(
         df["space"].values.tolist(),
+        df["conditioned"].values.tolist(),
         df["lighting"].values.tolist(),
         df["electric"].values.tolist(),
         df["ppl_density"].values.tolist(),

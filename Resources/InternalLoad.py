@@ -570,6 +570,7 @@ class InternalLoad:
     @staticmethod
     def internal_load_input_json(
             space_type=None,
+            conditioned=None,
             lighting=None,
             equipment=None,
             people_density=None,
@@ -594,6 +595,14 @@ class InternalLoad:
         if space_type is not None and isinstance(space_type, list):
             for i, space in enumerate(space_type):
                 load_dict = {}
+
+                if conditioned is not None and isinstance(conditioned, list):
+                    try:
+                        load_dict["conditioned"] = True if conditioned[i] == 1 else False
+                    except IndexError:
+                        load_dict["conditioned"] = conditioned[-1]
+                        print("Cannot find conditioned value for space {}".format(space))
+
                 if lighting is not None and isinstance(lighting, list):
                     try:
                         load_dict["lighting"] = lighting[i]

@@ -51,7 +51,7 @@ load = get_internal_load("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "ExpoTo
 
 # Load geometry from Rhino:
 # **************************************************************************************
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo.3dm", "Kunyu_House")
+file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
 geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_1F, schedule_template)
 
 # Get all thermal zones for HVAC arrangement:

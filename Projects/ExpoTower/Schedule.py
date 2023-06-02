@@ -3,7 +3,7 @@ from Schedules.Template import schedule_sets_office
 from Schedules.ScheduleTools import ScheduleSets, ScheduleTool
 
 
-def add_schedules(model: openstudio.openstudiomodel.Model):
+def add_schedules(model: openstudio.openstudiomodel.Model, space_types: list):
 
     schedule_sets = {}
 
@@ -44,7 +44,39 @@ def add_schedules(model: openstudio.openstudiomodel.Model):
 
     schedule_office.set_infiltration(schedule=schedule_template["Open_Office_Infiltration"])
 
-    schedule_sets["Office"] = schedule_office
+    # Cafeteria:
+    # *****************************************************************************************************
+    schedule_cafe = ScheduleSets(model)
+    occupancy_cafe = ScheduleTool.custom_annual_schedule(
+        model, 1,
+        [0.36, 0.36, 0.35, 0.34, 0.34, 0.38, 0.43, 0.5, 0.63, 0.89, 1.0, 0.97, 0.9, 0.88, 0.96, 0.95, 1.0, 0.94, 0.84,
+         0.77, 0.71, 0.67, 0.64, 0.52],
+        [0.34, 0.33, 0.33, 0.32, 0.31, 0.31, 0.32, 0.34, 0.35, 0.37, 0.4, 0.42, 0.44, 0.45, 0.45, 0.46, 0.46, 0.46,
+         0.46, 0.46, 0.41, 0.41, 0.4, 0.35],
+        [0.34, 0.33, 0.33, 0.32, 0.31, 0.31, 0.32, 0.34, 0.35, 0.37, 0.4, 0.42, 0.44, 0.45, 0.45, 0.46, 0.46, 0.46,
+         0.46, 0.46, 0.41, 0.41, 0.4, 0.35],
+        "Cafeteria_Occupancy")
+    schedule_cafe.set_occupancy(schedule=occupancy_cafe)
+
+    lighting_cafe = ScheduleTool.custom_annual_schedule(
+        model, 1,
+        [0.36, 0.36, 0.35, 0.34, 0.34, 0.38, 0.43, 0.5, 0.63, 0.89, 1.0, 0.97, 0.9, 0.88, 0.96, 0.95, 1.0, 0.94, 0.84,
+         0.77, 0.71, 0.67, 0.64, 0.52],
+        [0.34, 0.33, 0.33, 0.32, 0.31, 0.31, 0.32, 0.34, 0.35, 0.37, 0.4, 0.42, 0.44, 0.45, 0.45, 0.46, 0.46, 0.46,
+         0.46, 0.46, 0.41, 0.41, 0.4, 0.35],
+        [0.34, 0.33, 0.33, 0.32, 0.31, 0.31, 0.32, 0.34, 0.35, 0.37, 0.4, 0.42, 0.44, 0.45, 0.45, 0.46, 0.46, 0.46,
+         0.46, 0.46, 0.41, 0.41, 0.4, 0.35],
+        "Cafeteria_Lighting")
+    schedule_cafe.set_lighting(schedule=lighting_cafe)
+    schedule_cafe.set_electric_equipment(schedule=lighting_cafe)
+
+    clg_setpt_cafe = ScheduleTool.schedule_ruleset(model, 2, 26, "Cafeteria_CoolingSetPoint")
+    schedule_cafe.set_cooling_setpoint(schedule=clg_setpt_cafe)
+
+    htg_setpt_cafe = ScheduleTool.schedule_ruleset(model, 2, 18, "Cafeteria_HeatingSetPoint")
+    schedule_cafe.set_heating_setpoint(schedule=htg_setpt_cafe)
+
+    schedule_cafe.set_infiltration(schedule=schedule_template["Cafeteria_Infiltration"])
 
     # Corridor:
     # *****************************************************************************************************
@@ -76,14 +108,12 @@ def add_schedules(model: openstudio.openstudiomodel.Model):
     clg_setpt_corridor = ScheduleTool.schedule_ruleset(model, 2, 26, "Corridor_CoolingSetPoint")
     schedule_corridor.set_cooling_setpoint(schedule=clg_setpt_corridor)
 
-    htg_setpt_corridor = ScheduleTool.schedule_ruleset(model, 2, 21, "Corridor_HeatingSetPoint")
+    htg_setpt_corridor = ScheduleTool.schedule_ruleset(model, 2, 19, "Corridor_HeatingSetPoint")
     schedule_corridor.set_heating_setpoint(schedule=htg_setpt_corridor)
 
     schedule_corridor.set_infiltration(schedule=schedule_template["Corridor_Infiltration"])
 
-    schedule_sets["Corridor"] = schedule_corridor
-
-    # Conference:
+    # Others:
     # *****************************************************************************************************
     schedule_conference = ScheduleSets(model)
     schedule_conference.set_occupancy(schedule=schedule_template["occupancy"])
@@ -93,7 +123,19 @@ def add_schedules(model: openstudio.openstudiomodel.Model):
     schedule_conference.set_cooling_setpoint(schedule=schedule_template["cooling_setpoint"])
     schedule_conference.set_heating_setpoint(schedule=schedule_template["heating_setpoint"])
 
-    schedule_sets["Conference"] = schedule_conference
+    # Assignment:
+    # *****************************************************************************************************
+    for space in space_types:
+        if "Office" in space:
+            schedule_sets[space] = schedule_office
+        elif "Corridor" in space:
+            schedule_sets[space] = schedule_corridor
+        elif "Conference" in space:
+            schedule_sets[space] = schedule_conference
+        elif "Cafeteria" in space:
+            schedule_sets[space] = schedule_cafe
+        else:
+            schedule_sets[space] = schedule_conference
 
     # Output:
     # *****************************************************************************************************
