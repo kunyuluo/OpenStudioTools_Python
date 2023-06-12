@@ -354,6 +354,7 @@ class ZoneEquipment:
     def fan_coil_unit(
             model: openstudio.openstudiomodel.Model,
             name: str = None,
+            thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
             capacity_control_method: int = 0,
             heating_coil_type: int = 1,
             fan_pressure_rise=None,
@@ -407,6 +408,9 @@ class ZoneEquipment:
 
         equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(
             model, ScheduleTool.always_on(model), fan, cooling_coil, heating_coil)
+
+        if thermal_zone is not None:
+            equipment.addToThermalZone(thermal_zone)
 
         if name is not None:
             equipment.setName(name)

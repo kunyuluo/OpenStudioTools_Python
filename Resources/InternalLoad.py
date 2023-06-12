@@ -577,8 +577,8 @@ class InternalLoad:
             people_activity_level=None,
             outdoor_air_per_area=None,
             outdoor_air_per_person=None,
-            gas_equipment=None,
-            people_density_unit=None):
+            people_density_unit=None,
+            gas_equipment=None):
 
         """
         -People_density_unit: \n

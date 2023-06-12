@@ -514,8 +514,9 @@ class Template:
 
                         # Add set point manager after cooling coil for dehumidification:
                         if air_loop_dehumidification_control:
-                            spm_dehum = SetpointManager.scheduled(model, control_variable=5, constant_value=0.008)
-                            spm_dehum.addToNode(supply_outlet_node)
+                            pass
+                            # spm_dehum = SetpointManager.scheduled(model, control_variable=5, constant_value=0.008)
+                            # spm_dehum.addToNode(supply_outlet_node)
 
                         # Add heating water coil
                         coil_heating = AirLoopComponent.coil_heating_water(model)
@@ -619,7 +620,7 @@ class Template:
                 chilled_water_loop = HVACTool.plant_loop(
                     model, "Chilled Water Loop", 1,
                     common_pipe_simulation=1,
-                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
+                    setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=1),
                     supply_branches=chilled_water_supply_branches,
                     demand_branches=cooling_coils)
 

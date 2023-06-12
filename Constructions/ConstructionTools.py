@@ -268,7 +268,6 @@ class ConstructionTool:
             win_shgc=0.5,
             win_transmittance=0.5,
             int_wall_r_value=10,
-            int_roof_r_value=10,
             int_floor_r_value=10,
             ground_wall_r_value=10,
             ground_roof_r_value=10,
@@ -334,16 +333,6 @@ class ConstructionTool:
                 model, "R-{} IntWall".format(round(1 / int_wall_r_value, 1)), 1 / int_wall_r_value)
         interior_surfaces.setWallConstruction(interior_wall_cons)
 
-        # Ceiling:
-        # ***************************************************************************************
-        if unit_r_or_u:
-            interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntRoof".format(round(int_roof_r_value, 1)), int_roof_r_value)
-        else:
-            interior_roof_cons = ConstructionTool.opaque_no_mass_cons(
-                model, "R-{} IntRoof".format(round(1 / int_roof_r_value, 1)), 1 / int_roof_r_value)
-        interior_surfaces.setRoofCeilingConstruction(interior_roof_cons)
-
         # Floor:
         # ***************************************************************************************
         if unit_r_or_u:
@@ -353,6 +342,10 @@ class ConstructionTool:
             interior_floor_cons = ConstructionTool.opaque_no_mass_cons(
                 model, "R-{} IntFloor".format(round(1 / int_floor_r_value, 1)), 1 / int_floor_r_value)
         interior_surfaces.setFloorConstruction(interior_floor_cons)
+
+        # Ceiling:
+        # ***************************************************************************************
+        interior_surfaces.setRoofCeilingConstruction(interior_floor_cons)
 
         sets.setDefaultInteriorSurfaceConstructions(interior_surfaces)
 

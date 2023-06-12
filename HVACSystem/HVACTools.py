@@ -23,7 +23,8 @@ class HVACTool:
             supply_branches=None,
             demand_branches=None,
             setpoint_manager: openstudio.openstudiomodel.SetpointManager = None,
-            setpoint_manager_secondary: openstudio.openstudiomodel.SetpointManager = None):
+            setpoint_manager_secondary: openstudio.openstudiomodel.SetpointManager = None,
+            availability: openstudio.openstudiomodel.ScheduleRuleset = None):
 
         """
         -Fluid_type:
@@ -50,6 +51,11 @@ class HVACTool:
         common_pipe_types = {1: "None", 2: "CommonPipe", 3: "TwoWayCommonPipe"}
 
         plant = openstudio.openstudiomodel.PlantLoop(model)
+
+        if availability is not None:
+            avm = openstudio.openstudiomodel.AvailabilityManagerScheduled(model)
+            avm.setSchedule(availability)
+            plant.addAvailabilityManager(avm)
 
         if name is not None:
             plant.setName(name)
@@ -117,12 +123,12 @@ class HVACTool:
 
         # Set up for secondary pump system if needed:
         match common_pipe_simulation:
-            case 0:
-                pass
             case 1:
+                pass
+            case 2:
                 pump = PlantLoopComponent.pump_variable_speed(model)
                 pump.addToNode(node_demand_inlet)
-            case 2:
+            case 3:
                 pump = PlantLoopComponent.pump_variable_speed(model)
                 pump.addToNode(node_demand_inlet)
                 try:
@@ -189,7 +195,9 @@ class HVACTool:
             supply_components: list = [],
             air_terminal_type: int = 1,
             air_terminal_reheat_type: int = 3,
-            thermal_zones: list = None):
+            thermal_zones: list = None,
+            availability: openstudio.openstudiomodel.ScheduleRuleset = None,
+            night_cycle_control: int = 1):
 
         """
         -Economizer Control Type: \n
@@ -219,9 +227,17 @@ class HVACTool:
         1.Water
         2.Gas
         3.Electric
+
+        -Night Cycle Control Types: \n
+        1.StayOff
+        2.CycleOnAny
+        3.CycleOnAnyZoneFansOnly
         """
 
+        night_controls = {1: "StayOff", 2: "CycleOnAny", 3: "CycleOnAnyZoneFansOnly"}
+
         loop = openstudio.openstudiomodel.AirLoopHVAC(model)
+
         cooling_water_coils = []
         heat_water_coils = []
         beam_cool_coils = []
@@ -236,6 +252,11 @@ class HVACTool:
 
         if design_return_air_flow_fraction is not None:
             loop.setDesignReturnAirFlowFractionofSupplyAirFlow(design_return_air_flow_fraction)
+
+        if availability is not None:
+            loop.setAvailabilitySchedule(availability)
+
+        loop.setNightCycleControlType(night_controls[night_cycle_control])
 
         # Supply branch
         # **********************************************************************************************

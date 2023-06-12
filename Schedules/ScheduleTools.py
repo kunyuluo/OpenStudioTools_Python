@@ -145,9 +145,11 @@ class ScheduleTool:
             model: openstudio.openstudiomodel.Model,
             unit_type: int,
             weekday_value,
-            saturday_value,
-            sunday_value,
-            name: str = None):
+            saturday_value=None,
+            sunday_value=None,
+            summer_design_day_value=None,
+            winter_design_day_value=None,
+            name: str = "Default"):
 
         """
         -Unit_type: \n
@@ -178,14 +180,22 @@ class ScheduleTool:
             case _:
                 type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 100)
 
-        schedule = ScheduleTool.schedule_ruleset(model, type_limits=type_limit, name=name)
+        schedule = ScheduleTool.schedule_ruleset(model, unit_type, name=name)
 
         schedule_wd = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
                                                 name=name + "_Schedule_Weekdays")
-        schedule_sat = ScheduleTool.schedule_day(model, saturday_value, type_limits=type_limit,
-                                                 name=name + "_Schedule_Saturday")
-        schedule_sun = ScheduleTool.schedule_day(model, sunday_value, type_limits=type_limit,
-                                                 name=name + "_Schedule_Sunday")
+        if saturday_value is not None:
+            schedule_sat = ScheduleTool.schedule_day(model, saturday_value, type_limits=type_limit,
+                                                     name=name + "_Schedule_Saturday")
+        else:
+            schedule_sat = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
+                                                     name=name + "_Schedule_Saturday")
+        if sunday_value is not None:
+            schedule_sun = ScheduleTool.schedule_day(model, sunday_value, type_limits=type_limit,
+                                                     name=name + "_Schedule_Sunday")
+        else:
+            schedule_sun = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
+                                                     name=name + "_Schedule_Sunday")
 
         ScheduleTool.schedule_rule(schedule, schedule_wd,
                                    days=[True, True, True, True, True, False, False], name=name + "_Weekdays")
@@ -193,6 +203,17 @@ class ScheduleTool:
                                    days=[False, False, False, False, False, True, False], name=name + "_Saturday")
         ScheduleTool.schedule_rule(schedule, schedule_sun,
                                    days=[False, False, False, False, False, False, True], name=name + "_Sunday")
+
+        # Daily Schedule for Design Day:
+        if summer_design_day_value is not None:
+            schedule_summer = ScheduleTool.schedule_day(model, summer_design_day_value, type_limits=type_limit,
+                                                        name=name + "_Schedule_Summer_Design_Day")
+            schedule.setSummerDesignDaySchedule(schedule_summer)
+
+        if winter_design_day_value is not None:
+            schedule_winter = ScheduleTool.schedule_day(model, winter_design_day_value, type_limits=type_limit,
+                                                        name=name + "_Schedule_Winter_Design_Day")
+            schedule.setWinterDesignDaySchedule(schedule_winter)
 
         return schedule
 
@@ -231,6 +252,20 @@ class ScheduleTool:
 
         if value != -9999:
             schedule_ruleset = openstudio.openstudiomodel.ScheduleRuleset(model, value)
+
+            if unit_type == 2:
+                if name is not None:
+                    name = name
+                else:
+                    name = "Temperature"
+
+                summer_values = [value] * 24
+                winter_values = [value] * 24
+                summer_design_day = ScheduleTool.schedule_day(model, summer_values, type_limit, name + "_Summer")
+                winter_design_day = ScheduleTool.schedule_day(model, winter_values, type_limit, name + "_Winter")
+                bool1 = schedule_ruleset.setSummerDesignDaySchedule(summer_design_day)
+                bool2 = schedule_ruleset.setWinterDesignDaySchedule(winter_design_day)
+                # print(bool1)
         else:
             schedule_ruleset = openstudio.openstudiomodel.ScheduleRuleset(model)
 
@@ -295,15 +330,13 @@ class ScheduleTool:
 
     @staticmethod
     def always_on(model):
-        type_limit = ScheduleTool.schedule_type_limits(model, 11, 2, 0, 1, "always on limits")
-        schedule = ScheduleTool.schedule_ruleset(model, 1, type_limits=type_limit, name="AlwaysOn")
+        schedule = ScheduleTool.schedule_ruleset(model, 11, 1, name="AlwaysOn")
 
         return schedule
 
     @staticmethod
     def always_off(model):
-        type_limit = ScheduleTool.schedule_type_limits(model, 11, 2, 0, 1, "always off limits")
-        schedule = ScheduleTool.schedule_ruleset(model, 0, type_limits=type_limit, name="AlwaysOff")
+        schedule = ScheduleTool.schedule_ruleset(model, 11, 0, name="AlwaysOff")
 
         return schedule
 
@@ -312,7 +345,7 @@ class ScheduleTool:
         type_limit = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
 
         schedule = ScheduleTool.schedule_ruleset(
-            model, 0, type_limits=type_limit, name="ESTAR MFHR DHW Fraction Schedule")
+            model, 1, 0, name="ESTAR MFHR DHW Fraction Schedule")
 
         fraction_values = [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.3, 0.5, 0.4, 0.4, 0.3, 0.35, 0.4, 0.4, 0.35, 0.35, 0.3,
                            0.3, 0.5, 0.4, 0.35, 0.45, 0.3, 0.05]
@@ -694,8 +727,7 @@ class ScheduleSets:
             activity = schedule
         else:
             if activity_value is not None:
-                type_limit = ScheduleTool.schedule_type_limits(self._model, 7, 1, 0, 250)
-                activity = ScheduleTool.schedule_ruleset(self._model, 200, type_limit, self._name + "_Activity")
+                activity = ScheduleTool.schedule_ruleset(self._model, 7, 200, self._name + "_Activity")
             else:
                 raise ValueError("Weekly schedule values cannot be empty.")
 

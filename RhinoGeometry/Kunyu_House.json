@@ -3,9 +3,9 @@
     "number_of_stories": 2,
     "rooms": [
         {
-            "identifier": "09c1b2dc-4b0d-4546-ad9b-7bbe8c989615",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "52142e37-e011-4d4c-bab3-aed6bd52f626",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -290,7 +290,7 @@
             ]
         },
         {
-            "identifier": "e022687d-8de4-4133-b833-323bcebd7baa",
+            "identifier": "06faf11d-76f8-4db1-a6e2-dde2da0c3063",
             "name": "Corridor",
             "space_type": "Corridor",
             "story": 1,
@@ -546,9 +546,9 @@
             ]
         },
         {
-            "identifier": "00201a1d-5a83-4650-ba1e-0eb79f53b8e1",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "ee983c69-6a59-4ead-8b4d-4e3f81aec998",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -802,9 +802,9 @@
             ]
         },
         {
-            "identifier": "dbbf2c14-3e88-4f21-9eb0-01f1c5eaab0a",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "58e21668-ff17-403b-be2e-3dc05d2c3dab",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -1120,9 +1120,9 @@
             ]
         },
         {
-            "identifier": "1bda5106-7bb5-4e89-810f-a4bbaadd064a",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "6cbb0f78-d5ca-4246-9044-cb5a087475de",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -1376,9 +1376,9 @@
             ]
         },
         {
-            "identifier": "c66195b8-9805-42a6-af5d-60b11bfb1c41",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "be7cb0b8-c79e-4d73-8f29-2d12ef25a887",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -1632,9 +1632,9 @@
             ]
         },
         {
-            "identifier": "467823a7-b31c-43cf-ad0d-3389ba730369",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "b86caca0-4ff4-42a8-84e5-3dbca552dc2f",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -1919,9 +1919,9 @@
             ]
         },
         {
-            "identifier": "8f74b310-b881-4112-990e-5a1806734a34",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "860ec1a2-6b1e-4a7e-bce9-3076b6c65471",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {
@@ -2175,7 +2175,7 @@
             ]
         },
         {
-            "identifier": "6e037cf9-7279-46aa-9d24-975e28340067",
+            "identifier": "0176cf3a-1242-4f7a-9c24-704d9d31edab",
             "name": "Corridor",
             "space_type": "Corridor",
             "story": 2,
@@ -2400,9 +2400,9 @@
             ]
         },
         {
-            "identifier": "005617b9-cb26-418d-b634-6c324bf741ea",
-            "name": "Conference",
-            "space_type": "Conference",
+            "identifier": "9a79c81b-3812-4e8f-9c89-d4715b15a1e5",
+            "name": "BigConference_2W",
+            "space_type": "BigConference_2W",
             "story": 2,
             "surfaces": [
                 {
@@ -2718,9 +2718,9 @@
             ]
         },
         {
-            "identifier": "6193cb67-d860-4eb7-810a-10e6477f47e1",
-            "name": "Conference",
-            "space_type": "Conference",
+            "identifier": "735b3b9e-cdf9-4e09-acbf-e4aa43d2b02b",
+            "name": "BigConference_2W",
+            "space_type": "BigConference_2W",
             "story": 1,
             "surfaces": [
                 {
@@ -3005,9 +3005,9 @@
             ]
         },
         {
-            "identifier": "0fee9612-c641-4e5c-8460-c3863dda6f5a",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "38dfff3a-3fae-4db0-8c8e-e8630d65eb70",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {
@@ -3292,9 +3292,9 @@
             ]
         },
         {
-            "identifier": "5c39f9a3-b2f7-46d0-91c1-7536ec5fee98",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "154123b6-906d-416c-857c-a7fe54cf0b7a",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {
@@ -3609,9 +3609,9 @@
             ]
         },
         {
-            "identifier": "3e730ddb-a85f-469c-96d3-453815d686c5",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "74a006b6-fa39-429b-bb2a-dfb59536c3e4",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {
@@ -3896,9 +3896,9 @@
             ]
         },
         {
-            "identifier": "8ecd11a2-5515-41e1-99d7-52b305c96d09",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "e3dd84f2-f58f-4dbf-ae92-3e2a3ee2dd92",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {
@@ -4183,9 +4183,9 @@
             ]
         },
         {
-            "identifier": "a93ecc27-e26e-40a5-9c11-8ee1ef57c390",
-            "name": "Conference",
-            "space_type": "Conference",
+            "identifier": "1f493c1a-df28-4d3f-a527-99df82f08acc",
+            "name": "BigConference_2W",
+            "space_type": "BigConference_2W",
             "story": 2,
             "surfaces": [
                 {
@@ -4470,9 +4470,9 @@
             ]
         },
         {
-            "identifier": "6d96a1be-585d-4064-b2bb-b721b9735b81",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "48a1dea1-0835-4e2e-914a-f372a853cf3e",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 1,
             "surfaces": [
                 {
@@ -4757,9 +4757,9 @@
             ]
         },
         {
-            "identifier": "5ead2384-c86b-4b60-8a82-e968cb991bef",
-            "name": "Office",
-            "space_type": "Office",
+            "identifier": "013f2acb-57d2-4933-b125-8672651d49b4",
+            "name": "OpenOffice_1W",
+            "space_type": "OpenOffice_1W",
             "story": 2,
             "surfaces": [
                 {

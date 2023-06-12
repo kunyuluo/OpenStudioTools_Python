@@ -81,7 +81,9 @@ def get_internal_load(file_path: str, sheet_name: str = None):
         df["OA_per_ppl"].values.tolist(),
         df["people_unit"].values.tolist())
 
-    return load
+    space_list = df["space"].values.tolist()
+
+    return load, space_list
 
 # project_spaces = ["Lobby", "Lounge", "Exhibition", "MultiFunctional", "BreakRoom", "SmallConference", "Cafeteria",
 #                   "OpenOffice", "ClosedOffice", "BigConference", "Gym", "DocumentRoom"]

@@ -362,6 +362,7 @@ class GeometryTool:
                     if isinstance(schedule_sets, ScheduleSets):
                         schedules[space] = schedule_sets.get_schedule_sets()
                     elif isinstance(schedule_sets, dict):
+                        # print(space)
                         schedules[space] = schedule_sets[space].get_schedule_sets()
                     else:
                         schedules[space] = schedule_sets_office(model)
@@ -392,9 +393,10 @@ class GeometryTool:
                 load_dict["people"] = people
 
                 # Gas Equipment Definition:
-                gas_equip = InternalLoad.gas_equipment_definition(
-                    model, load_of_space["gas_power"], name=space + "_Gas_Definition")
-                load_dict["gas_equip"] = gas_equip
+                if load_of_space["gas_power"] is not None:
+                    gas_equip = InternalLoad.gas_equipment_definition(
+                        model, load_of_space["gas_power"], name=space + "_Gas_Definition")
+                    load_dict["gas_equip"] = gas_equip
 
                 # Outdoor Air:
                 if schedules[space]["occupancy"] is not None:
@@ -430,6 +432,7 @@ class GeometryTool:
 
             for i, room in enumerate(rooms, 1):
                 room_type = room["space_type"]
+                # print(room_type)
 
                 # Define internal load object for each space:
                 # People:
@@ -438,6 +441,7 @@ class GeometryTool:
                         loads[room_type]["people"],
                         schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
                 else:
+                    print("this shit")
                     people = InternalLoad.people(loads[room_type]["people"])
 
                 # Electric Equipment:
@@ -512,7 +516,7 @@ class GeometryTool:
                                 case _:
                                     oriented_subsurfaces["other"].append(fen_srf)
 
-            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces, True)
+            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces)
 
             for srf in updated_surfaces:
                 srf_type = srf.surfaceType()

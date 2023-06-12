@@ -1632,14 +1632,14 @@ class AirLoopComponent:
 
         """
         -Economizer Control Type: \n
-        1.NoEconomizer \n
-        2.FixedDryBulb \n
-        3.FixedDewPointAndDryBulb \n
-        4.FixedEnthalpy \n
-        5.DifferentialDryBulb \n
-        6.DifferentialEnthalpy \n
-        7.DifferentialDryBulbAndEnthalpy \n
-        8.ElectronicEnthalpy \n
+        0.NoEconomizer \n
+        1.FixedDryBulb \n
+        2.FixedDewPointAndDryBulb \n
+        3.FixedEnthalpy \n
+        4.DifferentialDryBulb \n
+        5.DifferentialEnthalpy \n
+        6.DifferentialDryBulbAndEnthalpy \n
+        7.ElectronicEnthalpy \n
 
         -Economizer Control Action Type: \n
         1.ModulateFlow \n
@@ -1647,8 +1647,8 @@ class AirLoopComponent:
         """
 
         economizer_types = {0: "NoEconomizer", 1: "FixedDryBulb", 2: "FixedDewPointAndDryBulb", 3: "FixedEnthalpy",
-                            4: "FixedEnthalpy", 5: "DifferentialDryBulb", 6: "DifferentialEnthalpy",
-                            7: "DifferentialDryBulbAndEnthalpy", 8: "ElectronicEnthalpy"}
+                            4: "DifferentialDryBulb", 5: "DifferentialEnthalpy",
+                            6: "DifferentialDryBulbAndEnthalpy", 7: "ElectronicEnthalpy"}
         economizer_action_types = {0: "ModulateFlow", 1: "MinimumFlowWithBypass"}
 
         controller = openstudio.openstudiomodel.ControllerOutdoorAir(model)

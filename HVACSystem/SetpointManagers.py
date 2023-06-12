@@ -31,16 +31,16 @@ class SetpointManager:
 
         match control_variable:
             case 1 | 2 | 3:
-                type_limits = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 60)
+                unit_type = 2
             case 4 | 5 | 6:
-                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
+                unit_type = 1
             case 7 | 8 | 9:
-                type_limits = ScheduleTool.schedule_type_limits(model, 15, 1, 0, 100)
+                unit_type = 15
             case _:
-                type_limits = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
+                unit_type = 1
 
         if constant_value is not None:
-            setpoint_schedule = ScheduleTool.schedule_ruleset(model, constant_value, type_limits)
+            setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value)
         else:
             if schedule is not None:
                 setpoint_schedule = schedule

@@ -3,6 +3,8 @@ from HVACSystem.HVACTools import HVACTool
 from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
+from HVACSystem.ZoneEquipments import ZoneEquipment
+from Schedules.ScheduleTools import ScheduleTool
 from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
 
@@ -17,7 +19,25 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # *****************************************************************************************************
     all_zones = ZoneTool.get_thermal_zone(thermal_zones)
     sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
-    stories = len(sorted_zones.keys())
+
+    # elevator_lobbies = sorted_zones["ElevatorLobby"]
+    # stories = len(sorted_zones.keys())
+
+    # Availability Schedule:
+    # *****************************************************************************************************
+    plant_availability = ScheduleTool.custom_annual_schedule(
+        model, 1,
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+        "Plant_Availability")
+
+    ahu_availability = ScheduleTool.custom_annual_schedule(
+        model, 1,
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+        "AHU_Availability")
 
     # Air loops:
     # *****************************************************************************************************
@@ -30,8 +50,12 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     spm_2 = SetpointManager.scheduled(model, 1, Helper.f_to_c(55))
 
     air_loop = HVACTool.air_loop_simplified(
-        model, "AHU-1-1", economizer_type=1, heat_recovery_efficiency=0.6,
-        supply_components=[cooling_coil, spm_1, heating_coil, supply_fan, spm_2], thermal_zones=all_zones)
+        model, "AHU-1-1",
+        economizer_type=1,
+        heat_recovery_efficiency=0.6,
+        supply_components=[cooling_coil, spm_1, heating_coil, supply_fan, spm_2],
+        thermal_zones=all_zones,
+        availability=ahu_availability)
 
     loop = air_loop[0]
     cooling_coils = air_loop[1]
@@ -57,9 +81,10 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         model, "Chilled Water Loop", 1,
         load_distribution_scheme=2,
         common_pipe_simulation=1,
-        setpoint_manager=SetpointManager.outdoor_air_reset(model, ashrae_default=2),
+        setpoint_manager=SetpointManager.scheduled(model, 1, 7),
         supply_branches=[[pump_cooling_1, heatpump_cooling], [pump_cooling_2, district_cooling]],
-        demand_branches=cooling_coils)
+        demand_branches=cooling_coils,
+        availability=plant_availability)
 
     PlantLoopComponent.sizing(model, chilled_water_loop, 1)
 
@@ -69,6 +94,18 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         common_pipe_simulation=1,
         setpoint_manager=SetpointManager.scheduled(model, 1, 45),
         supply_branches=[[pump_heating_1, heatpump_heating], [pump_heating_2, district_heating]],
-        demand_branches=heating_coils)
+        demand_branches=heating_coils,
+        availability=plant_availability)
 
     PlantLoopComponent.sizing(model, hot_water_loop, 1)
+
+    # Zone Equipments (FCUs for elevator lobby):
+    # *****************************************************************************************************
+    # if len(elevator_lobbies) != 0:
+    #     for ele_lobby in elevator_lobbies:
+    #         fcu = ZoneEquipment.fan_coil_unit(
+    #             model,
+    #             thermal_zone=ele_lobby,
+    #             fan_pressure_rise=250,
+    #             chilled_water_loop=chilled_water_loop,
+    #             hot_water_loop=hot_water_loop)
