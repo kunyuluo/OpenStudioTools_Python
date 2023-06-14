@@ -391,7 +391,10 @@ def shades_dict(geometries):
     return shades
 
 
-def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type="Office"):
+def rooms_dict(solids=None, solid_names=None, apertures=None, story_multipliers=None, default_space_type="Office"):
+    """
+    Story_multipliers: a single integer to be applied to all stories or a list of integers to be applied to each story.
+    """
     rooms = []
     names = []
     stories = []
@@ -402,6 +405,17 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
 
         # Get all valid stories of the input geometries:
         valid_stories = check_story_validity(solids)[0]
+
+        # Regulate multiplier values:
+        # multipliers = []
+        # if isinstance(story_multipliers, int):
+        #     multipliers = [story_multipliers] * len(valid_stories)
+        # elif isinstance(story_multipliers, list) and len(story_multipliers) != 0:
+        #     if len(story_multipliers) < len(valid_stories):
+        #         for item in story_multipliers:
+        #
+        # else:
+        #     raise TypeError("Invalid input type of story_multipliers.")
 
         if solid_names is not None and len(solid_names) == len(solids):
 
@@ -422,7 +436,7 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
                         except ValueError:
                             story = match_story(brep, valid_stories)[0]
                 else:
-                    name = default_space_type
+                    name = layer_name
                     story = match_story(brep, valid_stories)[0]
 
                 names.append(name)
@@ -430,7 +444,8 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type
 
                 # Construct room dictionary for each input brep:
                 story_z = match_story(brep, valid_stories)[1]
-                room_dict = {"name": name, "space_type": None, "identifier": None, "story": None, "surfaces": None}
+                room_dict = {"name": name, "space_type": None, "identifier": None,
+                             "story": None, "surfaces": None, "multiplier": None}
 
                 if len(names) != 0:
                     room_dict["space_type"] = names[i]

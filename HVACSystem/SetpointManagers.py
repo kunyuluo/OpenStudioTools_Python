@@ -10,7 +10,8 @@ class SetpointManager:
             model: openstudio.openstudiomodel.Model,
             control_variable: int = 1,
             constant_value=None,
-            schedule: openstudio.openstudiomodel.Schedule = None):
+            schedule: openstudio.openstudiomodel.Schedule = None,
+            name: str = None):
 
         """
         -Control variable:
@@ -40,7 +41,7 @@ class SetpointManager:
                 unit_type = 1
 
         if constant_value is not None:
-            setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value)
+            setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value, name=name)
         else:
             if schedule is not None:
                 setpoint_schedule = schedule
@@ -49,6 +50,9 @@ class SetpointManager:
 
         manager = openstudio.openstudiomodel.SetpointManagerScheduled(
             model, control_variables[control_variable], setpoint_schedule)
+
+        if name is not None:
+            manager.setName(name)
 
         return manager
 
@@ -156,5 +160,12 @@ class SetpointManager:
             manager.setMaximumSetpointTemperature(max_setpoint_temp)
         if min_setpoint_temp is not None:
             manager.setMinimumSetpointTemperature(min_setpoint_temp)
+
+        return manager
+
+    @staticmethod
+    def humidity_maximum(model: openstudio.openstudiomodel.Model):
+
+        manager = openstudio.openstudiomodel.SetpointManagerSystemNodeResetHumidity(model)
 
         return manager

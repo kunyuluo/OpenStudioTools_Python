@@ -619,6 +619,25 @@ class ZoneTool:
         return target_zones
 
     @staticmethod
+    def thermal_zone_by_conditioned(thermal_zones: list):
+        """
+        :param thermal_zones: a list of thermal zone dictionary objects. Use output from "geometry_from_json" here.
+        :return: a list of conditioned zone dictionary objects and unconditioned zone dictionary objects.
+        """
+
+        conditioned_zones = []
+        unconditioned_zones = []
+        for zone_dict in thermal_zones:
+            condition = zone_dict["conditioned"]
+
+            if condition:
+                conditioned_zones.append(zone_dict)
+            else:
+                unconditioned_zones.append(zone_dict)
+
+        return conditioned_zones, unconditioned_zones
+
+    @staticmethod
     def construction_by_orientation(
             sorted_surfaces: dict,
             construction_east: Construction = None,

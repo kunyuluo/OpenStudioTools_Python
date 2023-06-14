@@ -1346,6 +1346,198 @@ class AirLoopComponent:
 
         return fan
 
+    @staticmethod
+    def unitary_system(
+            model: openstudio.openstudiomodel.Model,
+            cooling_coil=None,
+            heating_coil=None,
+            reheat_coil=None,
+            supply_fan=None,
+            control_type: int = 1,
+            thermal_zone_to_serve: openstudio.openstudiomodel.ThermalZone = None,
+            air_loop: openstudio.openstudiomodel.AirLoopHVAC = None,
+            control_zone: openstudio.openstudiomodel.ThermalZone = None,
+            dehumidification_control_type: int = 1,
+            latent_load_control: int = 1,
+            availability_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            fan_placement: int = 1,
+            supply_fan_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            supply_air_flow_rate_method_cooling: int = 0,
+            supply_air_flow_rate_cooling=None,
+            supply_air_flow_rate_per_floor_area_cooling=None,
+            supply_air_flow_rate_per_unit_capacity_cooling=None,
+            fraction_supply_air_flow_rate_cooling=None,
+            supply_air_flow_rate_method_heating: int = 0,
+            supply_air_flow_rate_heating=None,
+            supply_air_flow_rate_per_floor_area_heating=None,
+            supply_air_flow_rate_per_unit_capacity_heating=None,
+            fraction_supply_air_flow_rate_heating=None,
+            supply_air_flow_rate_method_none: int = 0,
+            supply_air_flow_rate_none=None,
+            supply_air_flow_rate_per_floor_area_none=None,
+            supply_air_flow_rate_per_clg_capacity_none=None,
+            supply_air_flow_rate_per_htg_capacity_none=None,
+            fraction_clg_supply_air_flow_rate_none=None,
+            fraction_htg_supply_air_flow_rate_none=None,
+            dx_heating_coil_sizing_ratio=None,
+            use_doas_dx_cooling_coil: bool = False,
+            doas_dx_cooling_coil_leaving_min_air_temp=None,
+            max_supply_air_temp=None,
+            name: str = None):
+
+        """
+        -Control_type: 1.Load 2.SetPoint 3.SingleZoneVAV \n
+        -Dehumidification_control_type: 1.None 2.Multimode 3.CoolReheat \n
+        -Latent_load_control:
+        1.SensibleOnlyLoadControl 2.LatentOnlyLoadControl
+        3.LatentWithSensibleLoadControl 4.LatentOrSensibleLoadControl \n
+        -Fan placement: 1.BlowThrough 2.DrawThrough \n
+        -Supply_air_flow_rate_method_cooling:
+        0.None 1.SupplyAirFlowRate 3.FlowPerFloorArea 4.FractionOfAutosizedCoolingValue 5.FlowPerCoolingCapacity \n
+        -Supply_air_flow_rate_method_heating:
+        0.None 1.SupplyAirFlowRate 2.FlowPerFloorArea 3.FractionOfAutosizedHeatingValue 4.FlowPerHeatingCapacity \n
+        -Supply_air_flow_rate_method_none (no cooling and no heating):
+        0.None 1.SupplyAirFlowRate 2.FlowPerFloorArea 3.FractionOfAutosizedCoolingValue 4.FractionOfAutosizedHeatingValue
+        5.FlowPerCoolingCapacity 6.FlowPerHeatingCapacity\n
+        """
+
+        control_types = {1: "Load", 2: "SetPoint", 3: "SingleZoneVAV"}
+        dehumidification_controls = {1: "None", 2: "Multimode", 3:"CoolReheat"}
+        latent_controls = {1: "SensibleOnlyLoadControl", 2: "LatentOnlyLoadControl",
+                           3: "LatentWithSensibleLoadControl", 4: "LatentOrSensibleLoadControl"}
+        fan_placements = {1: "BlowThrough", 2: "DrawThrough"}
+        supply_air_methods_clg = {0: "None", 1: "SupplyAirFlowRate", 2: "FlowPerFloorArea",
+                                  3: "FractionOfAutosizedCoolingValue", 4: "FlowPerCoolingCapacity"}
+        supply_air_methods_htg = {0: "None", 1: "SupplyAirFlowRate", 2: "FlowPerFloorArea",
+                                  3: "FractionOfAutosizedHeatingValue", 4: "FlowPerHeatingCapacity"}
+        supply_air_methods_none = {0: "None", 1: "SupplyAirFlowRate", 2: "FlowPerFloorArea",
+                                   3: "FractionOfAutosizedCoolingValue", 4: "FractionOfAutosizedHeatingValue",
+                                   5: "FlowPerCoolingCapacity", 6: "FlowPerHeatingCapacity"}
+
+        unitary = openstudio.openstudiomodel.AirLoopHVACUnitarySystem(model)
+
+        if cooling_coil is not None:
+            unitary.setCoolingCoil(cooling_coil)
+
+        if heating_coil is not None:
+            unitary.setHeatingCoil(heating_coil)
+
+        if reheat_coil is not None:
+            unitary.setSupplementalHeatingCoil(reheat_coil)
+
+        if supply_fan is not None:
+            unitary.setSupplyFan(supply_fan)
+
+        if name is not None:
+            unitary.setName(name)
+
+        if supply_fan_schedule is not None:
+            unitary.setSupplyAirFanOperatingModeSchedule(supply_fan_schedule)
+
+        unitary.setControlType(control_types[control_type])
+        unitary.setDehumidificationControlType(dehumidification_controls[dehumidification_control_type])
+        unitary.setLatentLoadControl(latent_controls[latent_load_control])
+
+        if control_zone is not None:
+            unitary.setControllingZoneorThermostatLocation(control_zone)
+
+        if availability_schedule is not None:
+            unitary.setAvailabilitySchedule(availability_schedule)
+
+        if fan_placement is not None:
+            unitary.setFanPlacement(fan_placements[fan_placement])
+
+        if dx_heating_coil_sizing_ratio is not None:
+            unitary.setDXHeatingCoilSizingRatio(dx_heating_coil_sizing_ratio)
+
+        unitary.setUseDOASDXCoolingCoil(use_doas_dx_cooling_coil)
+
+        if doas_dx_cooling_coil_leaving_min_air_temp is not None:
+            unitary.setDOASDXCoolingCoilLeavingMinimumAirTemperature(doas_dx_cooling_coil_leaving_min_air_temp)
+        else:
+            unitary.autosizeDOASDXCoolingCoilLeavingMinimumAirTemperature()
+
+        if supply_air_methods_clg is not None:
+            unitary.setSupplyAirFlowRateMethodDuringCoolingOperation(
+                supply_air_methods_clg[supply_air_flow_rate_method_cooling])
+
+        if supply_air_flow_rate_cooling is not None:
+            unitary.setSupplyAirFlowRateDuringCoolingOperation(supply_air_flow_rate_cooling)
+        else:
+            unitary.autosizeSupplyAirFlowRateDuringCoolingOperation()
+
+        if supply_air_flow_rate_per_floor_area_cooling is not None:
+            unitary.setSupplyAirFlowRatePerFloorAreaDuringCoolingOperation(supply_air_flow_rate_per_floor_area_cooling)
+
+        if supply_air_flow_rate_per_unit_capacity_cooling is not None:
+            unitary.setDesignSupplyAirFlowRatePerUnitofCapacityDuringCoolingOperation(
+                supply_air_flow_rate_per_unit_capacity_cooling)
+
+        if fraction_supply_air_flow_rate_cooling is not None:
+            unitary.setFractionofAutosizedDesignCoolingSupplyAirFlowRate(fraction_supply_air_flow_rate_cooling)
+
+        if supply_air_methods_htg is not None:
+            unitary.setSupplyAirFlowRateMethodDuringHeatingOperation(
+                supply_air_methods_htg[supply_air_flow_rate_method_heating])
+
+        if supply_air_flow_rate_heating is not None:
+            unitary.setSupplyAirFlowRateDuringHeatingOperation(supply_air_flow_rate_heating)
+        else:
+            unitary.autosizeSupplyAirFlowRateDuringHeatingOperation()
+
+        if supply_air_flow_rate_per_floor_area_heating is not None:
+            unitary.setSupplyAirFlowRatePerFloorAreaduringHeatingOperation(supply_air_flow_rate_per_floor_area_heating)
+
+        if supply_air_flow_rate_per_unit_capacity_heating is not None:
+            unitary.setDesignSupplyAirFlowRatePerUnitofCapacityDuringHeatingOperation(
+                supply_air_flow_rate_per_unit_capacity_heating)
+
+        if fraction_supply_air_flow_rate_heating is not None:
+            unitary.setFractionofAutosizedDesignHeatingSupplyAirFlowRate(fraction_supply_air_flow_rate_heating)
+
+        if supply_air_flow_rate_method_none is not None:
+            unitary.setSupplyAirFlowRateMethodWhenNoCoolingorHeatingisRequired(
+                supply_air_methods_none[supply_air_flow_rate_method_none])
+
+        if supply_air_flow_rate_none is not None:
+            unitary.setSupplyAirFlowRateWhenNoCoolingorHeatingisRequired(supply_air_flow_rate_none)
+        else:
+            unitary.autosizeSupplyAirFlowRateWhenNoCoolingorHeatingisRequired()
+
+        if supply_air_flow_rate_per_floor_area_none is not None:
+            unitary.setSupplyAirFlowRatePerFloorAreaWhenNoCoolingorHeatingisRequired(
+                supply_air_flow_rate_per_floor_area_none)
+
+        if supply_air_flow_rate_per_clg_capacity_none is not None:
+            unitary.setDesignSupplyAirFlowRatePerUnitofCapacityDuringCoolingOperationWhenNoCoolingorHeatingisRequired(
+                supply_air_flow_rate_per_clg_capacity_none)
+
+        if supply_air_flow_rate_per_htg_capacity_none is not None:
+            unitary.setDesignSupplyAirFlowRatePerUnitofCapacityDuringHeatingOperationWhenNoCoolingorHeatingisRequired(
+                supply_air_flow_rate_per_htg_capacity_none)
+
+        if fraction_clg_supply_air_flow_rate_none is not None:
+            unitary.setFractionofAutosizedDesignCoolingSupplyAirFlowRateWhenNoCoolingorHeatingisRequired(
+                fraction_clg_supply_air_flow_rate_none)
+
+        if fraction_htg_supply_air_flow_rate_none is not None:
+            unitary.setFractionofAutosizedDesignHeatingSupplyAirFlowRateWhenNoCoolingorHeatingisRequired(
+                fraction_htg_supply_air_flow_rate_none)
+
+        if max_supply_air_temp is not None:
+            unitary.setMaximumSupplyAirTemperature(max_supply_air_temp)
+        else:
+            unitary.autosizeMaximumSupplyAirTemperature()
+
+        if thermal_zone_to_serve is not None:
+            unitary.addToThermalZone(thermal_zone_to_serve)
+
+        if air_loop is not None:
+            node = air_loop.supplyOutletNode()
+            unitary.addToNode(node)
+
+        return unitary
+
     # Heat exchanger:
     # ***************************************************************************
     @staticmethod

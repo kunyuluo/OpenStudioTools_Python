@@ -387,6 +387,9 @@ class ZoneEquipment:
             2:Electric
         """
 
+        capacity_controls = {0: "ConstantFanVariableFlow", 1: "VariableFanVariableFlow", 2: "VariableFanConstantFlow",
+                             3: "CyclingFan", 4: "MultiSpeedFan", 5: "ASHRAE90VariableFan"}
+
         # Create a fan object based on control method:
         match capacity_control_method:
             case 0:
@@ -416,7 +419,7 @@ class ZoneEquipment:
             equipment.setName(name)
 
         if capacity_control_method is not None:
-            equipment.setCapacityControlMethod(capacity_control_method)
+            equipment.setCapacityControlMethod(capacity_controls[capacity_control_method])
 
         if max_supply_air_flow_rate is not None:
             equipment.setMaximumSupplyAirFlowRate(max_supply_air_flow_rate)
@@ -471,7 +474,7 @@ class ZoneEquipment:
             chilled_water_loop.addDemandBranchForComponent(cooling_coil)
 
         # Add heating coil to the chilled water loop if applicable:
-        if heating_coil_type == "Water" and hot_water_loop is not None:
+        if heating_coil_type == 1 and hot_water_loop is not None:
             hot_water_loop.addDemandBranchForComponent(heating_coil)
 
         return equipment

@@ -20,7 +20,7 @@ path_str = "D:\\Projects\\OpenStudioDev\\ExpoTower.osm"
 #
 # # Create a new openstudio model
 # # **************************************************************************************
-model_file = create_model(epw_path_str, ddy_path_str, path_str, "Expo Tower")
+model_file = create_model(epw_path_str, ddy_path_str, path_str, "Expo Tower", north_axis=-45)
 model = model_file[0]
 path = model_file[1]
 
@@ -51,7 +51,7 @@ schedule_sets = add_schedules(model, load[1])
 
 # Load geometry from Rhino:
 # **************************************************************************************
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\geometry_test.3dm", "Kunyu_House")
+file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo_2.3dm", "Kunyu_House")
 geometries = GeometryTool.geometry_from_json(model, file_path, load[0], cons_set_1F, schedule_sets)
 
 # Get all thermal zones for HVAC arrangement:
@@ -73,9 +73,14 @@ ZoneTool.construction_by_orientation(
 
 # Build HVAC system:
 # **************************************************************************************
-# hvac_system(model, thermal_zones)
-Template.vav_chiller_boiler(model, ZoneTool.get_thermal_zone(thermal_zones), air_loop_dehumidification_control=True,
-                            number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
+hvac_system(model, thermal_zones)
+
+# all_conditioned_zones = ZoneTool.thermal_zone_by_conditioned(thermal_zones)[0]
+# all_conditioned_zones = ZoneTool.get_thermal_zone(all_conditioned_zones)
+# for zone in all_conditioned_zones:
+#     zone.setUseIdealAirLoads(True)
+# Template.vav_chiller_boiler(model, all_conditioned_zones, air_loop_dehumidification_control=True,
+#                             number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
 
 # Save the model to the pre-defined path:
 # **************************************************************************************

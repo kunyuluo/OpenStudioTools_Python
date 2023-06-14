@@ -316,7 +316,8 @@ class GeometryTool:
             json_path: str,
             internal_load: str = None,
             construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None,
-            schedule_sets=None):
+            schedule_sets=None,
+            story_multipliers=None):
 
         """
         :param model: an openstudio model object.
@@ -341,7 +342,7 @@ class GeometryTool:
             # cons_set = ConstructionSet(model, "ASHRAE Default Set").get()
             cons_set = ConstructionTool.construction_set_simple(
                 model, "Chinese Code Compliance Set", False,
-                0.6, 0.4, 0.7, 2.2, 0.35, 0.8, 0.6, 0.4, 0.7, 0.6, 0.4, 0.7)
+                0.6, 0.4, 0.7, 2.2, 0.35, 0.8, 0.6, 0.4, 0.6, 0.4, 0.7)
 
         # Internal load data:
         loads = {}
@@ -353,7 +354,7 @@ class GeometryTool:
             for i, space in enumerate(space_types):
                 # space = space.lower()
                 load_dict = {"lighting": None, "electric_equip": None, "people": None,
-                             "gas_equip": None, "space_type": None}
+                             "gas_equip": None, "space_type": None, "conditioned": None}
                 load_of_space = internal_loads[space]
                 people_cal_method = internal_loads[space]["people_density_method"]
 
@@ -418,6 +419,8 @@ class GeometryTool:
                 space_type = ZoneTool.space_type(model, space, space, outdoor_air, infiltration)
                 load_dict["space_type"] = space_type
 
+                load_dict["conditioned"] = load_of_space["conditioned"]
+
                 loads[space] = load_dict
 
         # Rooms in the building
@@ -432,7 +435,6 @@ class GeometryTool:
 
             for i, room in enumerate(rooms, 1):
                 room_type = room["space_type"]
-                # print(room_type)
 
                 # Define internal load object for each space:
                 # People:
@@ -441,7 +443,6 @@ class GeometryTool:
                         loads[room_type]["people"],
                         schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
                 else:
-                    print("this shit")
                     people = InternalLoad.people(loads[room_type]["people"])
 
                 # Electric Equipment:
@@ -473,25 +474,39 @@ class GeometryTool:
                 space.setDefaultConstructionSet(cons_set)
 
                 # Thermal zones:
-                if schedules[room_type]["cooling_setpoint"] is not None and \
-                        schedules[room_type]["heating_setpoint"] is not None:
-                    thermal_zone = ZoneTool.thermal_zone_from_space(
-                        model, space,
-                        schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
+                # Conditioned Zones:
+                conditioned = loads[room_type]["conditioned"]
+                if conditioned:
+                    # print(room_type + " is conditioned")
+                    if schedules[room_type]["cooling_setpoint"] is not None and \
+                            schedules[room_type]["heating_setpoint"] is not None:
+                        thermal_zone = ZoneTool.thermal_zone_from_space(
+                            model, space,
+                            schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
+                    else:
+                        thermal_zone = ZoneTool.thermal_zone_from_space(model, space)
+                # Unconditioned Zones:
                 else:
+                    # print(room_type + " is unconditioned")
                     thermal_zone = ZoneTool.thermal_zone_from_space(model, space)
 
+                # Multiplier if applicable:
+                # thermal_zone.setMultiplier(1)
+
                 thermal_zone_dict = {
-                    "zone": thermal_zone, "name": name, "story": room["story"], "space_type": room_type}
+                    "zone": thermal_zone, "name": name, "story": room["story"],
+                    "space_type": room_type, "conditioned": conditioned}
+
                 thermal_zones.append(thermal_zone_dict)
 
-                # Create surfaces and subsurfaces:
+                # Create surfaces and subsurface:
                 surfaces = room["surfaces"]
                 for srf in surfaces:
                     vertices = srf["vertices"]
                     name = srf["name"]
 
                     surface = GeometryTool.make_surface(model, vertices, space=space, name=name)
+
                     all_surfaces.append(surface)
 
                     if len(srf["fenestrations"]) != 0:
@@ -516,7 +531,8 @@ class GeometryTool:
                                 case _:
                                     oriented_subsurfaces["other"].append(fen_srf)
 
-            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces)
+            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces, True, cons_set)
+            # GeometryTool.adiabatic_by_type(updated_surfaces, 2)
 
             for srf in updated_surfaces:
                 srf_type = srf.surfaceType()
@@ -586,7 +602,11 @@ class GeometryTool:
 
     # Find Adjacent Surfaces:
     @staticmethod
-    def solve_adjacency(surfaces, adiabatic=False):
+    def solve_adjacency(
+            surfaces,
+            adiabatic: bool = False,
+            construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None):
+
         surfaces_adj = []
         updated_surfaces = []
 
@@ -617,6 +637,16 @@ class GeometryTool:
                         surfaces_adj.append(srf_curr)
                         surfaces_adj.append(srf_rest)
                         srf_curr.setAdjacentSurface(srf_rest)
+
+                        interior_wall = construction_sets.defaultInteriorSurfaceConstructions().get().wallConstruction().get()
+                        interior_floor = construction_sets.defaultInteriorSurfaceConstructions().get().floorConstruction().get()
+
+                        if srf_curr.surfaceType() == "Wall":
+                            srf_curr.setConstruction(interior_wall)
+                            srf_rest.setConstruction(interior_wall)
+                        else:
+                            srf_curr.setConstruction(interior_floor)
+                            srf_rest.setConstruction(interior_floor)
 
                         if adiabatic:
                             srf_curr.setOutsideBoundaryCondition("Adiabatic")
@@ -656,3 +686,29 @@ class GeometryTool:
                 orientation = "other"
 
         return orientation
+
+    @staticmethod
+    def adiabatic_by_type(surfaces: list, surface_type: int = 0):
+        """
+        Surface_type: \n
+
+        """
+        surface_types = {0: "None", 1: "walls", 2: "interiorWalls", 3: "airWalls", 4: "windows", 5: "interiorWindows",
+                         6: "roofs", 7: "ceilings", 8: "floors", 9: "exposedFloors", 10: "groundFloors",
+                         11: "undergroundWalls", 12: "undergroundSlabs", 13: "undergroundCeilings"}
+
+        for surface in surfaces:
+            srf_type = surface.surfaceType()
+            boundary_type = surface.outsideBoundaryCondition()
+
+            match surface_type:
+                case 0:
+                    pass
+                case 1:
+                    if srf_type == "Wall" and boundary_type == "Outdoors":
+                        surface.setOutsideBoundaryCondition("Adiabatic")
+                case 2 | 3:
+                    if srf_type == "Wall" and boundary_type == "Surface":
+                        surface.setOutsideBoundaryCondition("Adiabatic")
+                case _:
+                    pass
