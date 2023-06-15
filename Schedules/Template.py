@@ -3,7 +3,6 @@ from Schedules.ScheduleTools import ScheduleTool
 
 
 def schedule_sets_office(model: openstudio.openstudiomodel.Model):
-
     """
     keys: \n
     "occupancy", "lighting", "electric_equipment", "gas_equipment", "hot_water_equipment", "steam_equipment",
@@ -14,7 +13,7 @@ def schedule_sets_office(model: openstudio.openstudiomodel.Model):
     sets = {"occupancy": None, "lighting": None, "electric_equipment": None, "gas_equipment": None,
             "hot_water_equipment": None, "steam_equipment": None, "other_equipment": None,
             "infiltration": None, "activity": None, "cooling_setpoint": None, "heating_setpoint": None,
-            "hvac_availability": None, "dcv": None}
+            "humidify_setpoint": None, "dehumidify_setpoint": None, "hvac_availability": None, "dcv": None}
 
     # Occupancy Schedule
     # *******************************************************************************************
@@ -94,6 +93,30 @@ def schedule_sets_office(model: openstudio.openstudiomodel.Model):
 
     sets["heating_setpoint"] = htg_schedule
 
+    # Humidify_set point schedule:
+    # *******************************************************************************************
+    hum_wd_values = [10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    hum_sat_values = [10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    hum_sun_values = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+
+    hum_schedule = ScheduleTool.custom_annual_schedule(
+        model, 12, hum_wd_values, hum_sat_values, hum_sun_values, hum_wd_values, hum_wd_values,
+        prefix + "_HumidifySetPt")
+
+    sets["humidify_setpoint"] = hum_schedule
+
+    # Dehumidify_set point schedule:
+    # *******************************************************************************************
+    dehum_wd_values = [70, 70, 70, 70, 70, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+    dehum_sat_values = [70, 70, 70, 70, 70, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 70, 70, 70, 70, 70]
+    dehum_sun_values = [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+
+    dehum_schedule = ScheduleTool.custom_annual_schedule(
+        model, 12, dehum_wd_values, dehum_sat_values, dehum_sun_values, dehum_wd_values, dehum_wd_values,
+        prefix + "_DehumidifySetPt")
+
+    sets["dehumidify_setpoint"] = dehum_schedule
+
     # Activity schedule:
     # *******************************************************************************************
     activity = ScheduleTool.schedule_ruleset(model, 7, 200, prefix + "_Activity")
@@ -130,12 +153,11 @@ def schedule_sets_office(model: openstudio.openstudiomodel.Model):
 
 
 def schedule_sets_residential(model: openstudio.openstudiomodel.Model):
-
     prefix = "Residential"
     sets = {"occupancy": None, "number_of_people": None, "lighting": None, "electric_equipment": None,
             "gas_equipment": None, "hot_water_equipment": None, "steam_equipment": None, "other_equipment": None,
             "infiltration": None, "activity": None, "cooling_setpoint": None, "heating_setpoint": None,
-            "hvac_availability": None, "dcv": None}
+            "humidify_setpoint": None, "dehumidify_setpoint": None, "hvac_availability": None, "dcv": None}
 
     # Occupancy Schedule
     # *******************************************************************************************
@@ -214,6 +236,30 @@ def schedule_sets_residential(model: openstudio.openstudiomodel.Model):
         model, 2, htg_wd_values, htg_sat_values, htg_sun_values, htg_wd_values, htg_wd_values, prefix + "_HeatingSetPt")
 
     sets["heating_setpoint"] = htg_schedule
+
+    # Humidify_set point schedule:
+    # *******************************************************************************************
+    hum_wd_values = [10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    hum_sat_values = [10, 10, 10, 10, 10, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+    hum_sun_values = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+
+    hum_schedule = ScheduleTool.custom_annual_schedule(
+        model, 12, hum_wd_values, hum_sat_values, hum_sun_values, hum_wd_values, hum_wd_values,
+        prefix + "_HumidifySetPt")
+
+    sets["humidify_setpoint"] = hum_schedule
+
+    # Dehumidify_set point schedule:
+    # *******************************************************************************************
+    dehum_wd_values = [70, 70, 70, 70, 70, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
+    dehum_sat_values = [70, 70, 70, 70, 70, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 70, 70, 70, 70, 70]
+    dehum_sun_values = [70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70]
+
+    dehum_schedule = ScheduleTool.custom_annual_schedule(
+        model, 12, dehum_wd_values, dehum_sat_values, dehum_sun_values, dehum_wd_values, dehum_wd_values,
+        prefix + "_DehumidifySetPt")
+
+    sets["dehumidify_setpoint"] = dehum_schedule
 
     # Activity schedule:
     # *******************************************************************************************

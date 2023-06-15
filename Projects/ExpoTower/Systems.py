@@ -48,7 +48,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # Air loops:
     # *****************************************************************************************************
     for i, story in enumerate(sorted_zones.keys()):
-        if story == 100:
+        if story == 1:
             for zone_type in sorted_zones[story].keys():
                 if zone_type == "ElevatorLobby":
                     elevator_lobbies.extend(sorted_zones[story][zone_type])
@@ -73,7 +73,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                     cooling_coils.extend(air_loop[1])
                     heating_coils.extend(air_loop[2])
 
-        elif 1 <= story <= 18:
+        elif 2 <= story <= 18:
             zone_by_ahu = {"1W": [], "1N": [], "2W": [], "2N": [], "3W": [], "3N": [], "4W": [], "4N": []}
             for zone_type in sorted_zones[story].keys():
                 if zone_type == "ElevatorLobby":
@@ -163,7 +163,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         demand_branches=cooling_coils,
         availability=plant_availability)
 
-    PlantLoopComponent.sizing(model, chilled_water_loop, 1)
+    PlantLoopComponent.sizing(model, chilled_water_loop, 1, 7)
 
     hot_water_loop = HVACTool.plant_loop(
         model, "Hot Water Loop", 1,
@@ -174,7 +174,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         demand_branches=heating_coils,
         availability=plant_availability)
 
-    PlantLoopComponent.sizing(model, hot_water_loop, 1)
+    PlantLoopComponent.sizing(model, hot_water_loop, 2, 45)
 
     # Zone Equipments (FCUs for elevator lobby):
     # *****************************************************************************************************

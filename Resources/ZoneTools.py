@@ -79,10 +79,10 @@ class ZoneTool:
     def thermal_zone_from_space(
             model,
             spaces,
-            cooling_setpoint_schedules=None,
-            heating_setpoint_schedules=None,
-            dehumidification_setpoint_schedules=None,
-            humidification_setpoint_schedules=None,
+            cooling_setpoint_schedules: openstudio.openstudiomodel.ScheduleRuleset = None,
+            heating_setpoint_schedules: openstudio.openstudiomodel.ScheduleRuleset = None,
+            dehumidification_setpoint_schedules: openstudio.openstudiomodel.ScheduleRuleset = None,
+            humidification_setpoint_schedules: openstudio.openstudiomodel.ScheduleRuleset = None,
             multiplier: int = None,
             ceiling_height=None,
             volume=None,
@@ -114,32 +114,22 @@ class ZoneTool:
                 # Assign thermostats to the zone:
                 thermostat = openstudio.openstudiomodel.ThermostatSetpointDualSetpoint(model)
                 if cooling_setpoint_schedules is not None:
-                    if isinstance(cooling_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
-                        thermostat.setCoolingSchedule(cooling_setpoint_schedules)
-                    else:
-                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                    thermostat.setCoolingSchedule(cooling_setpoint_schedules)
                 if heating_setpoint_schedules is not None:
-                    if isinstance(heating_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
-                        thermostat.setHeatingSchedule(heating_setpoint_schedules)
-                    else:
-                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                    thermostat.setHeatingSchedule(heating_setpoint_schedules)
 
                 zone.setThermostatSetpointDualSetpoint(thermostat)
 
                 # Assign humidity thermostat to the zone:
                 humidity_thermostat = openstudio.openstudiomodel.ZoneControlHumidistat(model)
                 if dehumidification_setpoint_schedules is not None:
-                    if isinstance(dehumidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
-                        humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
-                            dehumidification_setpoint_schedules)
-                    else:
-                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                    humidity_thermostat.setDehumidifyingRelativeHumiditySetpointSchedule(
+                        dehumidification_setpoint_schedules)
                 if humidification_setpoint_schedules is not None:
-                    if isinstance(humidification_setpoint_schedules, openstudio.openstudiomodel.ScheduleRuleset):
-                        humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
-                            humidification_setpoint_schedules)
-                    else:
-                        raise TypeError("Schedule must be a ScheduleRulset object.")
+                    humidity_thermostat.setHumidifyingRelativeHumiditySetpointSchedule(
+                        humidification_setpoint_schedules)
+
+                zone.setZoneControlHumidistat(humidity_thermostat)
 
                 # Set other properties:
                 if multiplier is not None:

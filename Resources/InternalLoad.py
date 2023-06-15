@@ -5,6 +5,7 @@ from openstudio.openstudiomodel import GasEquipmentDefinition, InternalMassDefin
 from openstudio.openstudiomodel import DesignSpecificationOutdoorAir, SpaceInfiltrationDesignFlowRate
 from Schedules.ScheduleTools import ScheduleTool
 import openstudio
+import pandas as pd
 import json
 
 
@@ -686,8 +687,31 @@ class InternalLoad:
 
         return internal_load_json
 
-    # @staticmethod
-    # def internal_load_from_file():
+    @staticmethod
+    def internal_load_from_file(file_path: str, sheet_name: str = None):
+
+        if sheet_name is not None:
+            sheet = sheet_name
+        else:
+            sheet = "Sheet1"
+
+        df = pd.read_excel(file_path, sheet_name=sheet)
+
+        load = InternalLoad.internal_load_input_json(
+            df["space"].values.tolist(),
+            df["conditioned"].values.tolist(),
+            df["lighting"].values.tolist(),
+            df["electric"].values.tolist(),
+            df["ppl_density"].values.tolist(),
+            df["activity"].values.tolist(),
+            df["OA_per_area"].values.tolist(),
+            df["OA_per_ppl"].values.tolist(),
+            df["people_unit"].values.tolist())
+
+        space_list = df["space"].values.tolist()
+
+        return load, space_list
+
 
 
 

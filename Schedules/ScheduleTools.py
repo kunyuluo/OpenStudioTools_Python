@@ -102,6 +102,52 @@ class ScheduleTool:
 
         return schedule
 
+    @staticmethod
+    def schedule_year(
+            model,
+            unit_type: int,
+            name: str = None):
+
+        """
+        -Unit_type: \n
+        1.Dimensionless
+        2.Temperature
+        3.DeltaTemperature
+        4.PrecipitationRate
+        5.Angle
+        6.Convection Coefficient
+        7.Activity Level
+        8.Velocity
+        9.Capacity
+        10.Power
+        11.Availability
+        12.Percent
+        13.Control
+        14.Mode
+        15.MassFlowRate
+        """
+
+        match unit_type:
+            case 1 | 4 | 6 | 11:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 1)
+            case 2 | 3:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 60)
+            case 7:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 300)
+            case _:
+                type_limit = ScheduleTool.schedule_type_limits(model, unit_type, 1, 0, 100)
+
+        schedule = openstudio.openstudiomodel.ScheduleYear(model)
+        schedule.setScheduleTypeLimits(type_limit)
+
+        if name is not None:
+            schedule.setName(name)
+
+        schedule_week1 = openstudio.openstudiomodel.ScheduleWeek(model)
+        # schedule.addScheduleWeek(openstudio.Date(openstudio.MonthOfYear(start_m), start_d, ScheduleTool.year))
+
+        return schedule
+
     # Schedule Rule
     @staticmethod
     def schedule_rule(
@@ -209,9 +255,17 @@ class ScheduleTool:
             schedule_summer = ScheduleTool.schedule_day(model, summer_design_day_value, type_limits=type_limit,
                                                         name=name + "_Schedule_Summer_Design_Day")
             schedule.setSummerDesignDaySchedule(schedule_summer)
+        else:
+            schedule_summer = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
+                                                        name=name + "_Schedule_Summer_Design_Day")
+            schedule.setSummerDesignDaySchedule(schedule_summer)
 
         if winter_design_day_value is not None:
             schedule_winter = ScheduleTool.schedule_day(model, winter_design_day_value, type_limits=type_limit,
+                                                        name=name + "_Schedule_Winter_Design_Day")
+            schedule.setWinterDesignDaySchedule(schedule_winter)
+        else:
+            schedule_winter = ScheduleTool.schedule_day(model, weekday_value, type_limits=type_limit,
                                                         name=name + "_Schedule_Winter_Design_Day")
             schedule.setWinterDesignDaySchedule(schedule_winter)
 
@@ -397,6 +451,8 @@ class ScheduleSets:
             infiltration: openstudio.openstudiomodel.ScheduleRuleset = None,
             cooling_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
             heating_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
+            humidify_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
+            dehumidify_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
             hvac_availability: openstudio.openstudiomodel.ScheduleRuleset = None,
             dcv: openstudio.openstudiomodel.ScheduleRuleset = None,
             activity_level: openstudio.openstudiomodel.ScheduleRuleset = None, ):
@@ -413,6 +469,8 @@ class ScheduleSets:
         self._infiltration = infiltration
         self._cooling_setpoint = cooling_setpoint
         self._heating_setpoint = heating_setpoint
+        self._humidify_setpoint = humidify_setpoint
+        self._dehumidify_setpoint = dehumidify_setpoint
         self._hvac_availability = hvac_availability
         self._dcv = dcv
         self._activity_level = activity_level
@@ -665,6 +723,56 @@ class ScheduleSets:
         self._heating_setpoint = heating_schedule
 
     # ***********************************************************************************************
+    # humidify set point schedule getter:
+    def humidify_setpoint(self):
+        return self._humidify_setpoint
+
+    # humidify set point schedule setter:
+    def set_humidify_setpoint(
+            self,
+            humidify_wd_values: list = None,
+            humidify_sat_values: list = None,
+            humidify_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            humidify_schedule = schedule
+        else:
+            if humidify_wd_values is not None and humidify_sat_values is not None and humidify_sun_values is not None:
+                humidify_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 2, humidify_wd_values, humidify_sat_values, humidify_sun_values,
+                    self._name + "_HumidifySetPt")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._humidify_setpoint = humidify_schedule
+
+    # ***********************************************************************************************
+    # dehumidify_set point schedule getter:
+    def dehumidify_setpoint(self):
+        return self._dehumidify_setpoint
+
+    # dehumidify set point schedule setter:
+    def set_dehumidify_setpoint(
+            self,
+            dehumidify_wd_values: list = None,
+            dehumidify_sat_values: list = None,
+            dehumidify_sun_values: list = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+
+        if schedule is not None:
+            dehumidify_schedule = schedule
+        else:
+            if dehumidify_wd_values is not None and dehumidify_sat_values is not None and dehumidify_sun_values is not None:
+                dehumidify_schedule = ScheduleTool.custom_annual_schedule(
+                    self._model, 2, dehumidify_wd_values, dehumidify_sat_values, dehumidify_sun_values,
+                    self._name + "_DehumidifySetPt")
+            else:
+                raise ValueError("Weekly schedule values cannot be empty.")
+
+        self._dehumidify_setpoint = dehumidify_schedule
+
+    # ***********************************************************************************************
     # hvac_availability schedule getter:
     def hvac_availability(self):
         return self._hvac_availability
@@ -740,8 +848,8 @@ class ScheduleSets:
         """
         keys: \n
         "occupancy", "lighting", "electric_equipment", "gas_equipment", "hot_water_equipment", "steam_equipment",
-        "other_equipment", "infiltration", "activity", "cooling_setpoint", "heating_setpoint", "hvac_availability",
-        "dcv"
+        "other_equipment", "infiltration", "activity", "cooling_setpoint", "heating_setpoint",
+        "humidify_setpoint", "dehumidify_setpoint", "hvac_availability", "dcv"
         """
 
         sets = {"occupancy": self._occupancy, "lighting": self._lighting,
@@ -749,6 +857,7 @@ class ScheduleSets:
                 "hot_water_equipment": self._hot_water_equipment, "steam_equipment": self._steam_equipment,
                 "other_equipment": self._other_equipment, "infiltration": self._infiltration,
                 "cooling_setpoint": self._cooling_setpoint, "heating_setpoint": self._heating_setpoint,
+                "humidify_setpoint": self._humidify_setpoint, "dehumidify_setpoint": self._dehumidify_setpoint,
                 "dcv": self._dcv, "activity": self._activity_level, "hvac_availability": self._hvac_availability}
 
         return sets

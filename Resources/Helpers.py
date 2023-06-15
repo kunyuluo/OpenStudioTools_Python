@@ -92,6 +92,13 @@ class Helper:
         return head * 9806.65
 
     @staticmethod
+    def inh2o_to_pa(head):
+        """
+        Convert pump head from inH2O to Pa
+        """
+        return head * 248.84
+
+    @staticmethod
     def u_ip_to_si(u_value):
         """
         Convert U-Values in IP (BTU/hft2F) to U-Values in SI (W/Km2)

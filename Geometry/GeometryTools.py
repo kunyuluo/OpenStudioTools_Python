@@ -477,14 +477,30 @@ class GeometryTool:
                 # Conditioned Zones:
                 conditioned = loads[room_type]["conditioned"]
                 if conditioned:
-                    # print(room_type + " is conditioned")
                     if schedules[room_type]["cooling_setpoint"] is not None and \
                             schedules[room_type]["heating_setpoint"] is not None:
+                        temp_control = True
+                    else:
+                        temp_control = False
+
+                    if schedules[room_type]["humidify_setpoint"] is not None and \
+                            schedules[room_type]["dehumidify_setpoint"] is not None:
+                        hum_control = True
+                    else:
+                        hum_control = False
+
+                    if temp_control and hum_control:
+                        thermal_zone = ZoneTool.thermal_zone_from_space(
+                            model, space,
+                            schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"],
+                            schedules[room_type]["dehumidify_setpoint"], schedules[room_type]["humidify_setpoint"])
+                    elif temp_control and not hum_control:
                         thermal_zone = ZoneTool.thermal_zone_from_space(
                             model, space,
                             schedules[room_type]["cooling_setpoint"], schedules[room_type]["heating_setpoint"])
                     else:
                         thermal_zone = ZoneTool.thermal_zone_from_space(model, space)
+
                 # Unconditioned Zones:
                 else:
                     # print(room_type + " is unconditioned")

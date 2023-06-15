@@ -1381,8 +1381,8 @@ class AirLoopComponent:
             fraction_htg_supply_air_flow_rate_none=None,
             dx_heating_coil_sizing_ratio=None,
             use_doas_dx_cooling_coil: bool = False,
-            doas_dx_cooling_coil_leaving_min_air_temp=None,
-            max_supply_air_temp=None,
+            doas_dx_cooling_coil_leaving_min_air_temp=2,
+            max_supply_air_temp=80,
             name: str = None):
 
         """
