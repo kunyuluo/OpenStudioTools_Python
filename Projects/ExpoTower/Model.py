@@ -7,10 +7,18 @@ from RhinoGeometry.RhinoParse import load_rhino_model, find_child_surface
 from Geometry.GeometryTools import GeometryTool
 from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
+from SimulationSettings.SimulationSettings import SimulationSettingTool
 from HVACSystem.Template.Template import Template
 from Projects.ExpoTower.Systems import hvac_system
 from Projects.ExpoTower.Schedule import add_schedules
 from Projects.ExpoTower.InternalLoads import get_internal_load
+import os
+
+# Project Info:
+# **************************************************************************************
+project_name = "ExpoTower"
+building_name = "ExpoTower"
+rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo_3.3dm"
 
 # Weather file:
 # **************************************************************************************
@@ -26,10 +34,10 @@ path = model_file[1]
 
 # Construction set:
 # **************************************************************************************
-cons_set_1F = ConstructionTool.construction_set_simple(
+cons_set_1 = ConstructionTool.construction_set_simple(
     model, "1-4F Construction Set", False, 0.58, 0.43, 0.55, 2.2, 0.45, 0.6, 0.57, 0.43, 0.57, 0.43, 0.55)
 
-cons_set_5F = ConstructionTool.construction_set_simple(
+cons_set_5 = ConstructionTool.construction_set_simple(
     model, "5F Construction Set", False, 0.57, 0.43, 0.55, 2.14, 0.36, 0.6, 0.57, 0.43, 0.57, 0.43, 0.55)
 
 glazing_east_5F = ConstructionTool.simple_glazing_cons(model, "Glazing_East_5F", 2.14, 0.36, 0.6)
@@ -53,8 +61,15 @@ schedule_sets = add_schedules(model, space_list)
 
 # Load geometry from Rhino:
 # **************************************************************************************
-file_path = load_rhino_model("D:\\Projects\\OpenStudioDev\\RhinoGeometry\\BoxModel.3dm", "Kunyu_House")
-geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_1F, schedule_sets)
+file_path = load_rhino_model(rhino_model_path, project_name, building_name)
+geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
+# file_path = os.path.dirname(__file__) + "\\" + building_name + ".json"
+#
+# if os.path.exists(file_path):
+#     geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
+# else:
+#     file_path = load_rhino_model(rhino_model_path, project_name, building_name)
+#     geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
 
 # Get all thermal zones for HVAC arrangement:
 # **************************************************************************************
@@ -86,4 +101,5 @@ hvac_system(model, thermal_zones)
 
 # Save the model to the pre-defined path:
 # **************************************************************************************
-model.save(path, True)
+SimulationSettingTool.set_timestep(model, 1)
+# model.save(path, True)

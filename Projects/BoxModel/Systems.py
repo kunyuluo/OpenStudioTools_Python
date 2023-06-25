@@ -58,7 +58,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         unitary = AirLoopComponent.unitary_system(
             model, cooling_coil, heating_coil, reheat_coil, supply_fan,
             dehumidification_control_type=3, latent_load_control=3, control_zone=sorted_zones[story][0],
-            availability_schedule=ahu_availability, fan_placement=2, supply_fan_schedule=always_on,
+            fan_placement=2, supply_fan_schedule=always_on,
             supply_air_flow_rate_method_cooling=1, supply_air_flow_rate_method_heating=1,
             supply_air_flow_rate_method_none=3, fraction_clg_supply_air_flow_rate_none=0.05)
 
@@ -68,8 +68,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
             heat_recovery_efficiency=0.6,
             supply_components=[unitary],
             air_terminal_type=3,
-            thermal_zones=sorted_zones[story],
-            availability=ahu_availability)
+            thermal_zones=sorted_zones[story])
 
         loop = air_loop[0]
         AirLoopComponent.sizing(model, loop, 1)
@@ -80,31 +79,30 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
 
     # Plant loops:
     # *****************************************************************************************************
-    heatpump_cooling = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 3000, 7.5)
-    heatpump_heating = PlantLoopComponent.heat_pump_plant_heating(model, 1, 3000, 4.5)
+    # heatpump_cooling = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 3000, 7.5)
+    # heatpump_heating = PlantLoopComponent.heat_pump_plant_heating(model, 1, 3000, 4.5)
 
-    chiller = PlantLoopComponent.chiller_electric(model, condenser_type=1, capacity=8000, cop=7.5)
-    boiler = PlantLoopComponent.boiler_hot_water(model, fuel_type=2, nominal_capacity=8000)
+    chiller = PlantLoopComponent.chiller_electric(model, condenser_type=1, cop=7.5)
+    boiler = PlantLoopComponent.boiler_hot_water(model, fuel_type=2)
 
-    heatpump_cooling.setCompanionHeatingHeatPump(heatpump_heating)
-    heatpump_heating.setCompanionCoolingHeatPump(heatpump_cooling)
+    # heatpump_cooling.setCompanionHeatingHeatPump(heatpump_heating)
+    # heatpump_heating.setCompanionCoolingHeatPump(heatpump_cooling)
 
-    district_cooling = PlantLoopComponent.district_cooling(model)
-    district_heating = PlantLoopComponent.district_heating(model)
+    # district_cooling = PlantLoopComponent.district_cooling(model)
+    # district_heating = PlantLoopComponent.district_heating(model)
 
     pump_cooling_1 = PlantLoopComponent.pump_variable_speed(model)
-    pump_cooling_2 = PlantLoopComponent.pump_variable_speed(model)
+    # pump_cooling_2 = PlantLoopComponent.pump_variable_speed(model)
     pump_heating_1 = PlantLoopComponent.pump_variable_speed(model)
-    pump_heating_2 = PlantLoopComponent.pump_variable_speed(model)
+    # pump_heating_2 = PlantLoopComponent.pump_variable_speed(model)
 
     chilled_water_loop = HVACTool.plant_loop(
         model, "Chilled Water Loop", 1,
         load_distribution_scheme=2,
         common_pipe_simulation=1,
         setpoint_manager=SetpointManager.scheduled(model, 1, 7, name="Chilled_Water_Supply_Temp"),
-        supply_branches=[[pump_cooling_1, chiller], [pump_cooling_2, district_cooling]],
-        demand_branches=cooling_coils,
-        availability=plant_availability)
+        supply_branches=[pump_cooling_1, chiller],
+        demand_branches=cooling_coils)
 
     PlantLoopComponent.sizing(model, chilled_water_loop, 1, 7)
 
@@ -113,7 +111,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         load_distribution_scheme=2,
         common_pipe_simulation=1,
         setpoint_manager=SetpointManager.scheduled(model, 1, 60, name="Hot_Water_Supply_Temp"),
-        supply_branches=[[pump_heating_1, boiler], [pump_heating_2, district_heating]],
+        supply_branches=[pump_heating_1, boiler],
         demand_branches=heating_coils,
         availability=plant_availability)
 

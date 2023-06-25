@@ -547,14 +547,22 @@ def building_dict(room_geos=None, solid_names=None, fenestration_geos=None, shad
     return json_out
 
 
-def write_to_json(json_out=None):
-    dir_path = os.path.dirname(__file__)
+def write_to_json(json_out=None, project_name: str = None):
+    dir_path = os.path.dirname(__file__).replace("RhinoGeometry", "Projects")
     try:
         building = json.loads(json_out)
         file_name = building["building_name"]
-        file_path = dir_path + "\\{}.json".format(file_name)
+
+        if project_name is not None:
+            file_path = dir_path + "\\" + project_name + "\\{}.json".format(file_name)
+        else:
+            file_path = dir_path + "\\{}.json".format(file_name)
+
     except ValueError:
-        file_path = dir_path + "\\Building.json"
+        if project_name is not None:
+            file_path = dir_path + "\\" + project_name + "\\Building.json"
+        else:
+            file_path = dir_path + "\\Building.json"
 
     try:
         with open(file_path, "w") as outfile:
@@ -564,7 +572,7 @@ def write_to_json(json_out=None):
         print("Cannot write to json file")
 
 
-def load_rhino_model(rhino_file_path: str, building_name: str = "Building"):
+def load_rhino_model(rhino_file_path: str, project_name: str = None, building_name: str = "Building"):
     all_geos = sort_geometry_from_rhino(rhino_file_path)
 
     rooms = all_geos[0]
@@ -573,6 +581,6 @@ def load_rhino_model(rhino_file_path: str, building_name: str = "Building"):
     shades = all_geos[2]
 
     building = building_dict(rooms, room_names, windows, shades, building_name)
-    json_path = write_to_json(building)
+    json_path = write_to_json(building, project_name)
 
     return json_path

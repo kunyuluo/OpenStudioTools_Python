@@ -52,9 +52,6 @@ class GeometryTool:
             vertices,
             normal=None,
             surface_type: int = None,
-            outside_boundary_condition: int = None,
-            sun_exposure="Sunexposed",
-            wind_exposure="Windexposed",
             construction: openstudio.openstudiomodel.Construction = None,
             space: openstudio.openstudiomodel.Space = None,
             name: str = None):
@@ -108,10 +105,10 @@ class GeometryTool:
                     else:
                         surface.setSurfaceType(surface_types[surface_type])
 
-                    if outside_boundary_condition is None:
-                        surface.setOutsideBoundaryCondition(boundaries[3])
-                    else:
-                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+                    surface.setOutsideBoundaryCondition(boundaries[3])
+
+                    sun_exposure = "Sunexposed"
+                    wind_exposure = "Windexposed"
 
                 elif GeometryTool.roof_threshold <= angle_rad < 3 * GeometryTool.roof_threshold:
                     if surface_type is None:
@@ -119,13 +116,14 @@ class GeometryTool:
                     else:
                         surface.setSurfaceType(surface_types[surface_type])
 
-                    if outside_boundary_condition is None:
-                        if centroid_z > GeometryTool.tolerance:
-                            surface.setOutsideBoundaryCondition(boundaries[3])
-                        else:
-                            surface.setOutsideBoundaryCondition(boundaries[5])
+                    if centroid_z > GeometryTool.tolerance:
+                        surface.setOutsideBoundaryCondition(boundaries[3])
+                        sun_exposure = "Sunexposed"
+                        wind_exposure = "Windexposed"
                     else:
-                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+                        surface.setOutsideBoundaryCondition(boundaries[5])
+                        sun_exposure = "NoSun"
+                        wind_exposure = "NoWind"
 
                 else:
                     if surface_type is None:
@@ -133,16 +131,18 @@ class GeometryTool:
                     else:
                         surface.setSurfaceType(surface_types[surface_type])
 
-                    if outside_boundary_condition is None:
-                        if centroid_z > GeometryTool.tolerance:
-                            surface.setOutsideBoundaryCondition(boundaries[3])
-                        else:
-                            surface.setOutsideBoundaryCondition(boundaries[5])
+                    if centroid_z > GeometryTool.tolerance:
+                        surface.setOutsideBoundaryCondition(boundaries[3])
+                        sun_exposure = "Sunexposed"
+                        wind_exposure = "Windexposed"
                     else:
-                        surface.setOutsideBoundaryCondition(boundaries[outside_boundary_condition])
+                        surface.setOutsideBoundaryCondition(boundaries[5])
+                        sun_exposure = "NoSun"
+                        wind_exposure = "NoWind"
 
                 surface.setSunExposure(sun_exposure)
                 surface.setWindExposure(wind_exposure)
+
                 if construction is not None:
                     surface.setConstruction(construction)
                 if space is not None:
@@ -547,7 +547,7 @@ class GeometryTool:
                                 case _:
                                     oriented_subsurfaces["other"].append(fen_srf)
 
-            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces, True, cons_set)
+            updated_surfaces = GeometryTool.solve_adjacency(all_surfaces, False, cons_set)
             # GeometryTool.adiabatic_by_type(updated_surfaces, 2)
 
             for srf in updated_surfaces:
