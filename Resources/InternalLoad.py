@@ -92,7 +92,7 @@ class InternalLoad:
                     print("Invalid input of surface area.")
 
         if construction is not None:
-            mass_def.setConstruction(construction)
+            mass_def.setConstruction(construction.to_ConstructionBase().get())
 
         if name is not None:
             mass_def.setName(name)
@@ -579,17 +579,22 @@ class InternalLoad:
             outdoor_air_per_area=None,
             outdoor_air_per_person=None,
             people_density_unit=None,
-            gas_equipment=None):
+            internal_mass_area=None,
+            internal_mass_unit=None,
+            gas_equipment=None,):
 
         """
-        -People_density_unit: \n
-        1.ppl (number of people) \n
-        2.m2/ppl (square meter per people) \n
-        3.ppl/m2 (people per square meter) \n
-        (Default is 3)
+        -People_density_unit: (Default is 3)\n
+        1.ppl (number of people)
+        2.m2/ppl (square meter per people)
+        3.ppl/m2 (people per square meter)\n
+
+        -Internal_mass_unit: \n
+        1.SurfaceArea 2.SurfaceArea/Area 3.SurfaceArea/Person
         """
 
         ppl_density_units = {1: "People", 2: "Area/Person", 3: "Person/Area"}
+        internal_mass_units = {1: "SurfaceArea", 2: "SurfaceArea/Area", 3: "SurfaceArea/Person"}
 
         internal_load = {}
 
@@ -681,6 +686,27 @@ class InternalLoad:
                 else:
                     load_dict["gas_power"] = None
 
+                if internal_mass_area is not None and isinstance(internal_mass_area, list):
+                    try:
+                        load_dict["internal_mass_area"] = internal_mass_area[i]
+                    except IndexError:
+                        load_dict["internal_mass_area"] = None
+                        print("Cannot find people density value for space {}".format(space))
+                else:
+                    load_dict["internal_mass_area"] = None
+
+                if internal_mass_unit is not None:
+                    if isinstance(internal_mass_unit, int):
+                        load_dict["internal_mass_method"] = internal_mass_units[internal_mass_unit]
+                    elif isinstance(internal_mass_unit, list):
+                        try:
+                            load_dict["internal_mass_method"] = internal_mass_units[internal_mass_unit[i]]
+                        except IndexError:
+                            load_dict["internal_mass_method"] = None
+                            print("Cannot find internal mass unit type for space {}".format(space))
+                    else:
+                        load_dict["internal_mass_method"] = None
+
                 internal_load[space] = load_dict
 
         internal_load_json = json.dumps(internal_load, indent=4)
@@ -706,7 +732,9 @@ class InternalLoad:
             df["activity"].values.tolist(),
             df["OA_per_area"].values.tolist(),
             df["OA_per_ppl"].values.tolist(),
-            df["people_unit"].values.tolist())
+            df["people_unit"].values.tolist(),
+            df["internal_mass_area"].values.tolist(),
+            df["internal_mass_unit"].values.tolist())
 
         space_list = df["space"].values.tolist()
 

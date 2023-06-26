@@ -317,6 +317,7 @@ class GeometryTool:
             internal_load: str = None,
             construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None,
             schedule_sets=None,
+            internal_mass_construction: openstudio.openstudiomodel.Construction = None,
             story_multipliers=None):
 
         """
@@ -325,6 +326,8 @@ class GeometryTool:
         :param internal_load: a json file. Use output from method "internal_load_input_json" here.
         :param construction_sets: a DefaultConstructionSet object.
         :param schedule_sets: a dictionary. Use output from method "schedule_set_input_json" here.
+        :param internal_mass_construction:
+        :param story_multipliers:
         """
 
         with open(json_path, 'r') as openfile:
@@ -344,6 +347,12 @@ class GeometryTool:
                 model, "Chinese Code Compliance Set", False,
                 0.6, 0.4, 0.7, 2.2, 0.35, 0.8, 0.6, 0.4, 0.6, 0.4, 0.7)
 
+        # Internal mass construction:
+        if internal_mass_construction is not None:
+            mass_cons = internal_mass_construction
+        else:
+            mass_cons = ConstructionTool.opaque_standard_material(model, "Std Wood 6inch", 0.15, 0.12, 540, 1210, 3)
+
         # Internal load data:
         loads = {}
         schedules = {}
@@ -354,9 +363,10 @@ class GeometryTool:
             for i, space in enumerate(space_types):
                 # space = space.lower()
                 load_dict = {"lighting": None, "electric_equip": None, "people": None,
-                             "gas_equip": None, "space_type": None, "conditioned": None}
+                             "gas_equip": None, "space_type": None, "conditioned": None, "internal_mass": None}
                 load_of_space = internal_loads[space]
                 people_cal_method = internal_loads[space]["people_density_method"]
+                internal_mass_method = internal_loads[space]["internal_mass_method"]
 
                 # Schedule set for this space type:
                 if schedule_sets is not None:
@@ -399,6 +409,20 @@ class GeometryTool:
                         model, load_of_space["gas_power"], name=space + "_Gas_Definition")
                     load_dict["gas_equip"] = gas_equip
 
+                # Internal Mass Definition:
+                if load_of_space["internal_mass_area"] is not None:
+                    match internal_mass_method:
+                        case "SurfaceArea":
+                            internal_mass = InternalLoad.internal_mass_definition(
+                                model, 1, load_of_space["internal_mass_area"], mass_cons, space + "_Internal_Mass")
+                        case "SurfaceArea/Area":
+                            internal_mass = InternalLoad.internal_mass_definition(
+                                model, 2, load_of_space["internal_mass_area"], mass_cons, space + "_Internal_Mass")
+                        case "SurfaceArea/Person" | _:
+                            internal_mass = InternalLoad.internal_mass_definition(
+                                model, 3, load_of_space["internal_mass_area"], mass_cons, space + "_Internal_Mass")
+                    load_dict["internal_mass"] = internal_mass
+
                 # Outdoor Air:
                 if schedules[space]["occupancy"] is not None:
                     outdoor_air = InternalLoad.outdoor_air(
@@ -422,6 +446,8 @@ class GeometryTool:
                 load_dict["conditioned"] = load_of_space["conditioned"]
 
                 loads[space] = load_dict
+
+            print("Step 3-5: Internal loads are assigned.")
 
         # Rooms in the building
         thermal_zones = []
@@ -459,6 +485,12 @@ class GeometryTool:
                 else:
                     light = InternalLoad.light(loads[room_type]["lighting"])
 
+                # Internal Mass:
+                if loads[room_type]["internal_mass"] is not None:
+                    mass = InternalLoad.internal_mass(loads[room_type]["internal_mass"])
+                else:
+                    mass = None
+
                 name = str(room["story"]) + "F_" + room_type + "_{}".format(i)
 
                 # Create space object:
@@ -469,7 +501,8 @@ class GeometryTool:
                     story=stories[int(room["story"])-1],
                     lights=light,
                     people=people,
-                    electric_equipment=electric_equip)
+                    electric_equipment=electric_equip,
+                    internal_mass=mass)
 
                 space.setDefaultConstructionSet(cons_set)
 
@@ -575,6 +608,9 @@ class GeometryTool:
                 for shade in shades:
                     shade_srf = GeometryTool.make_shading(model, shade["vertices"], name=shade["name"])
                     all_shades.append(shade_srf)
+                print("Shading Objects created.")
+
+            print("Step 4-5: Geometries All Done!")
 
         return thermal_zones, oriented_walls, oriented_subsurfaces
 

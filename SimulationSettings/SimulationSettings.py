@@ -86,3 +86,12 @@ class SimulationSettingTool:
             convergence.setMinimumPlantIterations(min_plant_iteration)
         if min_system_timestep != 1:
             convergence.setMinimumSystemTimestep(min_system_timestep)
+
+    @staticmethod
+    def heat_balance_algorithm(
+            model: openstudio.openstudiomodel.Model,
+            srf_temp_upper_limit: int = 200):
+
+        balance = model.getHeatBalanceAlgorithm()
+
+        balance.setSurfaceTemperatureUpperLimit(srf_temp_upper_limit)

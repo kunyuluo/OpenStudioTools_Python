@@ -1,18 +1,13 @@
 from Constructions.ConstructionTools import ConstructionTool
-from Schedules.Template import schedule_sets_office
-from Schedules.ScheduleTools import ScheduleSets, ScheduleTool
 from Resources.Models import create_model
 from Resources.InternalLoad import InternalLoad
-from RhinoGeometry.RhinoParse import load_rhino_model, find_child_surface
+from RhinoGeometry.RhinoParse import load_rhino_model
 from Geometry.GeometryTools import GeometryTool
 from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
 from SimulationSettings.SimulationSettings import SimulationSettingTool
-from HVACSystem.Template.Template import Template
 from Projects.ExpoTower.Systems import hvac_system
 from Projects.ExpoTower.Schedule import add_schedules
-from Projects.ExpoTower.InternalLoads import get_internal_load
-import os
 
 # Project Info:
 # **************************************************************************************
@@ -48,6 +43,9 @@ glazing_south_5F = ConstructionTool.simple_glazing_cons(model, "Glazing_South_5F
 ext_wall_east = ConstructionTool.opaque_no_mass_cons(model, "East R-15 Wall", Helper.r_ip_to_si(15))
 ext_wall_south = ConstructionTool.opaque_no_mass_cons(model, "South R-19 Wall", Helper.r_ip_to_si(19))
 
+internal_mass_cons = ConstructionTool.opaque_cons(model, "Std Wood 6inch", 0.15, 0.12, 540, 1210, 3)
+# print(type(internal_mass_cons.to_ConstructionBase().get()))
+
 # Internal Load:
 # **************************************************************************************
 load_and_space = InternalLoad.internal_load_from_file("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "ExpoTower")
@@ -57,24 +55,15 @@ space_list = load_and_space[1]
 # Schedules:
 # **************************************************************************************
 schedule_sets = add_schedules(model, space_list)
-# print(schedule_sets["OpenOffice_1W"].get_schedule_sets())
 
 # Load geometry from Rhino:
 # **************************************************************************************
 file_path = load_rhino_model(rhino_model_path, project_name, building_name)
-geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
-# file_path = os.path.dirname(__file__) + "\\" + building_name + ".json"
-#
-# if os.path.exists(file_path):
-#     geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
-# else:
-#     file_path = load_rhino_model(rhino_model_path, project_name, building_name)
-#     geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets)
+geometries = GeometryTool.geometry_from_json(model, file_path, load, cons_set_5, schedule_sets, internal_mass_cons)
 
 # Get all thermal zones for HVAC arrangement:
 # **************************************************************************************
 thermal_zones = geometries[0]
-# sorted_zones = ZoneTool.thermal_zone_by_floor(thermal_zones, True)
 
 # Get all exterior wall surfaces for construction assignment:
 # **************************************************************************************
@@ -92,14 +81,12 @@ ZoneTool.construction_by_orientation(
 # **************************************************************************************
 hvac_system(model, thermal_zones)
 
-# all_conditioned_zones = ZoneTool.thermal_zone_by_conditioned(thermal_zones)[0]
-# all_conditioned_zones = ZoneTool.get_thermal_zone(all_conditioned_zones)
-# for zone in all_conditioned_zones:
-#     zone.setUseIdealAirLoads(True)
-# Template.vav_chiller_boiler(model, all_conditioned_zones, air_loop_dehumidification_control=True,
-#                             number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
+# Simulation settings:
+# **************************************************************************************
+SimulationSettingTool.set_timestep(model, 1)
+SimulationSettingTool.heat_balance_algorithm(model, 500)
 
 # Save the model to the pre-defined path:
 # **************************************************************************************
-SimulationSettingTool.set_timestep(model, 1)
-# model.save(path, True)
+model.save(path, True)
+print("Model is Ready!")

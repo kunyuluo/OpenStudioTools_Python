@@ -74,6 +74,9 @@ def sort_geometry_from_rhino(rhino_file_path: str, get_object: bool = False, con
                             rooms.append(geometry.ToBrep())
                     else:
                         rooms.append(geometry)
+
+        print("Step 1-5: Rhino geometries are ready for serialization.")
+
     except ValueError:
         print("Unable to read rhino file from given file path.")
 
@@ -175,6 +178,14 @@ def intersect_solids(solids, bound_boxes):
     return new_solids
 
 
+def unique_item(numbers):
+    uniques = []
+    for item in numbers:
+        if item not in uniques:
+            uniques.append(item)
+    return uniques
+
+
 def check_story_validity(rooms):
     value_tolerance = 0.0001
     valid_threshold = 1.0
@@ -186,7 +197,9 @@ def check_story_validity(rooms):
         bottom_z_values.append(bottom_z)
 
     # Get unique values from the value list:
-    stories = list(set(bottom_z_values))
+    # stories = list(set(bottom_z_values))
+    bottom_z_values = [round(num, 3) for num in bottom_z_values]
+    stories = unique_item(bottom_z_values)
     stories.sort()
 
     # Count number of brep at each vertical position:
@@ -519,6 +532,8 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, story_multipliers=
                 room_dict["surfaces"] = surfaces
 
                 rooms.append(room_dict)
+
+            print("Step 2-5: Rhino geometries serialization is completed.")
 
     return rooms
 

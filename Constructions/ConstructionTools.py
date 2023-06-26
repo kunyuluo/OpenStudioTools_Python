@@ -13,28 +13,46 @@ class ConstructionTool:
             conductivity=None,
             density=None,
             specific_heat=None,
-            roughness: str = None,
+            roughness: int = 1,
             thermal_absorptance=None,
             solar_absorptance=None,
             visible_absorptance=None):
 
+        """
+        Roughness: 1.VeryRough 2.Rough 3.MediumRough 4.MediumSmooth 5.Smooth 6.VerySmooth
+        """
+
+        roughness_options = {1: "VeryRough", 2: "Rough", 3: "MediumRough", 4: "MediumSmooth", 5: "Smooth", 6: "VerySmooth"}
+
         mat = StandardOpaqueMaterial(model)
         mat.setName(name)
-        if thickness is not None: mat.setThickness(thickness)
-        if conductivity is not None: mat.setConductivity(conductivity)
-        if density is not None: mat.setDensity(density)
-        if specific_heat is not None: mat.setSpecificHeat(specific_heat)
-        if roughness is not None: mat.setRoughness(roughness)
-        if thermal_absorptance is not None: mat.setThermalAbsorptance(thermal_absorptance)
-        if solar_absorptance is not None: mat.setSolarAbsorptance(solar_absorptance)
-        if visible_absorptance is not None: mat.setVisibleAbsorptance(visible_absorptance)
+
+        if thickness is not None:
+            mat.setThickness(thickness)
+        if conductivity is not None:
+            mat.setConductivity(conductivity)
+        if density is not None:
+            mat.setDensity(density)
+        if specific_heat is not None:
+            mat.setSpecificHeat(specific_heat)
+        if roughness is not None:
+            mat.setRoughness(roughness_options[roughness])
+        if thermal_absorptance is not None:
+            mat.setThermalAbsorptance(thermal_absorptance)
+        if solar_absorptance is not None:
+            mat.setSolarAbsorptance(solar_absorptance)
+        if visible_absorptance is not None:
+            mat.setVisibleAbsorptance(visible_absorptance)
 
         return mat
 
     @staticmethod
     def construction(model: openstudio.openstudiomodel.Model, name=None):
         cons = openstudio.openstudiomodel.Construction(model)
-        if name is not None: cons.setName(name)
+
+        if name is not None:
+            cons.setName(name)
+
         return cons
 
     @staticmethod
@@ -54,6 +72,36 @@ class ConstructionTool:
         return mat
 
     # Opaque construction
+    @staticmethod
+    def opaque_cons(
+            model: openstudio.openstudiomodel.Model,
+            name,
+            thickness=None,
+            conductivity=None,
+            density=None,
+            specific_heat=None,
+            roughness: int = 1,
+            thermal_absorptance=None,
+            solar_absorptance=None,
+            visible_absorptance=None):
+
+        """
+        Roughness: 1.VeryRough 2.Rough 3.MediumRough 4.MediumSmooth 5.Smooth 6.VerySmooth
+        """
+
+        mat = ConstructionTool.opaque_standard_material(
+            model, name, thickness, conductivity, density, specific_heat, roughness,
+            thermal_absorptance, solar_absorptance, visible_absorptance)
+
+        mat_vec = MaterialVector()
+        mat_vec.append(mat)
+
+        cons = Construction(model)
+        cons.setName(name)
+        cons.setLayers(mat_vec)
+
+        return cons
+
     @staticmethod
     def opaque_no_mass_cons(model, name, thermal_resistance, roughness="MediumRough"):
         mat = MasslessOpaqueMaterial(model, roughness, thermal_resistance)
