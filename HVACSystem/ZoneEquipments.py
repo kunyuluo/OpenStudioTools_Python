@@ -77,26 +77,26 @@ class ZoneEquipment:
     @staticmethod
     def packaged_terminal_air_conditioner(
             model: openstudio.openstudiomodel.Model,
-            name: str = None,
-            schedule=None,
+            schedule,
             fan=None,
             heating_coil=None,
             cooling_coil=None,
-            thermal_zone=None):
+            thermal_zone=None,
+            name: str = None):
 
         if model is not None:
-            if schedule is not None:
-                equip_schedule = schedule
-            else:
-                equip_schedule = ScheduleTool.always_on(model)
+            equip_schedule = schedule
+
             if fan is not None:
                 equip_fan = fan
             else:
                 equip_fan = AirLoopComponent.fan_constant_speed(model)
+
             if heating_coil is not None:
                 equip_heating_coil = heating_coil
             else:
                 equip_heating_coil = AirLoopComponent.coil_heating_electric(model)
+
             if cooling_coil is not None:
                 equip_cooling_coil = cooling_coil
             else:
@@ -353,7 +353,7 @@ class ZoneEquipment:
     @staticmethod
     def fan_coil_unit(
             model: openstudio.openstudiomodel.Model,
-            name: str = None,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
             capacity_control_method: int = 0,
             heating_coil_type: int = 1,
@@ -371,7 +371,8 @@ class ZoneEquipment:
             min_supply_air_temp_cooling=None,
             max_supply_air_temp_heating=None,
             chilled_water_loop: openstudio.openstudiomodel.PlantLoop = None,
-            hot_water_loop: openstudio.openstudiomodel.PlantLoop = None):
+            hot_water_loop: openstudio.openstudiomodel.PlantLoop = None,
+            name: str = None):
 
         """
         -Options for "capacity_control_method":
@@ -394,9 +395,9 @@ class ZoneEquipment:
         match capacity_control_method:
             case 0:
                 fan = AirLoopComponent.fan_constant_speed(model, pressure_rise=fan_pressure_rise)
-            case [1, 2]:
+            case 1 | 2:
                 fan = AirLoopComponent.fan_variable_speed(model, pressure_rise=fan_pressure_rise)
-            case [3, 4, 5] | _:
+            case 3 | 4 | 5 | _:
                 fan = AirLoopComponent.fan_on_off(model, pressure_rise=fan_pressure_rise)
 
         # Create a heating coil object based on control method:
@@ -410,7 +411,7 @@ class ZoneEquipment:
         cooling_coil = AirLoopComponent.coil_cooling_water(model)
 
         equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(
-            model, ScheduleTool.always_on(model), fan, cooling_coil, heating_coil)
+            model, schedule, fan, cooling_coil, heating_coil)
 
         if thermal_zone is not None:
             equipment.addToThermalZone(thermal_zone)
@@ -480,15 +481,123 @@ class ZoneEquipment:
         return equipment
 
     @staticmethod
+    def fan_coil_unit_detailed(
+            model: openstudio.openstudiomodel.Model,
+            fan,
+            cooling_coil,
+            heating_coil,
+            schedule,
+            capacity_control_method: int = 0,
+            name: str = None,
+            thermal_zone: openstudio.openstudiomodel.ThermalZone = None,
+            max_supply_air_flow_rate=None,
+            low_speed_supply_air_flow_ratio=None,
+            medium_speed_supply_air_flow_ratio=None,
+            max_outdoor_air_flow_rate=None,
+            outdoor_air_schedule=None,
+            max_cold_water_flow_rate=None,
+            min_cold_water_flow_rate=None,
+            max_hot_water_flow_rate=None,
+            min_hot_water_flow_rate=None,
+            supply_air_fan_operating_mode_schedule=None,
+            min_supply_air_temp_cooling=None,
+            max_supply_air_temp_heating=None,
+            chilled_water_loop: openstudio.openstudiomodel.PlantLoop = None,
+            hot_water_loop: openstudio.openstudiomodel.PlantLoop = None):
+
+        """
+        -Options for "capacity_control_method":
+            0:"ConstantFanVariableFlow",
+            1:"VariableFanVariableFlow",
+            2:"VariableFanConstantFlow",
+            3:"CyclingFan",
+            4:"MultiSpeedFan",
+            5:"ASHRAE90VariableFan" \n
+        """
+
+        capacity_controls = {0: "ConstantFanVariableFlow", 1: "VariableFanVariableFlow", 2: "VariableFanConstantFlow",
+                             3: "CyclingFan", 4: "MultiSpeedFan", 5: "ASHRAE90VariableFan"}
+
+        equipment = openstudio.openstudiomodel.ZoneHVACFourPipeFanCoil(
+            model, schedule, fan, cooling_coil, heating_coil)
+
+        if thermal_zone is not None:
+            equipment.addToThermalZone(thermal_zone)
+
+        if name is not None:
+            equipment.setName(name)
+
+        if capacity_control_method is not None:
+            equipment.setCapacityControlMethod(capacity_controls[capacity_control_method])
+
+        if max_supply_air_flow_rate is not None:
+            equipment.setMaximumSupplyAirFlowRate(max_supply_air_flow_rate)
+        else:
+            equipment.autosizeMaximumSupplyAirFlowRate()
+
+        if low_speed_supply_air_flow_ratio is not None:
+            equipment.setLowSpeedSupplyAirFlowRatio(low_speed_supply_air_flow_ratio)
+
+        if medium_speed_supply_air_flow_ratio is not None:
+            equipment.setMediumSpeedSupplyAirFlowRatio(medium_speed_supply_air_flow_ratio)
+
+        if max_outdoor_air_flow_rate is not None:
+            equipment.setMaximumOutdoorAirFlowRate(max_outdoor_air_flow_rate)
+        else:
+            equipment.autosizeMaximumOutdoorAirFlowRate()
+
+        if outdoor_air_schedule is not None:
+            equipment.setOutdoorAirSchedule(outdoor_air_schedule)
+
+        if max_cold_water_flow_rate is not None:
+            equipment.setMaximumColdWaterFlowRate(max_cold_water_flow_rate)
+        else:
+            equipment.autosizeMaximumColdWaterFlowRate()
+
+        if min_cold_water_flow_rate is not None:
+            equipment.setMinimumColdWaterFlowRate(min_cold_water_flow_rate)
+
+        if max_hot_water_flow_rate is not None:
+            equipment.setMaximumHotWaterFlowRate(max_hot_water_flow_rate)
+        else:
+            equipment.autosizeMaximumColdWaterFlowRate()
+
+        if min_hot_water_flow_rate is not None:
+            equipment.setMinimumHotWaterFlowRate(min_hot_water_flow_rate)
+
+        if supply_air_fan_operating_mode_schedule is not None:
+            equipment.setSupplyAirFanOperatingModeSchedule(supply_air_fan_operating_mode_schedule)
+
+        if min_supply_air_temp_cooling is not None:
+            equipment.setMinimumSupplyAirTemperatureInCoolingMode(min_supply_air_temp_cooling)
+        else:
+            equipment.autosizeMinimumSupplyAirTemperatureInCoolingMode()
+
+        if max_supply_air_temp_heating is not None:
+            equipment.setMaximumSupplyAirTemperatureInHeatingMode(max_supply_air_temp_heating)
+        else:
+            equipment.autosizeMaximumSupplyAirTemperatureInHeatingMode()
+
+        # Add cooling coil to the chilled water loop if applicable:
+        if cooling_coil is not None and chilled_water_loop is not None:
+            chilled_water_loop.addDemandBranchForComponent(cooling_coil)
+
+        # Add heating coil to the chilled water loop if applicable:
+        if heating_coil is not None and hot_water_loop is not None:
+            hot_water_loop.addDemandBranchForComponent(heating_coil)
+
+        return equipment
+
+    @staticmethod
     def low_temperature_radiant_electric(
             model: openstudio.openstudiomodel.Model,
+            availability_schedule,
+            heating_setpoint_schedule=None,
             name: str = None,
             max_electrical_power=None,
             radiant_surface_type: int = 1,
             temperature_control_type: int = 1,
             setpoint_control_type: int = 2,
-            availability_schedule=None,
-            heating_setpoint_schedule=None,
             heating_throttling_range=None):
 
         """
@@ -509,18 +618,13 @@ class ZoneEquipment:
                               6: "SurfaceFaceTemperature", 7: "SurfaceInteriorTemperature"}
         setpoint_control_types = {1: "ZeroFlowPower", 2: "HalfFlowPower"}
 
-        if availability_schedule is not None:
-            schedule = availability_schedule
-        else:
-            schedule = ScheduleTool.always_on(model)
-
         if heating_setpoint_schedule is not None:
             heating_schedule = heating_setpoint_schedule
         else:
-            type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 50)
-            heating_schedule = ScheduleTool.schedule_ruleset(model, 21, type_limit, "Low Temp Rad Elec Htg Sch")
+            heating_schedule = ScheduleTool.schedule_ruleset(model, 2, 21, "Low Temp Rad Elec Htg Sch")
 
-        equip = openstudio.openstudiomodel.ZoneHVACLowTemperatureRadiantElectric(model, schedule, heating_schedule)
+        equip = openstudio.openstudiomodel.ZoneHVACLowTemperatureRadiantElectric(
+            model, availability_schedule, heating_schedule)
 
         if name is not None:
             equip.setName(name)
@@ -542,6 +646,7 @@ class ZoneEquipment:
     @staticmethod
     def low_temperature_radiant_variable_flow(
             model: openstudio.openstudiomodel.Model,
+            availability_schedule,
             name: str = None,
             radiant_cooling_coil: openstudio.openstudiomodel.CoilCoolingLowTempRadiantVarFlow = None,
             radiant_heating_coil: openstudio.openstudiomodel.CoilHeatingLowTempRadiantVarFlow = None,
@@ -549,7 +654,6 @@ class ZoneEquipment:
             fluid_to_surface_heat_transfer_model: int = 1,
             temperature_control_type: int = 1,
             setpoint_control_type: int = 2,
-            availability_schedule=None,
             hydronic_tube_inside_diameter=None,
             hydronic_tube_outside_diameter=None,
             hydronic_tube_length=None,
@@ -584,11 +688,6 @@ class ZoneEquipment:
         setpoint_control_types = {1: "ZeroFlowPower", 2: "HalfFlowPower"}
         circuits = {1: "OnePerSurface", 2: "CalculateFromCircuitLength"}
 
-        if availability_schedule is not None:
-            schedule = availability_schedule
-        else:
-            schedule = ScheduleTool.always_on(model)
-
         if radiant_cooling_coil is not None:
             cooling_coil = radiant_cooling_coil
         else:
@@ -599,7 +698,8 @@ class ZoneEquipment:
         else:
             heating_coil = AirLoopComponent.coil_heating_low_temperature_radiant_variable_flow(model)
 
-        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantVarFlow(model, schedule, heating_coil, cooling_coil)
+        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantVarFlow(
+            model, availability_schedule, heating_coil, cooling_coil)
 
         if name is not None:
             equip.setName(name)
@@ -634,13 +734,13 @@ class ZoneEquipment:
     @staticmethod
     def low_temperature_radiant_constant_flow(
             model: openstudio.openstudiomodel.Model,
+            availability_schedule,
             name: str = None,
             radiant_cooling_coil: openstudio.openstudiomodel.CoilCoolingLowTempRadiantConstFlow = None,
             radiant_heating_coil: openstudio.openstudiomodel.CoilHeatingLowTempRadiantConstFlow = None,
             radiant_surface_type: int = 1,
             fluid_to_surface_heat_transfer_model: int = 1,
             temperature_control_type: int = 1,
-            availability_schedule=None,
             hydronic_tube_inside_diameter=None,
             hydronic_tube_outside_diameter=None,
             hydronic_tube_length=None,
@@ -677,11 +777,6 @@ class ZoneEquipment:
                               6: "SurfaceFaceTemperature", 7: "SurfaceInteriorTemperature"}
         circuits = {1: "OnePerSurface", 2: "CalculateFromCircuitLength"}
 
-        if availability_schedule is not None:
-            schedule = availability_schedule
-        else:
-            schedule = ScheduleTool.always_on(model)
-
         if radiant_cooling_coil is not None:
             cooling_coil = radiant_cooling_coil
         else:
@@ -692,7 +787,8 @@ class ZoneEquipment:
         else:
             heating_coil = AirLoopComponent.coil_heating_low_temperature_radiant_constant_flow(model)
 
-        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantConstFlow(model, schedule, heating_coil, cooling_coil)
+        equip = openstudio.openstudiomodel.ZoneHVACLowTempRadiantConstFlow(
+            model, availability_schedule, heating_coil, cooling_coil)
 
         if name is not None:
             equip.setName(name)

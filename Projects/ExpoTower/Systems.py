@@ -4,6 +4,7 @@ from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.PlantLoopComponents import PlantLoopComponent
 from HVACSystem.SetpointManagers import SetpointManager
 from HVACSystem.ZoneEquipments import ZoneEquipment
+from HVACSystem.PerformanceCurves import Curve
 from Schedules.ScheduleTools import ScheduleTool
 from Resources.ZoneTools import ZoneTool
 from Resources.Helpers import Helper
@@ -19,8 +20,18 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # *****************************************************************************************************
     all_conditioned_zones = ZoneTool.thermal_zone_by_conditioned(thermal_zones)[0]
     sorted_zones = ZoneTool.thermal_zone_by_floor(all_conditioned_zones, True)
-    # print(sorted_zones)
-    # print(sorted_zones.keys())
+
+    # Thermal zone sizing:
+    # *****************************************************************************************************
+    for zone in all_conditioned_zones:
+        ZoneTool.sizing(
+            model,
+            zone["zone"],
+            cooling_design_supply_air_temp=14,
+            cooling_design_supply_air_temp_diff=12,
+            heating_design_supply_air_temp=30,
+            heating_design_supply_air_temp_diff=8,
+            zone_load_sizing_method=3)
 
     # Availability Schedule:
     # *****************************************************************************************************
@@ -43,6 +54,8 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # Parameters:
     # *****************************************************************************************************
     supply_air_temp = 14
+    fan_curve = Curve.fan_curve_set(1)
+    pump_curve = Curve.pump_curve_set(1)
 
     cooling_coils = []
     heating_coils = []
@@ -50,24 +63,30 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # Air loops:
     # *****************************************************************************************************
     for i, story in enumerate(sorted_zones.keys()):
-        if story == 1:
+        if story == 100:
             for zone_type in sorted_zones[story].keys():
                 if zone_type == "ElevatorLobby":
                     elevator_lobbies.extend(sorted_zones[story][zone_type])
                 else:
-                    cooling_coil = AirLoopComponent.coil_cooling_water(model)
-                    heating_coil = AirLoopComponent.coil_heating_water(model)
-                    supply_fan = AirLoopComponent.fan_variable_speed(model, pressure_rise=Helper.mh2o_to_pa(1.5))
-                    spm_2 = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
+                    cooling_coil = AirLoopComponent.coil_cooling_water(model, design_inlet_water_temp=8)
+                    heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
+                    supply_fan = AirLoopComponent.fan_variable_speed(
+                        model, fan_total_efficiency=0.72, pressure_rise=400, fan_curve_coeff=fan_curve)
+
+                    if len(sorted_zones[story][zone_type]) > 1:
+                        spm = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
+                    else:
+                        spm = SetpointManager.single_zone_cooling(model, supply_air_temp, 30, sorted_zones[story][zone_type])
 
                     air_loop = HVACTool.air_loop_simplified(
                         model, "AHU-1F-" + zone_type,
                         economizer_type=0,
                         heat_recovery_efficiency=0.6,
-                        supply_components=[cooling_coil, heating_coil, supply_fan, spm_2],
+                        supply_components=[cooling_coil, heating_coil, supply_fan, spm],
                         air_terminal_type=1,
                         thermal_zones=sorted_zones[story][zone_type],
-                        availability=ahu_availability)
+                        availability=ahu_availability,
+                        terminal_schedule=always_on)
 
                     loop = air_loop[0]
                     AirLoopComponent.sizing(model, loop, 1)
@@ -75,7 +94,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                     cooling_coils.extend(air_loop[1])
                     heating_coils.extend(air_loop[2])
 
-        elif 2 <= story <= 18:
+        elif 1 <= story <= 18:
             zone_by_ahu = {"1W": [], "1N": [], "2W": [], "2N": [], "3W": [], "3N": [], "4W": [], "4N": []}
             zone_name_by_ahu = {"1W": [], "1N": [], "2W": [], "2N": [], "3W": [], "3N": [], "4W": [], "4N": []}
             for zone_type in sorted_zones[story].keys():
@@ -112,28 +131,25 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
             # print(zone_name_by_ahu)
             for key in zone_by_ahu.keys():
                 if len(zone_by_ahu[key]) != 0:
-                    cooling_coil = AirLoopComponent.coil_cooling_water(model)
-                    heating_coil = AirLoopComponent.coil_heating_water(model)
-                    # reheat_coil = AirLoopComponent.coil_heating_electric(model)
-                    supply_fan = AirLoopComponent.fan_variable_speed(model, pressure_rise=Helper.inh2o_to_pa(1.5))
-                    spm_2 = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
-                    # spm_2 = SetpointManager.warmest(model, 14, 12)
+                    cooling_coil = AirLoopComponent.coil_cooling_water(model, design_inlet_water_temp=8)
+                    heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
+                    supply_fan = AirLoopComponent.fan_variable_speed(
+                        model, fan_total_efficiency=0.72, pressure_rise=500, fan_curve_coeff=fan_curve)
 
-                    # unitary = AirLoopComponent.unitary_system(
-                    #     model, cooling_coil, heating_coil, reheat_coil, supply_fan,
-                    #     dehumidification_control_type=3, latent_load_control=3, control_zone=zone_by_ahu[key][0],
-                    #     availability_schedule=ahu_availability, fan_placement=2, supply_fan_schedule=always_on,
-                    #     supply_air_flow_rate_method_cooling=1, supply_air_flow_rate_method_heating=1,
-                    #     supply_air_flow_rate_method_none=3, fraction_clg_supply_air_flow_rate_none=0.05)
+                    if len(zone_by_ahu[key]) > 1:
+                        spm = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
+                    else:
+                        spm = SetpointManager.single_zone_cooling(model, supply_air_temp, 30, zone_by_ahu[key][0])
 
                     air_loop = HVACTool.air_loop_simplified(
                         model, "AHU-{}F-{}".format(story, key),
-                        economizer_type=0,
+                        economizer_type=1,
                         heat_recovery_efficiency=0.6,
-                        supply_components=[cooling_coil, heating_coil, supply_fan, spm_2],
+                        supply_components=[cooling_coil, heating_coil, supply_fan, spm],
                         air_terminal_type=1,
                         thermal_zones=zone_by_ahu[key],
-                        availability=ahu_availability)
+                        availability=ahu_availability,
+                        terminal_schedule=always_on)
 
                     loop = air_loop[0]
                     AirLoopComponent.sizing(model, loop, 1)
@@ -148,62 +164,75 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
 
     # Plant loops:
     # *****************************************************************************************************
-    # heatpump_cooling = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 3000, 7.5)
-    # heatpump_heating = PlantLoopComponent.heat_pump_plant_heating(model, 1, 3000, 4.5)
+    heatpump_cooling_1 = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 5600000, cop=7.5)
+    heatpump_heating_1 = PlantLoopComponent.heat_pump_plant_heating(model, 1, 5600000, cop=4.5)
 
-    # chiller = PlantLoopComponent.chiller_electric(model, condenser_type=1, capacity=8000, cop=7.5)
-    # boiler = PlantLoopComponent.boiler_hot_water(model, fuel_type=2, nominal_capacity=8000)
-
-    # heatpump_cooling.setCompanionHeatingHeatPump(heatpump_heating)
-    # heatpump_heating.setCompanionCoolingHeatPump(heatpump_cooling)
-
-    # chiller_1 = PlantLoopComponent.chiller_electric(model, cop=7.5, leaving_chilled_water_temp=7)
-    # chiller_2 = PlantLoopComponent.chiller_electric(model, cop=7.5, leaving_chilled_water_temp=7)
-    # chiller_3 = PlantLoopComponent.chiller_electric(model, cop=7.5, leaving_chilled_water_temp=7)
-    # chiller_4 = PlantLoopComponent.chiller_electric(model, cop=7.5, leaving_chilled_water_temp=7)
+    heatpump_cooling_1.setCompanionHeatingHeatPump(heatpump_heating_1)
+    heatpump_heating_1.setCompanionCoolingHeatPump(heatpump_cooling_1)
 
     district_cooling = PlantLoopComponent.district_cooling(model)
-    district_heating = PlantLoopComponent.district_heating(model)
+    # district_heating = PlantLoopComponent.district_heating(model)
 
-    pump_cooling_1 = PlantLoopComponent.pump_variable_speed(model)
-    # pump_cooling_2 = PlantLoopComponent.pump_variable_speed(model)
-    # pump_cooling_3 = PlantLoopComponent.pump_variable_speed(model)
-    # pump_cooling_4 = PlantLoopComponent.pump_variable_speed(model)
-    pump_heating_1 = PlantLoopComponent.pump_variable_speed(model)
-    pump_heating_2 = PlantLoopComponent.pump_variable_speed(model)
+    pump_cooling_1 = PlantLoopComponent.pump_variable_speed(
+        model, rated_head=Helper.mh2o_to_pa(34), control_type=2, pump_curve_coeff=pump_curve)
+    pump_cooling_2 = PlantLoopComponent.pump_variable_speed(
+        model, rated_head=Helper.mh2o_to_pa(34), control_type=2, pump_curve_coeff=pump_curve)
+    pump_heating_1 = PlantLoopComponent.pump_variable_speed(
+        model, rated_head=Helper.mh2o_to_pa(26), control_type=2, pump_curve_coeff=pump_curve)
+    # pump_heating_2 = PlantLoopComponent.pump_variable_speed(
+    #     model, rated_head=Helper.mh2o_to_pa(26), pump_curve_coeff=pump_curve)
 
     chilled_water_loop = HVACTool.plant_loop(
         model, "Chilled Water Loop", 1,
         load_distribution_scheme=2,
         common_pipe_simulation=1,
         setpoint_manager=SetpointManager.scheduled(model, 1, 7, name="Chilled_Water_Supply_Temp"),
-        supply_branches=[pump_cooling_1, district_cooling],
+        supply_branches=[[pump_cooling_1, heatpump_cooling_1], [pump_cooling_2, district_cooling]],
         demand_branches=cooling_coils,
         availability=plant_availability)
 
-    PlantLoopComponent.sizing(model, chilled_water_loop, 1, 7)
+    PlantLoopComponent.sizing(model, chilled_water_loop, 1, 8, 5)
 
     hot_water_loop = HVACTool.plant_loop(
         model, "Hot Water Loop", 1,
         load_distribution_scheme=2,
         common_pipe_simulation=1,
         setpoint_manager=SetpointManager.scheduled(model, 1, 45, name="Hot_Water_Supply_Temp"),
-        supply_branches=[pump_heating_2, district_heating],
+        supply_branches=[pump_heating_1, heatpump_heating_1],
         demand_branches=heating_coils,
         availability=plant_availability)
 
-    PlantLoopComponent.sizing(model, hot_water_loop, 2, 45)
+    PlantLoopComponent.sizing(model, hot_water_loop, 2, 45, 5)
 
     # Zone Equipments (FCUs for elevator lobby):
     # *****************************************************************************************************
     if len(elevator_lobbies) != 0:
         for ele_lobby in elevator_lobbies:
-            fcu = ZoneEquipment.fan_coil_unit(
+
+            cooling_coil = AirLoopComponent.coil_cooling_water(model, design_inlet_water_temp=8)
+            heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
+            fan = AirLoopComponent.fan_variable_speed(
+                model, fan_total_efficiency=0.72, pressure_rise=50, fan_curve_coeff=fan_curve)
+
+            ZoneEquipment.fan_coil_unit_detailed(
                 model,
+                fan,
+                cooling_coil,
+                heating_coil,
+                schedule=always_on,
                 thermal_zone=ele_lobby,
-                fan_pressure_rise=250,
+                capacity_control_method=1,
                 chilled_water_loop=chilled_water_loop,
                 hot_water_loop=hot_water_loop)
+
+            # ZoneEquipment.fan_coil_unit(
+            #     model,
+            #     schedule=always_on,
+            #     thermal_zone=ele_lobby,
+            #     capacity_control_method=1,
+            #     fan_pressure_rise=50,
+            #     chilled_water_loop=chilled_water_loop,
+            #     hot_water_loop=hot_water_loop)
 
     # Notification:
     # *****************************************************************************************************

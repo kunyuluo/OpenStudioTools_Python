@@ -10,12 +10,13 @@ class AirTerminal:
     @staticmethod
     def single_duct_constant_volume_no_reheat(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             name: str = None,
             max_air_flow_rate=None):
 
         if model is not None:
             terminal = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeNoReheat(
-                model, ScheduleTool.always_on(model))
+                model, schedule)
 
             if name is not None:
                 terminal.setName(name)
@@ -32,6 +33,7 @@ class AirTerminal:
     @staticmethod
     def single_duct_constant_volume_reheat(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             coil=None,
             reheat_coil_type: str = None,
             name: str = None,
@@ -69,7 +71,7 @@ class AirTerminal:
                         reheat_coil = AirLoopComponent.coil_heating_electric(model)
 
             terminal = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeReheat(
-                model, ScheduleTool.always_on(model), reheat_coil)
+                model, schedule, reheat_coil)
 
             if name is not None:
                 terminal.setName(name)
@@ -100,6 +102,7 @@ class AirTerminal:
     @staticmethod
     def single_duct_vav_no_reheat(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             name: str = None,
             max_air_flow_rate=None,
             min_air_flow_input_method: str = None,
@@ -118,7 +121,7 @@ class AirTerminal:
 
         if model is not None:
 
-            terminal = openstudio.openstudiomodel.AirTerminalSingleDuctVAVNoReheat(model, ScheduleTool.always_on(model))
+            terminal = openstudio.openstudiomodel.AirTerminalSingleDuctVAVNoReheat(model, schedule)
 
             if name is not None:
                 terminal.setName(name)
@@ -150,6 +153,7 @@ class AirTerminal:
     @staticmethod
     def single_duct_vav_reheat(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             coil=None,
             reheat_coil_type: str = None,
             name: str = None,
@@ -206,7 +210,7 @@ class AirTerminal:
                         reheat_coil = AirLoopComponent.coil_heating_electric(model)
 
             terminal = openstudio.openstudiomodel.AirTerminalSingleDuctVAVReheat(
-                model, ScheduleTool.always_on(model), reheat_coil)
+                model, schedule, reheat_coil)
 
             if name is not None:
                 terminal.setName(name)
@@ -454,6 +458,7 @@ class AirTerminal:
     @staticmethod
     def single_duct_parallel_piu_reheat(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             reheat_coil_type: str = None,
             fan=None,
             coil=None,
@@ -504,7 +509,7 @@ class AirTerminal:
                 terminal_fan = AirLoopComponent.fan_constant_speed(model)
 
             terminal = openstudio.openstudiomodel.AirTerminalSingleDuctParallelPIUReheat(
-                model, ScheduleTool.always_on(model), terminal_fan, reheat_coil)
+                model, schedule, terminal_fan, reheat_coil)
 
             if name is not None:
                 terminal.setName(name)
@@ -691,6 +696,7 @@ class AirTerminal:
     @staticmethod
     def single_duct_constant_volume_cooled_beam(
             model: openstudio.openstudiomodel.Model,
+            schedule: openstudio.openstudiomodel.ScheduleRuleset,
             coil: openstudio.openstudiomodel.CoilCoolingCooledBeam = None,
             name: str = None,
             cooled_beam_type: str = None,
@@ -710,7 +716,7 @@ class AirTerminal:
                 beam_coil = AirLoopComponent.coil_cooling_cooled_beam(model)
 
             terminal = openstudio.openstudiomodel.AirTerminalSingleDuctConstantVolumeCooledBeam(
-                model, ScheduleTool.always_on(model), beam_coil)
+                model, schedule, beam_coil)
 
             if name is not None:
                 terminal.setName(name)

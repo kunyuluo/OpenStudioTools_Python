@@ -218,37 +218,37 @@ class ZoneTool:
 
     @staticmethod
     def sizing(
-            model,
-            thermal_zone,
-            cooling_design_supply_air_temp_input_method=None,
+            model: openstudio.openstudiomodel.Model,
+            thermal_zone: openstudio.openstudiomodel.ThermalZone,
+            cooling_design_supply_air_temp_input_method: int = 1,
             cooling_design_supply_air_temp=None,
             cooling_design_supply_air_temp_diff=None,
-            heating_design_supply_air_temp_input_method=None,
+            heating_design_supply_air_temp_input_method: int = 1,
             heating_design_supply_air_temp=None,
             heating_design_supply_air_temp_diff=None,
             cooling_design_supply_air_humidity_ratio=None,
             heating_design_supply_air_humidity_ratio=None,
             cooling_sizing_factor=None,
             heating_sizing_factor=None,
-            cooling_design_air_flow_method=None,
+            cooling_design_air_flow_method: int = 2,
             cooling_design_air_flow=None,
             cooling_min_air_flow=None,
             cooling_min_air_flow_per_floor_area=None,
             cooling_min_air_flow_fraction=None,
-            heating_design_air_flow_method=None,
+            heating_design_air_flow_method: int = 2,
             heating_design_air_flow=None,
             heating_max_air_flow=None,
             heating_max_air_flow_per_floor_area=None,
             heating_max_air_flow_fraction=None,
             account_for_doas: bool = False,
-            doas_control_strategy: str = "NeutralSupplyAir",
+            doas_control_strategy: int = 1,
             doas_low_setpoint=None,
             doas_high_setpoint=None,
-            zone_load_sizing_method: str = "Sensible And Latent Load",
-            latent_cooling_design_supply_air_humidity_ratio_input_method: str = None,
+            zone_load_sizing_method: int = 3,
+            latent_cooling_design_supply_air_humidity_ratio_input_method: int = 1,
             dehumidification_design_supply_air_humidity_ratio=None,
             cooling_design_supply_air_humidity_ratio_diff=None,
-            latent_heating_design_supply_air_humidity_ratio_input_method: str = None,
+            latent_heating_design_supply_air_humidity_ratio_input_method: int = 1,
             humidification_design_supply_air_humidity_ratio=None,
             humidification_design_supply_air_humidity_ratio_diff=None,
             dehumidification_setpoint_schedule=None,
@@ -258,17 +258,38 @@ class ZoneTool:
             secondary_recirculation_fraction=None,
             min_ventilation_efficiency=None):
 
+        """
+        -Cooling_design_supply_air_temp_input_method: 1.SupplyAirTemperature 2.TemperatureDifference \n
+        -Heating_design_supply_air_temp_input_method: 1.SupplyAirTemperature 2.TemperatureDifference \n
+        -Cooling_design_air_flow_method: 1.Flow/Zone 2.DesignDay 3.DesignDayWithLimit \n
+        -Heating_design_air_flow_method: 1.Flow/Zone 2.DesignDay 3.DesignDayWithLimit \n
+        -Doas_control_strategy: 1.NeutralSupplyAir 2.NeutralDehumidifiedSupplyAir 3.ColdSupplyAir \n
+        -Zone_load_sizing_method: \n
+        1.Sensible Load 2.Latent Load 3.Sensible And Latent Load 4.Sensible Load Only No Latent Load \n
+        -Latent_cooling_design_supply_air_humidity_ratio_input_method:
+        1.SupplyAirHumidityRatio 2.HumidityRatioDifference \n
+        -Latent_heating_design_supply_air_humidity_ratio_input_method:
+        1.SupplyAirHumidityRatio 2.HumidityRatioDifference
+        """
+
+        air_temp_methods = {1: "SupplyAirTemperature", 2: "TemperatureDifference"}
+        air_flow_methods = {1: "Flow/Zone", 2: "DesignDay", 3: "DesignDayWithLimit"}
+        doas_strategies = {1: "NeutralSupplyAir", 2: "NeutralDehumidifiedSupplyAir", 3: "ColdSupplyAir"}
+        zone_load_methods = {1: "Sensible Load", 2: "Latent Load",
+                             3: "Sensible And Latent Load", 4: "Sensible Load Only No Latent Load"}
+        humidity_methods = {1: "SupplyAirHumidityRatio", 2: "HumidityRatioDifference"}
+
         sizing = openstudio.openstudiomodel.SizingZone(model, thermal_zone)
 
-        if cooling_design_supply_air_temp_input_method is not None:
-            sizing.setZoneCoolingDesignSupplyAirTemperatureInputMethod(cooling_design_supply_air_temp_input_method)
+        sizing.setZoneCoolingDesignSupplyAirTemperatureInputMethod(
+            air_temp_methods[cooling_design_supply_air_temp_input_method])
         if cooling_design_supply_air_temp is not None:
             sizing.setZoneCoolingDesignSupplyAirTemperature(cooling_design_supply_air_temp)
         if cooling_design_supply_air_temp_diff is not None:
             sizing.setZoneCoolingDesignSupplyAirTemperatureDifference(cooling_design_supply_air_temp_diff)
 
-        if heating_design_supply_air_temp_input_method is not None:
-            sizing.setZoneHeatingDesignSupplyAirTemperatureInputMethod(heating_design_supply_air_temp_input_method)
+        sizing.setZoneHeatingDesignSupplyAirTemperatureInputMethod(
+            air_temp_methods[heating_design_supply_air_temp_input_method])
         if heating_design_supply_air_temp is not None:
             sizing.setZoneHeatingDesignSupplyAirTemperature(heating_design_supply_air_temp)
         if heating_design_supply_air_temp_diff is not None:
@@ -284,8 +305,7 @@ class ZoneTool:
         if heating_sizing_factor is not None:
             sizing.setZoneHeatingSizingFactor(heating_sizing_factor)
 
-        if cooling_design_air_flow_method is not None:
-            sizing.setCoolingDesignAirFlowMethod(cooling_design_air_flow_method)
+        sizing.setCoolingDesignAirFlowMethod(air_flow_methods[cooling_design_air_flow_method])
         if cooling_design_air_flow is not None:
             sizing.setCoolingDesignAirFlowRate(cooling_design_air_flow)
         if cooling_min_air_flow is not None:
@@ -295,8 +315,7 @@ class ZoneTool:
         if cooling_min_air_flow_fraction is not None:
             sizing.setCoolingMinimumAirFlowFraction(cooling_min_air_flow_fraction)
 
-        if heating_design_air_flow_method is not None:
-            sizing.setHeatingDesignAirFlowMethod(heating_design_air_flow_method)
+        sizing.setHeatingDesignAirFlowMethod(air_flow_methods[heating_design_air_flow_method])
         if heating_design_air_flow is not None:
             sizing.setHeatingDesignAirFlowRate(heating_design_air_flow)
         if heating_max_air_flow is not None:
@@ -308,18 +327,19 @@ class ZoneTool:
 
         if account_for_doas is not None:
             sizing.setAccountforDedicatedOutdoorAirSystem(account_for_doas)
-        if doas_control_strategy is not None:
-            sizing.setDedicatedOutdoorAirSystemControlStrategy(doas_control_strategy)
+
+        sizing.setDedicatedOutdoorAirSystemControlStrategy(doas_strategies[doas_control_strategy])
+
         if doas_low_setpoint is not None:
             sizing.setDedicatedOutdoorAirLowSetpointTemperatureforDesign(doas_low_setpoint)
         if doas_high_setpoint is not None:
             sizing.setDedicatedOutdoorAirHighSetpointTemperatureforDesign(doas_high_setpoint)
 
-        sizing.setZoneLoadSizingMethod(zone_load_sizing_method)
+        sizing.setZoneLoadSizingMethod(zone_load_methods[zone_load_sizing_method])
 
-        if latent_cooling_design_supply_air_humidity_ratio_input_method is not None:
-            sizing.setZoneLatentCoolingDesignSupplyAirHumidityRatioInputMethod(
-                latent_cooling_design_supply_air_humidity_ratio_input_method)
+        sizing.setZoneLatentCoolingDesignSupplyAirHumidityRatioInputMethod(
+            humidity_methods[latent_cooling_design_supply_air_humidity_ratio_input_method])
+
         if dehumidification_design_supply_air_humidity_ratio is not None:
             sizing.setZoneDehumidificationDesignSupplyAirHumidityRatio(
                 dehumidification_design_supply_air_humidity_ratio)
@@ -327,9 +347,9 @@ class ZoneTool:
             sizing.setZoneCoolingDesignSupplyAirHumidityRatioDifference(
                 cooling_design_supply_air_humidity_ratio_diff)
 
-        if latent_heating_design_supply_air_humidity_ratio_input_method is not None:
-            sizing.setZoneLatentHeatingDesignSupplyAirHumidityRatioInputMethod(
-                latent_heating_design_supply_air_humidity_ratio_input_method)
+        sizing.setZoneLatentHeatingDesignSupplyAirHumidityRatioInputMethod(
+            humidity_methods[latent_heating_design_supply_air_humidity_ratio_input_method])
+
         if humidification_design_supply_air_humidity_ratio is not None:
             sizing.setZoneHumidificationDesignSupplyAirHumidityRatio(
                 humidification_design_supply_air_humidity_ratio)

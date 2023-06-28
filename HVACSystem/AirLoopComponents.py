@@ -232,10 +232,19 @@ class AirLoopComponent:
             design_outlet_air_temp=None,
             design_inlet_air_humidity_ratio=None,
             design_outlet_air_humidity_ratio=None,
-            type_of_analysis: str = None,
-            heat_exchanger_config: str = None):
+            type_of_analysis: int = 1,
+            heat_exchanger_config: int = 1):
+
+        """
+        -Type_of_analysis: 1.SimpleAnalysis 2.DetailedAnalysis \n
+        -Heat_exchanger_config: 1.CrossFlow 2.CounterFlow
+        """
+
+        analysis_types = {1: "SimpleAnalysis", 2: "DetailedAnalysis"}
+        hx_configs = {1: "CrossFlow", 2: "CounterFlow"}
 
         coil = openstudio.openstudiomodel.CoilCoolingWater(model)
+
         if name is not None:
             coil.setName(name)
 
@@ -278,12 +287,10 @@ class AirLoopComponent:
             coil.autosizeDesignOutletAirHumidityRatio()
 
         if type_of_analysis is not None:
-            coil.setTypeOfAnalysis(type_of_analysis)
+            coil.setTypeOfAnalysis(analysis_types[type_of_analysis])
 
         if heat_exchanger_config is not None:
-            coil.setHeatExchangerConfiguration(heat_exchanger_config)
-
-        # controller = coil.controllerWaterCoil().get()
+            coil.setHeatExchangerConfiguration(hx_configs[heat_exchanger_config])
 
         return coil
 
@@ -640,7 +647,7 @@ class AirLoopComponent:
             schedule=None,
             ufactor_times_area=None,
             max_water_flow_rate=None,
-            performance_input_method=None,
+            performance_input_method: int = 1,
             rated_capacity=None,
             inlet_water_temp=None,
             inlet_air_temp=None,
@@ -648,7 +655,14 @@ class AirLoopComponent:
             outlet_air_temp=None,
             ratio_air_water_convection=None):
 
+        """
+        -Performance_input_method: 1.UFactorTimesAreaAndDesignWaterFlowRate 2.NominalCapacity
+        """
+
+        methods = {1: "UFactorTimesAreaAndDesignWaterFlowRate", 2: "NominalCapacity"}
+
         coil = openstudio.openstudiomodel.CoilHeatingWater(model)
+
         if name is not None:
             coil.setName(name)
 
@@ -666,7 +680,7 @@ class AirLoopComponent:
             coil.autosizeMaximumWaterFlowRate()
 
         if performance_input_method is not None:
-            coil.setPerformanceInputMethod(performance_input_method)
+            coil.setPerformanceInputMethod(methods[performance_input_method])
 
         if rated_capacity is not None:
             coil.setRatedCapacity(rated_capacity)

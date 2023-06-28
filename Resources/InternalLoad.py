@@ -1,3 +1,4 @@
+import psycopg2
 from openstudio.openstudiomodel import Lights, ElectricEquipment, People
 from openstudio.openstudiomodel import GasEquipment, InternalMass, WaterUseEquipment
 from openstudio.openstudiomodel import LightsDefinition, ElectricEquipmentDefinition, PeopleDefinition
@@ -29,7 +30,8 @@ class InternalLoad:
     def gas_equipment(
             gas_definition: GasEquipmentDefinition,
             space: openstudio.openstudiomodel.Space = None,
-            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         gas = GasEquipment(gas_definition)
         if schedule is not None:
@@ -37,6 +39,9 @@ class InternalLoad:
 
         if space is not None:
             gas.setSpace(space)
+
+        if name is not None:
+            gas.setName(name)
 
         return gas
 
@@ -102,12 +107,16 @@ class InternalLoad:
     @staticmethod
     def internal_mass(
             mass_definition: InternalMassDefinition,
-            space: openstudio.openstudiomodel.Space = None):
+            space: openstudio.openstudiomodel.Space = None,
+            name: str = None):
 
         mass = InternalMass(mass_definition)
 
         if space is not None:
             mass.setSpace(space)
+
+        if name is not None:
+            mass.setName(name)
 
         return mass
 
@@ -176,7 +185,8 @@ class InternalLoad:
     def light(
             light_definition: LightsDefinition,
             space: openstudio.openstudiomodel.Space = None,
-            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         light = Lights(light_definition)
 
@@ -185,6 +195,9 @@ class InternalLoad:
 
         if space is not None:
             light.setSpace(space)
+
+        if name is not None:
+            light.setName(name)
 
         return light
 
@@ -254,7 +267,8 @@ class InternalLoad:
     def electric_equipment(
             equip_definition: ElectricEquipmentDefinition,
             space: openstudio.openstudiomodel.Space = None,
-            schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         equip = ElectricEquipment(equip_definition)
 
@@ -263,6 +277,9 @@ class InternalLoad:
 
         if space is not None:
             equip.setSpace(space)
+
+        if name is not None:
+            equip.setName(name)
 
         return equip
 
@@ -443,7 +460,8 @@ class InternalLoad:
             people_definition: PeopleDefinition,
             space: openstudio.openstudiomodel.Space = None,
             schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
-            activity_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            activity_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            name: str = None):
 
         ppl = People(people_definition)
 
@@ -455,6 +473,9 @@ class InternalLoad:
 
         if space is not None:
             ppl.setSpace(space)
+
+        if name is not None:
+            ppl.setName(name)
 
         return ppl
 
@@ -541,12 +562,10 @@ class InternalLoad:
         water_use_def.setPeakFlowRate(peak_flow_rate)
 
         # Schedules:
-        temp_type_limit = ScheduleTool.schedule_type_limits(model, 2, 1, 0, 100)
-        temp_schedule = ScheduleTool.schedule_ruleset(model, target_temp, temp_type_limit)
+        temp_schedule = ScheduleTool.schedule_ruleset(model, 2, target_temp)
 
-        ratio_type_limit = ScheduleTool.schedule_type_limits(model, 1, 1, 0, 1)
-        sensible_schedule = ScheduleTool.schedule_ruleset(model, 0.2, ratio_type_limit)
-        latent_schedule = ScheduleTool.schedule_ruleset(model, 0.05, ratio_type_limit)
+        sensible_schedule = ScheduleTool.schedule_ruleset(model, 1, 0.2)
+        latent_schedule = ScheduleTool.schedule_ruleset(model, 1, 0.05)
 
         water_use_def.setTargetTemperatureSchedule(temp_schedule)
         water_use_def.setSensibleFractionSchedule(sensible_schedule)
@@ -739,6 +758,64 @@ class InternalLoad:
         space_list = df["space"].values.tolist()
 
         return load, space_list
+
+    @staticmethod
+    def insert_data_into_database(
+            space,
+            people_density,
+            lighting,
+            electric_equipment,
+            outdoor_air_per_area,
+            outdoor_air_per_person,
+            people_density_unit,
+            people_activity,
+            gas_equipment,
+            table_name="InternalLoad"):
+        # First, build a connection
+        connect = psycopg2.connect(
+            database="InternalLoads",
+            user="postgres",
+            password="pg123",
+            port="5432")
+
+        # Set up a cursor
+        cursor = connect.cursor()
+
+        space_f, people_density_f, lighting_f, electric_equipment_f, outdoor_air_per_area_f, outdoor_air_per_person_f, \
+            people_density_unit_f, people_activity_f, gas_equipment_f = [], [], [], [], [], [], [], [], []
+        # data_length = min(len(names), len(teams), len(numbers))
+        data_length = len(space)
+        for i in range(data_length):
+            space_f.extend([space[i]])
+            people_density_f.extend([people_density[i]])
+            lighting_f.extend([lighting[i]])
+            electric_equipment_f.extend([electric_equipment[i]])
+            outdoor_air_per_area_f.extend([outdoor_air_per_area[i]])
+            outdoor_air_per_person_f.extend([outdoor_air_per_person[i]])
+            people_density_unit_f.extend([people_density_unit[i]])
+            people_activity_f.extend([people_activity[i]])
+            gas_equipment_f.extend([gas_equipment[i]])
+
+        # Command line to write data into table
+        table_name = '"' + table_name + '"'
+        sql = "INSERT INTO{}(\"space\", \"people_density\", \"lighting\", \"electric_equipment\", " \
+              "\"outdoor_air_per_area\", \"outdoor_air_per_person\", \"people_density_unit\", \"people_activity\", " \
+              "\"gas_equipment\") VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)".format(table_name)
+
+        # Group datasets into a list
+        data = zip(space_f, people_density_f, lighting_f, electric_equipment_f, outdoor_air_per_area_f,
+                   outdoor_air_per_person_f, people_density_unit_f, people_activity_f, gas_equipment_f)
+        data_list = [list(d) for d in data]
+
+        # Execute
+        try:
+            cursor.executemany(sql, data_list)
+        except Exception as e:
+            print(e)
+
+        connect.commit()
+        cursor.close()
+        connect.close()
 
 
 

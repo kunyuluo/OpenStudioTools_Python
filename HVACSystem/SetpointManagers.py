@@ -26,7 +26,7 @@ class SetpointManager:
         9.MinimumMassFlowRate
         """
 
-        control_variables = {1: "Temperature", 2: "MaximumTemperature", 3: "MinimumTemperature",
+        variables = {1: "Temperature", 2: "MaximumTemperature", 3: "MinimumTemperature",
                              4: "HumidityRatio", 5: "MaximumHumidityRatio", 6: "MinimumHumidityRatio",
                              7: "MassFlowRate", 8: "MaximumMassFlowRate", 9: "MinimumMassFlowRate"}
 
@@ -41,7 +41,10 @@ class SetpointManager:
                 unit_type = 1
 
         if constant_value is not None:
-            setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value, name=name)
+            try:
+                setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value, name=name)
+            except ValueError:
+                setpoint_schedule = ScheduleTool.schedule_ruleset(model, unit_type, constant_value)
         else:
             if schedule is not None:
                 setpoint_schedule = schedule
@@ -49,7 +52,7 @@ class SetpointManager:
                 raise ValueError("Specify either constant value or a schedule")
 
         manager = openstudio.openstudiomodel.SetpointManagerScheduled(
-            model, control_variables[control_variable], setpoint_schedule)
+            model, variables[control_variable], setpoint_schedule)
 
         if name is not None:
             manager.setName(name)
@@ -167,5 +170,43 @@ class SetpointManager:
     def humidity_maximum(model: openstudio.openstudiomodel.Model):
 
         manager = openstudio.openstudiomodel.SetpointManagerSystemNodeResetHumidity(model)
+
+        return manager
+
+    @staticmethod
+    def single_zone_cooling(
+            model: openstudio.openstudiomodel.Model,
+            min_supply_air_temp,
+            max_supply_air_temp,
+            control_zone: openstudio.openstudiomodel.ThermalZone,
+            name: str = None):
+
+        manager = openstudio.openstudiomodel.SetpointManagerSingleZoneCooling(model)
+
+        if name is not None:
+            manager.setName(name)
+
+        manager.setMinimumSupplyAirTemperature(min_supply_air_temp)
+        manager.setMaximumSupplyAirTemperature(max_supply_air_temp)
+        manager.setControlZone(control_zone)
+
+        return manager
+
+    @staticmethod
+    def single_zone_heating(
+            model: openstudio.openstudiomodel.Model,
+            min_supply_air_temp,
+            max_supply_air_temp,
+            control_zone: openstudio.openstudiomodel.ThermalZone,
+            name: str = None):
+
+        manager = openstudio.openstudiomodel.SetpointManagerSingleZoneHeating(model)
+
+        if name is not None:
+            manager.setName(name)
+
+        manager.setMinimumSupplyAirTemperature(min_supply_air_temp)
+        manager.setMaximumSupplyAirTemperature(max_supply_air_temp)
+        manager.setControlZone(control_zone)
 
         return manager

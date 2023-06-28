@@ -467,27 +467,32 @@ class GeometryTool:
                 if schedules[room_type]["occupancy"] is not None and schedules[room_type]["activity"] is not None:
                     people = InternalLoad.people(
                         loads[room_type]["people"],
-                        schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"])
+                        schedule=schedules[room_type]["occupancy"], activity_schedule=schedules[room_type]["activity"],
+                        name=room_type + "_People")
                 else:
-                    people = InternalLoad.people(loads[room_type]["people"])
+                    people = InternalLoad.people(loads[room_type]["people"], name=room_type + "_People")
 
                 # Electric Equipment:
                 if schedules[room_type]["electric_equipment"] is not None:
                     electric_equip = InternalLoad.electric_equipment(
-                        loads[room_type]["electric_equip"], schedule=schedules[room_type]["electric_equipment"])
+                        loads[room_type]["electric_equip"], schedule=schedules[room_type]["electric_equipment"],
+                        name=room_type + "_ElectricEquip")
                 else:
-                    electric_equip = InternalLoad.electric_equipment(loads[room_type]["electric_equip"])
+                    electric_equip = InternalLoad.electric_equipment(loads[room_type]["electric_equip"],
+                                                                     name=room_type + "_ElectricEquip")
 
                 # Light:
                 if schedules[room_type]["lighting"] is not None:
                     light = InternalLoad.light(
-                        loads[room_type]["lighting"], schedule=schedules[room_type]["lighting"])
+                        loads[room_type]["lighting"], schedule=schedules[room_type]["lighting"],
+                        name=room_type + "_Light")
                 else:
-                    light = InternalLoad.light(loads[room_type]["lighting"])
+                    light = InternalLoad.light(loads[room_type]["lighting"], name=room_type + "_Light")
 
                 # Internal Mass:
                 if loads[room_type]["internal_mass"] is not None:
-                    mass = InternalLoad.internal_mass(loads[room_type]["internal_mass"])
+                    mass = InternalLoad.internal_mass(loads[room_type]["internal_mass"],
+                                                      name=room_type + "_InternalMass")
                 else:
                     mass = None
 

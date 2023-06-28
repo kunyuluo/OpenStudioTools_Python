@@ -4,6 +4,7 @@ from HVACSystem.AirLoopComponents import AirLoopComponent
 from HVACSystem.AirTerminals import AirTerminal
 from HVACSystem.SetpointManagers import SetpointManager
 from Resources.Helpers import Helper
+from Schedules.ScheduleTools import ScheduleTool
 
 
 class HVACTool:
@@ -197,7 +198,8 @@ class HVACTool:
             air_terminal_reheat_type: int = 3,
             thermal_zones: list = None,
             availability: openstudio.openstudiomodel.ScheduleRuleset = None,
-            night_cycle_control: int = 1):
+            night_cycle_control: int = 1,
+            terminal_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
 
         """
         -Economizer Control Type: \n
@@ -242,6 +244,11 @@ class HVACTool:
         heat_water_coils = []
         beam_cool_coils = []
         beam_heat_coils = []
+
+        if terminal_schedule is not None:
+            terminal_schedule = terminal_schedule
+        else:
+            terminal_schedule = ScheduleTool.always_on(model)
 
         if name is not None:
             loop.setName(name)
@@ -306,7 +313,7 @@ class HVACTool:
             for zone in thermal_zones:
                 match air_terminal_type:
                     case 1:  # SingleDuctConstantVolumeNoReheat
-                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model)
+                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model, terminal_schedule)
 
                     case 2:  # SingleDuctConstantVolumeReheat
                         match air_terminal_reheat_type:
@@ -318,9 +325,10 @@ class HVACTool:
                             case 3 | _:  # Electric
                                 reheat_coil = AirLoopComponent.coil_heating_electric(model)
 
-                        terminal = AirTerminal.single_duct_constant_volume_reheat(model, coil=reheat_coil)
+                        terminal = AirTerminal.single_duct_constant_volume_reheat(
+                            model, terminal_schedule, coil=reheat_coil)
                     case 3:  # SingleDuctVAVNoReheat
-                        terminal = AirTerminal.single_duct_vav_no_reheat(model)
+                        terminal = AirTerminal.single_duct_vav_no_reheat(model, terminal_schedule)
 
                     case 4:  # SingleDuctVAVReheat
                         match air_terminal_reheat_type:
@@ -332,10 +340,10 @@ class HVACTool:
                             case 3 | _:  # Electric
                                 reheat_coil = AirLoopComponent.coil_heating_electric(model)
 
-                        terminal = AirTerminal.single_duct_vav_reheat(model, coil=reheat_coil)
+                        terminal = AirTerminal.single_duct_vav_reheat(model, terminal_schedule, coil=reheat_coil)
 
                     case 5:  # SingleDuctVAVHeatAndCoolNoReheat
-                        terminal = AirTerminal.single_duct_vav_heat_and_cool_no_reheat(model)
+                        terminal = AirTerminal.single_duct_vav_heat_and_cool_no_reheat(model, terminal_schedule)
 
                     case 6:  # SingleDuctVAVHeatAndCoolReheat
                         match air_terminal_reheat_type:
@@ -348,7 +356,7 @@ class HVACTool:
                                 reheat_coil = AirLoopComponent.coil_heating_electric(model)
 
                         terminal = AirTerminal.single_duct_vav_heat_and_cool_reheat(
-                            model, coil=reheat_coil)
+                            model, terminal_schedule, coil=reheat_coil)
 
                     case 7:  # SingleDuctSeriesPIUReheat
                         match air_terminal_reheat_type:
@@ -362,7 +370,8 @@ class HVACTool:
 
                         terminal_fan = AirLoopComponent.fan_constant_speed(model)
 
-                        terminal = AirTerminal.single_duct_series_piu_reheat(model, fan=terminal_fan, coil=reheat_coil)
+                        terminal = AirTerminal.single_duct_series_piu_reheat(
+                            model, terminal_schedule, fan=terminal_fan, coil=reheat_coil)
 
                     case 8:  # SingleDuctParallelPIUReheat
                         match air_terminal_reheat_type:
@@ -376,8 +385,8 @@ class HVACTool:
 
                         terminal_fan = AirLoopComponent.fan_constant_speed(model)
 
-                        terminal = AirTerminal.single_duct_parallel_piu_reheat(model, fan=terminal_fan,
-                                                                               coil=reheat_coil)
+                        terminal = AirTerminal.single_duct_parallel_piu_reheat(
+                            model, terminal_schedule, fan=terminal_fan, coil=reheat_coil)
 
                     case 9:  # SingleDuctConstantVolumeFourPipeInduction
                         terminal = AirTerminal.single_duct_constant_volume_four_pipe_induction(model)
@@ -400,13 +409,13 @@ class HVACTool:
                         except ValueError:
                             pass
                     case 11:  # SingleDuctConstantVolumeFourCooledBeam
-                        terminal = AirTerminal.single_duct_constant_volume_cooled_beam(model)
+                        terminal = AirTerminal.single_duct_constant_volume_cooled_beam(model, terminal_schedule)
                         try:
                             beam_cool_coils.append(terminal.coilCoolingCooledBeam())
                         except ValueError:
                             pass
                     case _:
-                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model)
+                        terminal = AirTerminal.single_duct_constant_volume_no_reheat(model, terminal_schedule)
                         print('This terminal type is currently not supported. Please choose another type, '
                               'or the "constant volume no reheat" will be used as default')
 
