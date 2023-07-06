@@ -54,6 +54,8 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # Parameters:
     # *****************************************************************************************************
     supply_air_temp = 14
+    ahu_supply_air_temp = ScheduleTool.schedule_ruleset(model, 2, supply_air_temp, name="AHU_supply_air_temp")
+
     fan_curve = Curve.fan_curve_set(1)
     pump_curve = Curve.pump_curve_set(1)
 
@@ -63,7 +65,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # Air loops:
     # *****************************************************************************************************
     for i, story in enumerate(sorted_zones.keys()):
-        if story == 100:
+        if story == 1:
             for zone_type in sorted_zones[story].keys():
                 if zone_type == "ElevatorLobby":
                     elevator_lobbies.extend(sorted_zones[story][zone_type])
@@ -74,9 +76,9 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                         model, fan_total_efficiency=0.72, pressure_rise=400, fan_curve_coeff=fan_curve)
 
                     if len(sorted_zones[story][zone_type]) > 1:
-                        spm = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
+                        spm = SetpointManager.scheduled(model, 1, schedule=ahu_supply_air_temp)
                     else:
-                        spm = SetpointManager.single_zone_cooling(model, supply_air_temp, 30, sorted_zones[story][zone_type])
+                        spm = SetpointManager.single_zone_cooling(model, supply_air_temp, 30, sorted_zones[story][zone_type][0])
 
                     air_loop = HVACTool.air_loop_simplified(
                         model, "AHU-1F-" + zone_type,
@@ -94,7 +96,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                     cooling_coils.extend(air_loop[1])
                     heating_coils.extend(air_loop[2])
 
-        elif 1 <= story <= 18:
+        elif 2 <= story <= 18:
             zone_by_ahu = {"1W": [], "1N": [], "2W": [], "2N": [], "3W": [], "3N": [], "4W": [], "4N": []}
             zone_name_by_ahu = {"1W": [], "1N": [], "2W": [], "2N": [], "3W": [], "3N": [], "4W": [], "4N": []}
             for zone_type in sorted_zones[story].keys():
@@ -137,7 +139,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                         model, fan_total_efficiency=0.72, pressure_rise=500, fan_curve_coeff=fan_curve)
 
                     if len(zone_by_ahu[key]) > 1:
-                        spm = SetpointManager.scheduled(model, 1, supply_air_temp, name="AHU_Supply_Air_Temp")
+                        spm = SetpointManager.scheduled(model, 1, schedule=ahu_supply_air_temp)
                     else:
                         spm = SetpointManager.single_zone_cooling(model, supply_air_temp, 30, zone_by_ahu[key][0])
 
@@ -164,8 +166,8 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
 
     # Plant loops:
     # *****************************************************************************************************
-    heatpump_cooling_1 = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 5600000, cop=7.5)
-    heatpump_heating_1 = PlantLoopComponent.heat_pump_plant_heating(model, 1, 5600000, cop=4.5)
+    heatpump_cooling_1 = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 3200000, cop=7.5)
+    heatpump_heating_1 = PlantLoopComponent.heat_pump_plant_heating(model, 1, 2800000, cop=4.5)
 
     heatpump_cooling_1.setCompanionHeatingHeatPump(heatpump_heating_1)
     heatpump_heating_1.setCompanionCoolingHeatPump(heatpump_cooling_1)

@@ -1,16 +1,53 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from bs4 import BeautifulSoup
-import requests
+from lxml import html
 
 
-url = "D:\\Projects\\OpenStudioDev\\ExpoTower_TypicalFlr\\reports\\eplustbl.html"
-html_file = open(url, "r")
+url = "D:\\Projects\\OpenStudioDev\\BoxModel\\reports\\eplustbl.html"
+try:
+    with open(url, "r") as f:
+        page = f.read()
+    tree = html.fromstring(page)
+except ValueError:
+    raise ValueError("Invalid url for file path.")
 
-index = html_file.read()
+tables = tree.xpath('/html/body/table')
+bolds = tree.xpath('/html/body/b')[2:]
 
-s = BeautifulSoup(index, "html.parser")
-print(s)
+row = tables[0].xpath('.//tr')
+data = row[0].xpath('.//td')[0].text
+# for table in tables:
+#     rows = table.xpath('//tr')
+#     for row in rows:
+#         data = row.xpath('//td')
+#         print(data[0].text)
+
+print(len(tables))
+print(bolds[0].text)
+# print(html.tostring(tree))
+
+
+cases = ("case 1", "case 2", "case 3")
+end_use_values = {
+    'Cooling': np.array([40, 30, 15]),
+    'Heating': np.array([20, 40, 25]),
+    'Lighting': np.array([10, 12, 14]),
+    'Equipment': np.array([23, 22, 25]),
+}
+width = 0.6
+
+fig, ax = plt.subplots()
+bottom = np.zeros(3)
+
+for category, end_use in end_use_values.items():
+    p = ax.bar(cases, end_use, width, label=category, bottom=bottom)
+    bottom += end_use
+
+    ax.bar_label(p, label_type='center')
+
+ax.set_title("Energy By End Use")
+ax.legend(loc="right")
+plt.show()
 
 
 # fig, ax = plt.subplots(subplot_kw=dict(projection="polar"))

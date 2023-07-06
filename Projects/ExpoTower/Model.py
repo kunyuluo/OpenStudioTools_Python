@@ -14,13 +14,13 @@ from OutputData.OutputData import output_variables
 # **************************************************************************************
 project_name = "ExpoTower"
 building_name = "ExpoTower"
-rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo_TypicalFlr.3dm"
+rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo.3dm"
 
 # Weather file:
 # **************************************************************************************
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
 ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
-path_str = "D:\\Projects\\OpenStudioDev\\ExpoTower_TypicalFlr.osm"
+path_str = "D:\\Projects\\OpenStudioDev\\ExpoTower_lightingControl.osm"
 #
 # # Create a new openstudio model
 # # **************************************************************************************

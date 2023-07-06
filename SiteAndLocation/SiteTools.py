@@ -1,7 +1,30 @@
 import openstudio
+import os
+# import System
 
 
 class SiteLocationTool:
+
+    @staticmethod
+    def download_weather_data(file_url):
+        if file_url and (file_url.startswith('https://') or file_url.startswith('http://')):
+            if file_url.endswith('.zip') or file_url.endswith('.ZIP') or file_url.endswith('.Zip'):
+                folder_name = file_url.split('/')[-1][:-4]
+            else:
+                folder_name = file_url.split('/')[-2]
+
+            check_data = True
+        else:
+            check_data = False
+
+        if check_data:
+            default_folder = "C:\ladybug"
+            working_dir = os.path.join(default_folder, folder_name)
+
+        # Download from web:
+        # client = System.Net.WebClient()
+        webFile = os.path.join(working_dir, file_url.split('/')[-2] + '.zip')
+        # client.DownloadFile(file_link, webFile)
 
     @staticmethod
     def set_weather_file(model: openstudio.openstudiomodel.Model, epw_path_str: str):
