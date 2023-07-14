@@ -641,9 +641,10 @@ class GeometryTool:
     @staticmethod
     def centroid(surface):
         vertices = surface.vertices()
-        cx = sum(pt.x() for pt in vertices)
-        cy = sum(pt.y() for pt in vertices)
-        cz = sum(pt.z() for pt in vertices)
+        length = len(vertices)
+        cx = sum(pt.x() for pt in vertices)/length
+        cy = sum(pt.y() for pt in vertices)/length
+        cz = sum(pt.z() for pt in vertices)/length
 
         centroid = Point3d(cx, cy, cz)
         return centroid

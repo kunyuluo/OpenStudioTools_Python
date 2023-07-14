@@ -682,3 +682,49 @@ class ZoneTool:
                     if construction_default is not None and len(sorted_surfaces[key]) != 0:
                         for srf in sorted_surfaces[key]:
                             srf.setConstruction(construction_default)
+
+    @staticmethod
+    def multiplier_by_floor(thermal_zone, multiplier: int = 1):
+
+        if isinstance(thermal_zone, openstudio.openstudiomodel.ThermalZone):
+            thermal_zone.setMultiplier(multiplier)
+        elif isinstance(thermal_zone, list):
+            for zone in thermal_zone:
+                if isinstance(zone, openstudio.openstudiomodel.ThermalZone):
+                    zone.setMultiplier(multiplier)
+        else:
+            raise TypeError("Invalid input type of thermal zone")
+
+    @staticmethod
+    def check_surface_type(
+            space: openstudio.openstudiomodel.Space,
+            surface: openstudio.openstudiomodel.Surface):
+        surfaces = space.surfaces()
+
+    @staticmethod
+    def adiabatic_by_type(
+            thermal_zone,
+            walls: bool = False,
+            interior_walls: bool = False,
+            air_walls: bool = False,
+            windows: bool = False,
+            interior_windows: bool = False,
+            roofs: bool = False,
+            ceilings: bool = False,
+            floors: bool = False,
+            exposed_floors: bool = False,
+            ground_floors: bool = False,
+            underground_walls: bool = False,
+            underground_slabs: bool = False,
+            underground_ceiling: bool = False):
+
+        if isinstance(thermal_zone, openstudio.openstudiomodel.ThermalZone):
+            pass
+            # thermal_zone.setMultiplier(multiplier)
+        elif isinstance(thermal_zone, list):
+            for zone in thermal_zone:
+                if isinstance(zone, openstudio.openstudiomodel.ThermalZone):
+                    pass
+                    # zone.setMultiplier(multiplier)
+        else:
+            raise TypeError("Invalid input type of thermal zone")

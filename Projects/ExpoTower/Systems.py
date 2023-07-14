@@ -74,6 +74,8 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                     heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
                     supply_fan = AirLoopComponent.fan_variable_speed(
                         model, fan_total_efficiency=0.72, pressure_rise=400, fan_curve_coeff=fan_curve)
+                    # supply_fan = AirLoopComponent.fan_constant_speed(model, fan_total_efficiency=0.72,
+                    #                                                  pressure_rise=400)
 
                     if len(sorted_zones[story][zone_type]) > 1:
                         spm = SetpointManager.scheduled(model, 1, schedule=ahu_supply_air_temp)
@@ -85,13 +87,13 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                         economizer_type=0,
                         heat_recovery_efficiency=0.6,
                         supply_components=[cooling_coil, heating_coil, supply_fan, spm],
-                        air_terminal_type=1,
+                        air_terminal_type=3,
                         thermal_zones=sorted_zones[story][zone_type],
                         availability=ahu_availability,
                         terminal_schedule=always_on)
 
                     loop = air_loop[0]
-                    AirLoopComponent.sizing(model, loop, 1)
+                    AirLoopComponent.sizing(model, loop, 1, central_cooling_capacity_control_method=4)
 
                     cooling_coils.extend(air_loop[1])
                     heating_coils.extend(air_loop[2])
@@ -137,6 +139,8 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                     heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
                     supply_fan = AirLoopComponent.fan_variable_speed(
                         model, fan_total_efficiency=0.72, pressure_rise=500, fan_curve_coeff=fan_curve)
+                    # supply_fan = AirLoopComponent.fan_constant_speed(
+                    #     model, fan_total_efficiency=0.72, pressure_rise=500)
 
                     if len(zone_by_ahu[key]) > 1:
                         spm = SetpointManager.scheduled(model, 1, schedule=ahu_supply_air_temp)
@@ -148,13 +152,13 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
                         economizer_type=1,
                         heat_recovery_efficiency=0.6,
                         supply_components=[cooling_coil, heating_coil, supply_fan, spm],
-                        air_terminal_type=1,
+                        air_terminal_type=3,
                         thermal_zones=zone_by_ahu[key],
                         availability=ahu_availability,
                         terminal_schedule=always_on)
 
                     loop = air_loop[0]
-                    AirLoopComponent.sizing(model, loop, 1)
+                    AirLoopComponent.sizing(model, loop, 1, central_cooling_capacity_control_method=4)
 
                     cooling_coils.extend(air_loop[1])
                     heating_coils.extend(air_loop[2])
@@ -176,11 +180,11 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     # district_heating = PlantLoopComponent.district_heating(model)
 
     pump_cooling_1 = PlantLoopComponent.pump_variable_speed(
-        model, rated_head=Helper.mh2o_to_pa(34), control_type=2, pump_curve_coeff=pump_curve)
+        model, rated_head=Helper.mh2o_to_pa(34), rated_flow_rate=0.2, control_type=2, pump_curve_coeff=pump_curve)
     pump_cooling_2 = PlantLoopComponent.pump_variable_speed(
-        model, rated_head=Helper.mh2o_to_pa(34), control_type=2, pump_curve_coeff=pump_curve)
+        model, rated_head=Helper.mh2o_to_pa(34), rated_flow_rate=0.2, control_type=2, pump_curve_coeff=pump_curve)
     pump_heating_1 = PlantLoopComponent.pump_variable_speed(
-        model, rated_head=Helper.mh2o_to_pa(26), control_type=2, pump_curve_coeff=pump_curve)
+        model, rated_head=Helper.mh2o_to_pa(26), rated_flow_rate=0.06, control_type=2, pump_curve_coeff=pump_curve)
     # pump_heating_2 = PlantLoopComponent.pump_variable_speed(
     #     model, rated_head=Helper.mh2o_to_pa(26), pump_curve_coeff=pump_curve)
 

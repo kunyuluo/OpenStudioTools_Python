@@ -338,7 +338,7 @@ def check_story_validity(rooms):
     invalid_stories = list(set(invalid_stories))
     for value in invalid_stories:
         for room in rooms:
-            bottom_z = room.GetBoundingBox(False).Min.Z
+            bottom_z = round(room.GetBoundingBox(False).Min.Z, 3)
             if abs(bottom_z - value) < tolerance:
                 invalid_breps.append(room)
 
