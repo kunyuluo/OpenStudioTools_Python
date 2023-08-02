@@ -455,7 +455,7 @@ class ScheduleSets:
             dehumidify_setpoint: openstudio.openstudiomodel.ScheduleRuleset = None,
             hvac_availability: openstudio.openstudiomodel.ScheduleRuleset = None,
             dcv: openstudio.openstudiomodel.ScheduleRuleset = None,
-            activity_level: openstudio.openstudiomodel.ScheduleRuleset = None, ):
+            activity_level: openstudio.openstudiomodel.ScheduleRuleset = None):
 
         self._model = model
         self._name = name
