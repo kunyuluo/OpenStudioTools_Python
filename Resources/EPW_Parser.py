@@ -2,17 +2,23 @@ import os
 import numpy as np
 
 
-def import_epw(file_path):
-    assert os.path.isfile(file_path), 'Cannot find an epw file at {}'.format(file_path)
-    assert file_path.lower().endswith('epw'), '{} is not an .epw file. \n' \
-                                              'It does not possess the .epw file extension.'.format(file_path)
-
+def format_date(date: str):
     try:
-        with open(file_path, 'r') as epwin:
-            line = epwin.readlines()
-            print(line[1])
+        items = date.split("/")
+        if len(items) == 2:
+            month = items[0]
+            day = items[1]
+            new_date = month + "/ " + day if len(day) == 1 else month + "/" + day
+            return new_date
+        elif len(items) == 3:
+            month = items[1]
+            day = items[2]
+            new_date = month + "/ " + day if len(day) == 1 else month + "/" + day
+            return new_date
+        else:
+            raise ValueError("Invalid input value of date.")
     except ValueError:
-        pass
+        raise ValueError("Invalid input value of date.")
 
 
 class Location:
@@ -37,6 +43,34 @@ class Location:
         self._longitude = longitude
         self._timezone = timezone
         self._elevation = elevation
+
+    @property
+    def city(self):
+        return self._city
+
+    @property
+    def province(self):
+        return self._province
+
+    @property
+    def country(self):
+        return self._country
+
+    @property
+    def latitude(self):
+        return self._latitude
+
+    @property
+    def longitude(self):
+        return self._longitude
+
+    @property
+    def timezone(self):
+        return self._timezone
+
+    @property
+    def elevation(self):
+        return self._elevation
 
     @classmethod
     def from_dict(cls, location):
@@ -135,6 +169,66 @@ class HeatingDesignCondition:
         self._mean_wind_speed_996 = mean_wind_speed_996
         self._wind_direction_996 = wind_direction_996
 
+    @property
+    def coldest_month(self):
+        return self._coldest_month
+
+    @property
+    def dry_bulb_temp_996(self):
+        return self._dry_bulb_temp_996
+
+    @property
+    def dry_bulb_temp_990(self):
+        return self._dry_bulb_temp_990
+
+    @property
+    def dew_point_temp_996(self):
+        return self._dew_point_temp_996
+
+    @property
+    def humidity_ratio_996(self):
+        return self._humidity_ratio_996
+
+    @property
+    def mean_coincident_dry_bulb_temp_996(self):
+        return self._mean_coincident_dry_bulb_temp_996
+
+    @property
+    def dew_point_temp_990(self):
+        return self._dew_point_temp_990
+
+    @property
+    def humidity_ratio_990(self):
+        return self._humidity_ratio_990
+
+    @property
+    def mean_coincident_dry_bulb_temp_990(self):
+        return self._mean_coincident_dry_bulb_temp_990
+
+    @property
+    def wind_speed_04(self):
+        return self._wind_speed_04
+
+    @property
+    def mean_coincident_dry_bulb_temp_04(self):
+        return self._mean_coincident_dry_bulb_temp_04
+
+    @property
+    def wind_speed_1(self):
+        return self._wind_speed_1
+
+    @property
+    def mean_coincident_dry_bulb_temp_1(self):
+        return self._mean_coincident_dry_bulb_temp_1
+
+    @property
+    def mean_wind_speed_996(self):
+        return self._mean_wind_speed_996
+
+    @property
+    def wind_direction_996(self):
+        return self._wind_direction_996
+
     @classmethod
     def from_string(cls, design_condition: str):
         items = design_condition.split("Heating,")[1].split(",Cooling")[0].split(",")
@@ -190,6 +284,7 @@ class CoolingDesignCondition:
             enthalpy_2: float = 85.2,
             mean_coincident_dry_bulb_temp_2_enth: float = 31.2,
             hours_8_to_4_db_12_to_20: int = 724):
+
         self._hottest_month = hottest_month
         self._hottest_month_dry_bulb_temp_range = hottest_month_dry_bulb_temp_range
         self._dry_bulb_temp_04 = dry_bulb_temp_04
@@ -222,6 +317,134 @@ class CoolingDesignCondition:
         self._enthalpy_2 = enthalpy_2
         self._mean_coincident_dry_bulb_temp_2_enth = mean_coincident_dry_bulb_temp_2_enth
         self._hours_8_to_4_db_12_to_20 = hours_8_to_4_db_12_to_20
+
+    @property
+    def hottest_month(self):
+        return self._hottest_month
+
+    @property
+    def hottest_month_dry_bulb_temp_range(self):
+        return self._hottest_month_dry_bulb_temp_range
+
+    @property
+    def dry_bulb_temp_04(self):
+        return self._dry_bulb_temp_04
+
+    @property
+    def mean_coincident_wet_bulb_temp_04(self):
+        return self._mean_coincident_wet_bulb_temp_04
+
+    @property
+    def dry_bulb_temp_1(self):
+        return self._dry_bulb_temp_1
+
+    @property
+    def mean_coincident_wet_bulb_temp_1(self):
+        return self._mean_coincident_wet_bulb_temp_1
+
+    @property
+    def dry_bulb_temp_2(self):
+        return self._dry_bulb_temp_2
+
+    @property
+    def mean_coincident_wet_bulb_temp_2(self):
+        return self._mean_coincident_wet_bulb_temp_2
+
+    @property
+    def wet_bulb_temp_04(self):
+        return self._wet_bulb_temp_04
+
+    @property
+    def mean_coincident_dry_bulb_temp_04_evap(self):
+        return self._mean_coincident_dry_bulb_temp_04_evap
+
+    @property
+    def wet_bulb_temp_1(self):
+        return self._wet_bulb_temp_1
+
+    @property
+    def mean_coincident_dry_bulb_temp_1_evap(self):
+        return self._mean_coincident_dry_bulb_temp_1_evap
+
+    @property
+    def wet_bulb_temp_2(self):
+        return self._wet_bulb_temp_2
+
+    @property
+    def mean_coincident_dry_bulb_temp_2_evap(self):
+        return self._mean_coincident_dry_bulb_temp_2_evap
+
+    @property
+    def mean_wind_speed_04(self):
+        return self._mean_wind_speed_04
+
+    @property
+    def wind_direction_04(self):
+        return self._wind_direction_04
+
+    @property
+    def dew_point_temp_04(self):
+        return self._dew_point_temp_04
+
+    @property
+    def humidity_ratio_04(self):
+        return self._humidity_ratio_04
+
+    @property
+    def mean_coincident_dry_bulb_temp_04_dehum(self):
+        return self._mean_coincident_dry_bulb_temp_04_dehum
+
+    @property
+    def dew_point_temp_1(self):
+        return self._dew_point_temp_1
+
+    @property
+    def humidity_ratio_1(self):
+        return self._humidity_ratio_1
+
+    @property
+    def mean_coincident_dry_bulb_temp_1_dehum(self):
+        return self._mean_coincident_dry_bulb_temp_1_dehum
+
+    @property
+    def dew_point_temp_2(self):
+        return self._dew_point_temp_2
+
+    @property
+    def humidity_ratio_2(self):
+        return self._humidity_ratio_2
+
+    @property
+    def mean_coincident_dry_bulb_temp_2_dehum(self):
+        return self._mean_coincident_dry_bulb_temp_2_dehum
+
+    @property
+    def enthalpy_04(self):
+        return self._enthalpy_04
+
+    @property
+    def mean_coincident_dry_bulb_temp_04_enth(self):
+        return self._mean_coincident_dry_bulb_temp_04_enth
+
+    @property
+    def enthalpy_1(self):
+        return self._enthalpy_1
+
+    @property
+    def mean_coincident_dry_bulb_temp_1_enth(self):
+        return self._mean_coincident_dry_bulb_temp_1_enth
+
+    @property
+    def enthalpy_2(self):
+        return self._enthalpy_2
+
+    @property
+    def mean_coincident_dry_bulb_temp_2_enth(self):
+        return self._mean_coincident_dry_bulb_temp_2_enth
+
+    @property
+    def hours_8_to_4_db_12_to_20(self):
+        return self._hours_8_to_4_db_12_to_20
 
     @classmethod
     def from_string(cls, design_condition: str):
@@ -324,11 +547,24 @@ class DesignConditions:
             heating_design_condition: HeatingDesignCondition = HeatingDesignCondition(),
             cooling_design_condition: CoolingDesignCondition = CoolingDesignCondition(),
             extreme_design_condition: ExtremeDesignCondition = ExtremeDesignCondition()):
+
         self._number_of_design_conditions = number_of_design_conditions
         self._design_condition_source = design_condition_source
         self._heating_design_condition = heating_design_condition
         self._cooling_design_condition = cooling_design_condition
         self._extreme_design_condition = extreme_design_condition
+
+    @property
+    def heating_design_condition(self):
+        return self._heating_design_condition
+
+    @property
+    def cooling_design_condition(self):
+        return self._cooling_design_condition
+
+    @property
+    def extreme_design_condition(self):
+        return self._extreme_design_condition
 
     @classmethod
     def from_string(cls, design_condition: str):
@@ -354,10 +590,11 @@ class ExtremePeriod:
         Period_type: 1.Extreme 2.Typical \n
         Start/End Day: use format "M/D", eg. 7/13
         """
+
         self._name = name
         self._period_type = period_type
-        self._start_day = start_day
-        self._end_day = end_day
+        self._start_day = format_date(start_day)
+        self._end_day = format_date(end_day)
 
     @classmethod
     def from_string(cls, items: list):
@@ -508,8 +745,11 @@ class GroundTemperatures:
 
 class Holiday:
     def __init__(self, name: str = "", day: str = ""):
+        """
+        Day: use format "M/D", eg. 7/13
+        """
         self._name = name
-        self._day = day
+        self._day = format_date(day) if day != "" else day
 
     @classmethod
     def from_string(cls, items: list):
@@ -593,8 +833,8 @@ class DataPeriod:
         """
         self._name = name
         self._start_day_of_week = start_day_of_week
-        self._start_day = start_day
-        self._end_day = end_day
+        self._start_day = format_date(start_day)
+        self._end_day = format_date(end_day)
 
     @classmethod
     def from_string(cls, items: list):
@@ -878,32 +1118,195 @@ class EPW:
     def data_periods(self):
         return self._data_periods
 
+    @property
+    def dry_bulb_temps(self):
+        return list(map(float, self._dry_bulb_temps))
+
+    @property
+    def dew_point_temps(self):
+        return list(map(float, self._dew_point_temps))
+
+    @property
+    def relative_humidity(self):
+        return list(map(float, self._relative_humidity))
+
+    @property
+    def atmosphere_station_pressure(self):
+        return list(map(float, self._atmosphere_station_pressure))
+
+    @property
+    def extraterrestrial_horizontal_radiation(self):
+        return list(map(float, self._extraterrestrial_horizontal_radiation))
+
+    @property
+    def extraterrestrial_direct_normal_radiation(self):
+        return list(map(float, self._extraterrestrial_direct_normal_radiation))
+
+    @property
+    def horizontal_infrared_radiation_intensity(self):
+        return list(map(float, self._horizontal_infrared_radiation_intensity))
+
+    @property
+    def global_horizontal_radiation(self):
+        return list(map(float, self._global_horizontal_radiation))
+
+    @property
+    def direct_normal_radiation(self):
+        return list(map(float, self._direct_normal_radiation))
+
+    @property
+    def diffuse_horizontal_radiation(self):
+        return list(map(float, self._diffuse_horizontal_radiation))
+
+    @property
+    def global_horizontal_illuminance(self):
+        return list(map(float, self._global_horizontal_illuminance))
+
+    @property
+    def direct_normal_illuminance(self):
+        return list(map(float, self._direct_normal_illuminance))
+
+    @property
+    def diffuse_horizontal_illuminance(self):
+        return list(map(float, self._diffuse_horizontal_illuminance))
+
+    @property
+    def zenith_luminance(self):
+        return list(map(float, self._zenith_luminance))
+
+    @property
+    def wind_direction(self):
+        return list(map(float, self._wind_direction))
+
+    @property
+    def wind_speed(self):
+        return list(map(float, self._wind_speed))
+
+    @property
+    def total_sky_cover(self):
+        return list(map(float, self._total_sky_cover))
+
+    @property
+    def opaque_sky_cover(self):
+        return list(map(float, self._opaque_sky_cover))
+
+    @property
+    def visibility(self):
+        return list(map(float, self._visibility))
+
+    @property
+    def ceiling_height(self):
+        return list(map(float, self._ceiling_height))
+
+    @property
+    def present_weather_observation(self):
+        return self._present_weather_observation
+
+    @property
+    def present_weather_codes(self):
+        return self._present_weather_codes
+
+    @property
+    def precipitable_water(self):
+        return list(map(float, self._precipitable_water))
+
+    @property
+    def aerosol_optical_depth(self):
+        return list(map(float, self._aerosol_optical_depth))
+
+    @property
+    def snow_depth(self):
+        return list(map(float, self._snow_depth))
+
+    @property
+    def days_since_last_snowfall(self):
+        return list(map(float, self._days_since_last_snowfall))
+
+    @property
+    def albedo(self):
+        return list(map(float, self._albedo))
+
+    @property
+    def liquid_precipitation_depth(self):
+        return list(map(float, self._liquid_precipitation_depth))
+
+    @property
+    def liquid_precipitation_quantity(self):
+        return list(map(float, self._liquid_precipitation_quantity))
+
     @staticmethod
     def import_from_existing(file_path):
+
+        """
+        :param file_path: file path of an existing epw weather file.
+        :return: a dictionary contains all data from the file
+
+        Index reference for output dictionary: \n
+        Header: \n
+        0.Location 1.Design Conditions 2.Extreme Periods 3.Ground Temperatures 4.Holidays \n
+        5.Comments-1 6.Comments-2 7.Data Periods \n
+        Data: \n
+        0.Dry Bulb Temperature (℃) \n
+        1.Dew Point Temperature (℃) \n
+        2.Relative Humidity (%) \n
+        3.Atmospheric Station Pressure (Pa) \n
+        4.Extraterrestrial Horizontal Radiation (Wh/m2) \n
+        5.Extraterrestrial Direct Normal Radiation (Wh/m2) \n
+        6.Horizontal Infrared Radiation Intensity (Wh/m2) \n
+        7.Global Horizontal Radiation (Wh/m2) \n
+        8.Direct Normal Radiation (Wh/m2) \n
+        9.Diffuse Horizontal Radiation (Wh/m2) \n
+        10.Global Horizontal Illuminance (lux) \n
+        11.Direct Normal Illuminance (lux) \n
+        12.Diffuse Horizontal Illuminance (lux) \n
+        13.Zenith Luminance (lux) \n
+        14.Wind Direction (degrees) \n
+        15.Wind Speed (m/s) \n
+        16.Total Sky Cover (tenths of coverage) \n
+        17.Opaque Sky Cover (tenths of coverage) \n
+        18.Visibility (km) \n
+        19.Ceiling Height (m) \n
+        20.Present Weather Observation (0 or 9) \n
+        21.Present Weather Codes (mm) \n
+        22.Precipitable Water (mm) \n
+        23.Aerosol Optical Depth (thousandths) \n
+        24.Snow Depth (cm) \n
+        25.Days Since Last Snowfall \n
+        26.Albedo \n
+        27.Liquid Precipitation Depth (mm) \n
+        28.Liquid Precipitation Quantity (hr) \n
+        """
+
         assert os.path.isfile(file_path), 'Cannot find an epw file at {}'.format(file_path)
         assert file_path.lower().endswith('epw'), '{} is not an .epw file. \n' \
                                                   'It does not possess the .epw file extension.'.format(file_path)
 
         try:
-            data_dict = {"Location": None, "Design Conditions": None, "Extreme Periods": None,
-                         "Ground Temperatures": None, "Holidays": None, "Comments 1": None, "Comments 2": None,
-                         "Data Periods": None, "Dry Bulb Temperature": None, "Dew Point Temperature": None, }
+            data_dict = {"header": {}, "data": {}}
 
             with open(file_path, 'r') as epwin:
-                line = epwin.readlines()
+                lines = epwin.readlines()
 
-            data_dict["Location"] = Location.from_string(line[0])
-            data_dict["Design Conditions"] = DesignConditions.from_string(line[1])
-            data_dict["Extreme Periods"] = ExtremePeriods.from_string(line[2])
-            data_dict["Ground Temperatures"] = GroundTemperatures.from_string(line[3])
-            data_dict["Holidays"] = Holidays.from_string(line[4])
-            data_dict["Comments 1"] = line[5]
-            data_dict["Comments 2"] = line[6]
-            data_dict["Data Periods"] = DataPeriods.from_string(line[7])
+            data_dict["header"][0] = Location.from_string(lines[0])
+            data_dict["header"][1] = DesignConditions.from_string(lines[1])
+            data_dict["header"][2] = ExtremePeriods.from_string(lines[2])
+            data_dict["header"][3] = GroundTemperatures.from_string(lines[3])
+            data_dict["header"][4] = Holidays.from_string(lines[4])
+            data_dict["header"][5] = lines[5]
+            data_dict["header"][6] = lines[6]
+            data_dict["header"][7] = DataPeriods.from_string(lines[7])
 
-            print(len(line))
-            # weather_data = np.column_stack([line[8], line[9]])
+            matrix = []
+            for i in range(8, len(lines)):
+                data = lines[i].split(",")
+                matrix.append(data)
+
+            weather_data = np.column_stack(matrix)
+            weather_data = np.delete(weather_data, [0, 1, 2, 3, 4, 5], 0)
             # print(weather_data.shape)
+
+            for i in range(29):
+                data_dict["data"][i] = list(weather_data[i])
 
             return data_dict
 
@@ -1020,13 +1423,15 @@ class EPW:
 
         # Close the file after done
         file.close()
+        print("Done!")
 
 
 epw_path_str = "C:\\Users\\DELL\\Downloads\\USA_CA_Los.Angeles.Intl.AP.722950_TMY3.epw"
 # import_epw(epw_path_str)
 
-epw = EPW.import_from_existing(epw_path_str)
-print(epw["Location"].to_string())
+la_epw = EPW.import_from_existing(epw_path_str)
+new_epw = EPW(dry_bulb_temps=la_epw["data"][0], dew_point_temps=la_epw["data"][1], relative_humidity=la_epw["data"][2])
+# print(la_epw["data"][6])
 
-# epw.write_to_file("D:\\Projects\\OpenStudioDev\\shanghai_weather.epw")
+new_epw.write_to_file("D:\\Projects\\OpenStudioDev\\shanghai_weather.epw")
 # print(epw.to_string())

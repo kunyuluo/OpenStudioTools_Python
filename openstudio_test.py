@@ -36,20 +36,20 @@ SiteLocationTool.set_weather_file(model, epw_path_str)
 
 # Site and design days:
 # **************************************************************************************
-SiteLocationTool.set_site_and_design_days(model, ddy_path_str)
+SiteLocationTool.set_site_and_design_days_from_epw(model, epw_path_str)
 
 # Run period:
 # **************************************************************************************
-SimulationSettingTool.set_run_period(model)
-SimulationSettingTool.simulation_controls(model)
+# SimulationSettingTool.set_run_period(model)
+# SimulationSettingTool.simulation_controls(model)
 
 # Output variables:
 # **************************************************************************************
-output_variables(model, ["Chiller Electricity Energy", "Boiler NaturalGas Energy"])
+# output_variables(model, ["Chiller Electricity Energy", "Boiler NaturalGas Energy"])
 
 # Exterior Equipment:
 # **************************************************************************************
-ExteriorEquipments.exterior_lights(model, design_level=24)
+# ExteriorEquipments.exterior_lights(model, design_level=24)
 
 # Space with load:
 # **************************************************************************************
@@ -92,7 +92,7 @@ ExteriorEquipments.exterior_lights(model, design_level=24)
 #     normalize=False, variable_1=variable_1, variable_2=29.44,
 #     reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
 
-Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
+# Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
 # Template.vav_chiller_boiler(model, thermal_zones, number_of_chiller=2, chiller_cop=6.8, chiller_condenser_type=2)
 #
@@ -101,4 +101,4 @@ Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve
 #     water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
-# model.save(newPath, True)
+model.save(newPath, True)
