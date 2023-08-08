@@ -19,12 +19,12 @@ rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ExpoTower_Geo_3.
 # Weather file:
 # **************************************************************************************
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
-ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
+# ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
 path_str = "D:\\Projects\\OpenStudioDev\\ExpoTower_test.osm"
 #
 # # Create a new openstudio model
 # # **************************************************************************************
-model_file = create_model(epw_path_str, ddy_path_str, path_str, "Expo Tower", north_axis=-45)
+model_file = create_model(epw_path_str, path_str, "Expo Tower", north_axis=-45)
 model = model_file[0]
 path = model_file[1]
 

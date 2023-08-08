@@ -162,10 +162,19 @@ class GeometryTool:
     def make_fenestration(
             model,
             vertices,
-            surface_type="FixedWindow",
+            surface_type: int = 1,
             construction=None,
             surface=None,
             name: str = None):
+
+        """
+        Surface_type: \n
+        1.FixedWindow 2.OperableWindow 3.GlassDoor 4.Door 5.OverheadDoor 6.Skylight
+        7.TubularDaylightDome 8.TubularDaylightDiffuser
+        """
+
+        types = {1: "FixedWindow", 2: "OperableWindow", 3: "GlassDoor", 4: "Door", 5: "OverheadDoor", 6: "Skylight",
+                 7: "TubularDaylightDome", 8: "TubularDaylightDiffuser"}
 
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
@@ -176,7 +185,25 @@ class GeometryTool:
 
             subsurface = SubSurface(pt_vec, model)
 
-            subsurface.setSubSurfaceType(surface_type)
+            # Calculate the angle between normal vector and z-axis (by Dot Product):
+            normal = GeometryTool.newell_method(subsurface)
+
+            z_axis = Vector3d(0.0, 0.0, 1.0)
+
+            angle_rad = math.acos(z_axis.dot(normal) / (z_axis.length() * normal.length()))
+
+            # Assign surface type based on its orientation:
+            if angle_rad < GeometryTool.roof_threshold:
+                if surface_type is None:
+                    subsurface.setSubSurfaceType(types[6])
+                else:
+                    subsurface.setSubSurfaceType(types[surface_type])
+            else:
+                if surface_type is None:
+                    subsurface.setSubSurfaceType(types[1])
+                else:
+                    subsurface.setSubSurfaceType(types[surface_type])
+
             if construction is not None:
                 subsurface.setConstruction(construction)
             if surface is not None:
@@ -317,8 +344,7 @@ class GeometryTool:
             internal_load: str = None,
             construction_sets: openstudio.openstudiomodel.DefaultConstructionSet = None,
             schedule_sets=None,
-            internal_mass_construction: openstudio.openstudiomodel.Construction = None,
-            story_multipliers=None):
+            internal_mass_construction: openstudio.openstudiomodel.Construction = None):
 
         """
         :param model: an openstudio model object.
@@ -327,7 +353,6 @@ class GeometryTool:
         :param construction_sets: a DefaultConstructionSet object.
         :param schedule_sets: a dictionary. Use output from method "schedule_set_input_json" here.
         :param internal_mass_construction:
-        :param story_multipliers:
         """
 
         with open(json_path, 'r') as openfile:

@@ -19,7 +19,6 @@ path = openstudioutilitiescore.toPath(path_str)
 newPath = openstudioutilitiescore.toPath(newPath_str)
 
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
-
 ddy_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.ddy"
 # ddy_path = openstudioutilitiescore.toPath(ddy_path_str)
 
@@ -36,7 +35,7 @@ SiteLocationTool.set_weather_file(model, epw_path_str)
 
 # Site and design days:
 # **************************************************************************************
-SiteLocationTool.set_site_and_design_days_from_epw(model, epw_path_str)
+# SiteLocationTool.set_site_and_design_days_from_epw(model, epw_path_str)
 
 # Run period:
 # **************************************************************************************

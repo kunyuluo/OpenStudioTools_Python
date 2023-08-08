@@ -1,7 +1,6 @@
 import openstudio
 import os
-from Resources.EPW_Parser import HeatingDesignCondition, CoolingDesignCondition, ExtremeDesignCondition
-from Resources.EPW_Parser import EPW, Location, DesignConditions
+from Resources.EPW_Parser import EPW
 
 
 class SiteLocationTool:
@@ -17,26 +16,257 @@ class SiteLocationTool:
             check_data = True
         else:
             check_data = False
+            folder_name = "C:\\ladybug"
 
         if check_data:
             default_folder = "C:\\ladybug"
             working_dir = os.path.join(default_folder, folder_name)
 
-        # Download from web:
-        # client = System.Net.WebClient()
-        webFile = os.path.join(working_dir, file_url.split('/')[-2] + '.zip')
-        # client.DownloadFile(file_link, webFile)
+            # Download from web:
+            # client = System.Net.WebClient()
+            webFile = os.path.join(working_dir, file_url.split('/')[-2] + '.zip')
+            # client.DownloadFile(file_link, webFile)
 
     @staticmethod
-    def set_weather_file(model: openstudio.openstudiomodel.Model, epw_path_str: str):
+    def set_weather_file(
+            model: openstudio.openstudiomodel.Model,
+            epw_path_str: str,
+            clg_dd_threshold: int = 1,
+            htg_dd_threshold: int = 1):
+
+        """
+        clg_dd_threshold: 1: 0.4% 2: 1% 3: 2% \n
+        htg_dd_threshold: 1: 99.6% 2: 99%
+        """
 
         assert os.path.isfile(epw_path_str), 'Cannot find an epw file at {}'.format(epw_path_str)
         assert epw_path_str.lower().endswith('epw'), '{} is not an .epw file. \n' \
                                                      'It does not possess the .epw file extension.'.format(epw_path_str)
 
+        # Assign epw file to the model:
         epw_path = openstudio.openstudioutilitiescore.toPath(epw_path_str)
         epw_file = openstudio.openstudioutilitiesfiletypes.EpwFile(epw_path)
         openstudio.openstudiomodel.WeatherFile.setWeatherFile(model, epw_file)
+
+        # Parse the epw file:
+        epw = EPW.import_from_existing(epw_path_str)
+        location = epw["header"][0]
+        heating_design_condition = epw["header"][1].heating_design_condition
+        cooling_design_condition = epw["header"][1].cooling_design_condition
+
+        clg_dd_thresholds = {1: ".4%", 2: "1%", 3: "2%"}
+        htg_dd_thresholds = {1: "99.6%", 2: "99%"}
+
+        # Assign site info to the model:
+        site = model.getSite()
+
+        if location.province != "-":
+            site_name = location.city.upper() + "_" + location.province.upper() + "_" + location.country.upper() + \
+                        " Design_Conditions"
+        else:
+            site_name = location.city.upper() + "_" + location.country.upper() + " Design_Conditions"
+
+        site.setName(site_name)
+        site.setLatitude(location.latitude)
+        site.setLongitude(location.longitude)
+        site.setElevation(location.elevation)
+        site.setTimeZone(location.timezone)
+
+        # Create Design Condition Object:
+        # ***********************************************************************************
+        # Apply selector:
+        match htg_dd_threshold:
+            case 1:
+                # for Ann Htg Condns DB
+                # ***************************************************************************
+                max_dry_bulb_temp_htg = heating_design_condition.dry_bulb_temp_996
+                # Ann Hum_n Condns DP=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_htg = heating_design_condition.mean_coincident_dry_bulb_temp_996
+                dew_point_htg = heating_design_condition.dew_point_temp_996
+                # Ann Htg Wind Condns WS=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_wind_htg = heating_design_condition.mean_coincident_dry_bulb_temp_04
+                wind_speed_htg = heating_design_condition.wind_speed_04
+            case 2 | _:
+                # for Ann Htg Condns DB
+                # ***************************************************************************
+                max_dry_bulb_temp_htg = heating_design_condition.dry_bulb_temp_990
+                # Ann Hum_n Condns DP=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_htg = heating_design_condition.mean_coincident_dry_bulb_temp_990
+                dew_point_htg = heating_design_condition.dew_point_temp_990
+                # Ann Htg Wind Condns WS=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_wind_htg = heating_design_condition.mean_coincident_dry_bulb_temp_1
+                wind_speed_htg = heating_design_condition.wind_speed_1
+
+        match clg_dd_threshold:
+            case 1:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
+                max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_04
+                wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_04
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_evap
+                wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_04
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_dehum
+                dew_point_temp_clg = cooling_design_condition.dew_point_temp_04
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_enth
+                enthalpy_clg = cooling_design_condition.enthalpy_04 * 1000
+            case 2:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
+                max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_1
+                wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_1
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_evap
+                wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_1
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_dehum
+                dew_point_temp_clg = cooling_design_condition.dew_point_temp_1
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_enth
+                enthalpy_clg = cooling_design_condition.enthalpy_1 * 1000
+            case 3 | _:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
+                max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_2
+                wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_2
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_evap
+                wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_2
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_dehum
+                dew_point_temp_clg = cooling_design_condition.dew_point_temp_2
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
+                max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_enth
+                enthalpy_clg = cooling_design_condition.enthalpy_2 * 1000
+
+        # Ann Htg Condns DB (99.6% or 99%)
+        # ***********************************************************************************
+        dd_htg_db_name = location.city + " Ann Htg " + htg_dd_thresholds[htg_dd_threshold] + " Condns DB"
+
+        SiteLocationTool.design_day(
+            model, dd_htg_db_name,
+            month=heating_design_condition.coldest_month,
+            max_dry_bulb_temp=max_dry_bulb_temp_htg,
+            humidity_condition_type=1,
+            wet_bulb_at_max_dry_bulb=max_dry_bulb_temp_htg,
+            wind_speed=heating_design_condition.mean_wind_speed_996,
+            wind_direction=heating_design_condition.wind_direction_996,
+            sky_clearness=0.0)
+
+        # Ann Hum_n Condns DP=>MCDB (99.6% or 99%)
+        # ***********************************************************************************
+        dd_htg_hum_name = location.city + " Ann Hum_n " + htg_dd_thresholds[htg_dd_threshold] + " Condns DP=>MCDB"
+
+        SiteLocationTool.design_day(
+            model, dd_htg_hum_name,
+            month=heating_design_condition.coldest_month,
+            max_dry_bulb_temp=max_dry_bulb_temp_dp_htg,
+            humidity_condition_type=2,
+            wet_bulb_at_max_dry_bulb=dew_point_htg,
+            wind_speed=heating_design_condition.mean_wind_speed_996,
+            wind_direction=heating_design_condition.wind_direction_996,
+            sky_clearness=0.0)
+
+        # Ann Htg Wind Condns WS=>MCDB (99.6% or 99%)
+        # ***********************************************************************************
+        dd_htg_wind_name = location.city + " Ann Htg Wind " + htg_dd_thresholds[htg_dd_threshold] + " Condns WS=>MCDB"
+
+        SiteLocationTool.design_day(
+            model, dd_htg_wind_name,
+            month=heating_design_condition.coldest_month,
+            max_dry_bulb_temp=max_dry_bulb_temp_wind_htg,
+            humidity_condition_type=1,
+            wet_bulb_at_max_dry_bulb=max_dry_bulb_temp_wind_htg,
+            wind_speed=wind_speed_htg,
+            wind_direction=heating_design_condition.wind_direction_996,
+            sky_clearness=0.0)
+
+        # Ann Clg Condns DB=>MWB (0.4% or 1% or 2%)
+        # ***********************************************************************************
+        dd_clg_db_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns DB=>MWB"
+
+        SiteLocationTool.design_day(
+            model, dd_clg_db_name,
+            month=cooling_design_condition.hottest_month,
+            day_type=2,
+            max_dry_bulb_temp=max_dry_bulb_temp_clg,
+            daily_dry_bulb_temp_range=cooling_design_condition.hottest_month_dry_bulb_temp_range,
+            humidity_condition_type=1,
+            wet_bulb_at_max_dry_bulb=wet_bulb_at_dry_bulb_clg,
+            wind_speed=cooling_design_condition.mean_wind_speed_04,
+            wind_direction=cooling_design_condition.wind_direction_04,
+            solar_model=2,
+            ashrae_clear_sky_optical_depth_for_beam_irradiance=0.899,
+            ashrae_clear_sky_optical_depth_for_diffuse_irradiance=1.294)
+
+        # Ann Clg Condns WB=>MDB (0.4% or 1% or 2%)
+        # ***********************************************************************************
+        dd_clg_wb_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns WB=>MDB"
+
+        SiteLocationTool.design_day(
+            model, dd_clg_wb_name,
+            month=cooling_design_condition.hottest_month,
+            day_type=2,
+            max_dry_bulb_temp=max_dry_bulb_temp_wb_clg,
+            daily_dry_bulb_temp_range=cooling_design_condition.hottest_month_dry_bulb_temp_range,
+            humidity_condition_type=1,
+            wet_bulb_at_max_dry_bulb=wet_bulb_temp_clg,
+            wind_speed=cooling_design_condition.mean_wind_speed_04,
+            wind_direction=cooling_design_condition.wind_direction_04,
+            solar_model=2,
+            ashrae_clear_sky_optical_depth_for_beam_irradiance=0.899,
+            ashrae_clear_sky_optical_depth_for_diffuse_irradiance=1.294)
+
+        # Ann Clg Condns DP=>MDB (0.4% or 1% or 2%)
+        # ***********************************************************************************
+        dd_clg_dp_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns DP=>MDB"
+
+        SiteLocationTool.design_day(
+            model, dd_clg_dp_name,
+            month=cooling_design_condition.hottest_month,
+            day_type=2,
+            max_dry_bulb_temp=max_dry_bulb_temp_dp_clg,
+            daily_dry_bulb_temp_range=cooling_design_condition.hottest_month_dry_bulb_temp_range,
+            humidity_condition_type=2,
+            wet_bulb_at_max_dry_bulb=dew_point_temp_clg,
+            wind_speed=cooling_design_condition.mean_wind_speed_04,
+            wind_direction=cooling_design_condition.wind_direction_04,
+            solar_model=2,
+            ashrae_clear_sky_optical_depth_for_beam_irradiance=0.899,
+            ashrae_clear_sky_optical_depth_for_diffuse_irradiance=1.294)
+
+        # Ann Clg Condns Enth=>MDB (0.4% or 1% or 2%)
+        # ***********************************************************************************
+        dd_clg_enth_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns Enth=>MDB"
+
+        SiteLocationTool.design_day(
+            model, dd_clg_enth_name,
+            month=cooling_design_condition.hottest_month,
+            day_type=2,
+            max_dry_bulb_temp=max_dry_bulb_temp_enth_clg,
+            daily_dry_bulb_temp_range=cooling_design_condition.hottest_month_dry_bulb_temp_range,
+            humidity_condition_type=4,
+            enthalpy_at_max_dry_bulb=enthalpy_clg,
+            wind_speed=cooling_design_condition.mean_wind_speed_04,
+            wind_direction=cooling_design_condition.wind_direction_04,
+            solar_model=2,
+            ashrae_clear_sky_optical_depth_for_beam_irradiance=0.899,
+            ashrae_clear_sky_optical_depth_for_diffuse_irradiance=1.294)
 
     @staticmethod
     def design_day(
@@ -50,7 +280,7 @@ class SiteLocationTool:
             dry_bulb_temp_range_modifier_type: int = 1,
             dry_bulb_temp_range_modifier_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
             humidity_condition_type: int = 1,
-            wet_bulb_at_max_dry_bulb: float = 0.0,
+            wet_bulb_at_max_dry_bulb: float = None,
             humidity_indicating_day_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
             humidity_ratio_at_max_dry_bulb: float = None,
             enthalpy_at_max_dry_bulb: float = None,
@@ -105,9 +335,7 @@ class SiteLocationTool:
 
         dd.setHumidityConditionType(humidity_types[humidity_condition_type])
 
-        if humidity_condition_type == 1:
-            dd.setWetBulbOrDewPointAtMaximumDryBulb(max_dry_bulb_temp)
-        else:
+        if wet_bulb_at_max_dry_bulb is not None:
             dd.setWetBulbOrDewPointAtMaximumDryBulb(wet_bulb_at_max_dry_bulb)
 
         if humidity_indicating_day_schedule is not None:
@@ -244,11 +472,6 @@ class SiteLocationTool:
         clg_dd_thresholds = {1: ".4%", 2: "1%", 3: "2%"}
         htg_dd_thresholds = {1: "99.6%", 2: "99%"}
 
-        clg_dd_selector = "Clg" + " " + clg_dd_thresholds[clg_dd_threshold]
-        htg_dd_selector = "Htg" + " " + htg_dd_thresholds[clg_dd_threshold]
-        hum_dd_selector = "Hum_n" + " " + htg_dd_thresholds[htg_dd_threshold]
-        wind_dd_selector = "Wind" + " " + htg_dd_thresholds[htg_dd_threshold]
-
         # Parse the epw file:
         epw = EPW.import_from_existing(epw_path_str)
         location = epw["header"][0]
@@ -275,42 +498,80 @@ class SiteLocationTool:
         # Apply selector:
         match htg_dd_threshold:
             case 1:
+                # for Ann Htg Condns DB
+                # ***************************************************************************
                 max_dry_bulb_temp_htg = heating_design_condition.dry_bulb_temp_996
-                wet_bulb_at_dry_bulb_htg = heating_design_condition.dew_point_temp_996
+                # Ann Hum_n Condns DP=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_htg = heating_design_condition.mean_coincident_dry_bulb_temp_996
+                dew_point_htg = heating_design_condition.dew_point_temp_996
+                # Ann Htg Wind Condns WS=>MCDB
+                # ***************************************************************************
                 max_dry_bulb_temp_wind_htg = heating_design_condition.mean_coincident_dry_bulb_temp_04
                 wind_speed_htg = heating_design_condition.wind_speed_04
             case 2 | _:
+                # for Ann Htg Condns DB
+                # ***************************************************************************
                 max_dry_bulb_temp_htg = heating_design_condition.dry_bulb_temp_990
-                wet_bulb_at_dry_bulb_htg = heating_design_condition.dew_point_temp_990
+                # Ann Hum_n Condns DP=>MCDB
+                # ***************************************************************************
+                max_dry_bulb_temp_dp_htg = heating_design_condition.mean_coincident_dry_bulb_temp_990
+                dew_point_htg = heating_design_condition.dew_point_temp_990
+                # Ann Htg Wind Condns WS=>MCDB
+                # ***************************************************************************
                 max_dry_bulb_temp_wind_htg = heating_design_condition.mean_coincident_dry_bulb_temp_1
                 wind_speed_htg = heating_design_condition.wind_speed_1
 
         match clg_dd_threshold:
             case 1:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
                 max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_04
                 wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_04
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_evap
                 wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_04
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_dehum
                 dew_point_temp_clg = cooling_design_condition.dew_point_temp_04
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_04_enth
                 enthalpy_clg = cooling_design_condition.enthalpy_04 * 1000
             case 2:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
                 max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_1
                 wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_1
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_evap
                 wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_1
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_dehum
                 dew_point_temp_clg = cooling_design_condition.dew_point_temp_1
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_1_enth
                 enthalpy_clg = cooling_design_condition.enthalpy_1 * 1000
             case 3 | _:
+                # Ann Clg Condns DB=>MWB
+                # ***************************************************************************
                 max_dry_bulb_temp_clg = cooling_design_condition.dry_bulb_temp_2
                 wet_bulb_at_dry_bulb_clg = cooling_design_condition.mean_coincident_wet_bulb_temp_2
+                # Ann Clg Condns WB=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_wb_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_evap
                 wet_bulb_temp_clg = cooling_design_condition.wet_bulb_temp_2
+                # Ann Clg Condns DP=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_dp_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_dehum
                 dew_point_temp_clg = cooling_design_condition.dew_point_temp_2
+                # Ann Clg Condns Enth=>MDB
+                # ***************************************************************************
                 max_dry_bulb_temp_enth_clg = cooling_design_condition.mean_coincident_dry_bulb_temp_2_enth
                 enthalpy_clg = cooling_design_condition.enthalpy_2 * 1000
 
@@ -318,10 +579,12 @@ class SiteLocationTool:
         # ***********************************************************************************
         dd_htg_db_name = location.city + " Ann Htg " + htg_dd_thresholds[htg_dd_threshold] + " Condns DB"
 
-        dd_htg_db = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_htg_db_name,
             month=heating_design_condition.coldest_month,
             max_dry_bulb_temp=max_dry_bulb_temp_htg,
+            humidity_condition_type=1,
+            wet_bulb_at_max_dry_bulb=max_dry_bulb_temp_htg,
             wind_speed=heating_design_condition.mean_wind_speed_996,
             wind_direction=heating_design_condition.wind_direction_996,
             sky_clearness=0.0)
@@ -330,12 +593,12 @@ class SiteLocationTool:
         # ***********************************************************************************
         dd_htg_hum_name = location.city + " Ann Hum_n " + htg_dd_thresholds[htg_dd_threshold] + " Condns DP=>MCDB"
 
-        dd_htg_hum = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_htg_hum_name,
             month=heating_design_condition.coldest_month,
-            max_dry_bulb_temp=max_dry_bulb_temp_htg,
+            max_dry_bulb_temp=max_dry_bulb_temp_dp_htg,
             humidity_condition_type=2,
-            wet_bulb_at_max_dry_bulb=wet_bulb_at_dry_bulb_htg,
+            wet_bulb_at_max_dry_bulb=dew_point_htg,
             wind_speed=heating_design_condition.mean_wind_speed_996,
             wind_direction=heating_design_condition.wind_direction_996,
             sky_clearness=0.0)
@@ -344,7 +607,7 @@ class SiteLocationTool:
         # ***********************************************************************************
         dd_htg_wind_name = location.city + " Ann Htg Wind " + htg_dd_thresholds[htg_dd_threshold] + " Condns WS=>MCDB"
 
-        dd_htg_wind = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_htg_wind_name,
             month=heating_design_condition.coldest_month,
             max_dry_bulb_temp=max_dry_bulb_temp_wind_htg,
@@ -356,9 +619,9 @@ class SiteLocationTool:
 
         # Ann Clg Condns DB=>MWB (0.4% or 1% or 2%)
         # ***********************************************************************************
-        dd_clg_db_name = location.city + " Ann Clg " + htg_dd_thresholds[htg_dd_threshold] + " Condns DB=>MWB"
+        dd_clg_db_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns DB=>MWB"
 
-        dd_clg_db = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_clg_db_name,
             month=cooling_design_condition.hottest_month,
             day_type=2,
@@ -374,9 +637,9 @@ class SiteLocationTool:
 
         # Ann Clg Condns WB=>MDB (0.4% or 1% or 2%)
         # ***********************************************************************************
-        dd_clg_wb_name = location.city + " Ann Clg " + htg_dd_thresholds[htg_dd_threshold] + " Condns WB=>MDB"
+        dd_clg_wb_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns WB=>MDB"
 
-        dd_clg_wb = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_clg_wb_name,
             month=cooling_design_condition.hottest_month,
             day_type=2,
@@ -392,9 +655,9 @@ class SiteLocationTool:
 
         # Ann Clg Condns DP=>MDB (0.4% or 1% or 2%)
         # ***********************************************************************************
-        dd_clg_dp_name = location.city + " Ann Clg " + htg_dd_thresholds[htg_dd_threshold] + " Condns DP=>MDB"
+        dd_clg_dp_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns DP=>MDB"
 
-        dd_clg_dp = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_clg_dp_name,
             month=cooling_design_condition.hottest_month,
             day_type=2,
@@ -410,9 +673,9 @@ class SiteLocationTool:
 
         # Ann Clg Condns Enth=>MDB (0.4% or 1% or 2%)
         # ***********************************************************************************
-        dd_clg_enth_name = location.city + " Ann Clg " + htg_dd_thresholds[htg_dd_threshold] + " Condns Enth=>MDB"
+        dd_clg_enth_name = location.city + " Ann Clg " + clg_dd_thresholds[clg_dd_threshold] + " Condns Enth=>MDB"
 
-        dd_clg_enth = SiteLocationTool.design_day(
+        SiteLocationTool.design_day(
             model, dd_clg_enth_name,
             month=cooling_design_condition.hottest_month,
             day_type=2,

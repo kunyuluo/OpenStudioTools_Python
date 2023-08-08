@@ -412,6 +412,12 @@ class ConstructionTool:
             model, "Operable_Window", win_u_value, win_shgc, win_transmittance)
         exterior_subsurfaces.setOperableWindowConstruction(exterior_operable_window_cons)
 
+        # Skylight:
+        # ***************************************************************************************
+        skylight_cons = ConstructionTool.simple_glazing_cons(
+            model, "Skylight", win_u_value, win_shgc, win_transmittance)
+        exterior_subsurfaces.setSkylightConstruction(skylight_cons)
+
         sets.setDefaultExteriorSubSurfaceConstructions(exterior_subsurfaces)
 
         # Ground Surfaces:

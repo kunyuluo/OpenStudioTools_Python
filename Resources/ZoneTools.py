@@ -702,6 +702,42 @@ class ZoneTool:
         surfaces = space.surfaces()
 
     @staticmethod
+    def add_window_by_ratio(
+            sorted_surfaces: dict,
+            glz_ratio: float,
+            by_orientation: bool = False,
+            east_ratio: float = None,
+            west_ratio: float = None,
+            north_ratio: float = None,
+            south_ratio: float = None):
+
+        """
+        sorted_surfaces: A dictionary of surfaces. Use output from "geometry_from_json" here.
+        """
+        for key in sorted_surfaces.keys():
+            match key:
+                case "east":
+                    if east_ratio is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            ratio = east_ratio if by_orientation else glz_ratio
+                            srf.setWindowToWallRatio(ratio)
+                case "west":
+                    if west_ratio is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            ratio = west_ratio if by_orientation else glz_ratio
+                            srf.setWindowToWallRatio(ratio)
+                case "north":
+                    if north_ratio is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            ratio = north_ratio if by_orientation else glz_ratio
+                            srf.setWindowToWallRatio(ratio)
+                case "south" | _:
+                    if south_ratio is not None and len(sorted_surfaces[key]) != 0:
+                        for srf in sorted_surfaces[key]:
+                            ratio = south_ratio if by_orientation else glz_ratio
+                            srf.setWindowToWallRatio(ratio)
+
+    @staticmethod
     def adiabatic_by_type(
             thermal_zone,
             walls: bool = False,

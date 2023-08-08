@@ -1426,12 +1426,10 @@ class EPW:
         print("Done!")
 
 
-epw_path_str = "C:\\Users\\DELL\\Downloads\\USA_CA_Los.Angeles.Intl.AP.722950_TMY3.epw"
-# import_epw(epw_path_str)
-
-la_epw = EPW.import_from_existing(epw_path_str)
-new_epw = EPW(dry_bulb_temps=la_epw["data"][0], dew_point_temps=la_epw["data"][1], relative_humidity=la_epw["data"][2])
-# print(la_epw["data"][6])
-
-new_epw.write_to_file("D:\\Projects\\OpenStudioDev\\shanghai_weather.epw")
+# epw_path_str = "C:\\Users\\DELL\\Downloads\\USA_CA_Los.Angeles.Intl.AP.722950_TMY3.epw"
+#
+# la_epw = EPW.import_from_existing(epw_path_str)
+# new_epw = EPW(dry_bulb_temps=la_epw["data"][0], dew_point_temps=la_epw["data"][1], relative_humidity=la_epw["data"][2])
+#
+# new_epw.write_to_file("D:\\Projects\\OpenStudioDev\\shanghai_weather.epw")
 # print(epw.to_string())

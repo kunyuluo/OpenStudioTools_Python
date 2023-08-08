@@ -6,7 +6,7 @@ from SimulationSettings.SimulationSettings import SimulationSettingTool
 
 def create_model(
         epw_file_path: str,
-        ddy_file_path: str,
+        # ddy_file_path: str,
         target_os_file_path: str = None,
         building_name: str = "Building",
         north_axis: float = 0,
@@ -39,7 +39,7 @@ def create_model(
     # Weather file:
     # **************************************************************************************
     SiteLocationTool.set_weather_file(model, epw_file_path)
-    SiteLocationTool.set_site_and_design_days(model, ddy_file_path)
+    # SiteLocationTool.set_site_and_design_days(model, ddy_file_path)
 
     # Run period:
     # **************************************************************************************
