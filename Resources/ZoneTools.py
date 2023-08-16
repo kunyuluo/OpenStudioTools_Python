@@ -755,7 +755,9 @@ class ZoneTool:
             underground_ceiling: bool = False):
 
         if isinstance(thermal_zone, openstudio.openstudiomodel.ThermalZone):
-            pass
+            space = thermal_zone.spaces()[0]
+            surfaces = space.surfaces()
+
             # thermal_zone.setMultiplier(multiplier)
         elif isinstance(thermal_zone, list):
             for zone in thermal_zone:

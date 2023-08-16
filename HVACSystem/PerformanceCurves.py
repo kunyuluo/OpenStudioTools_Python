@@ -522,20 +522,17 @@ class Curve:
 
         # Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve
         curves["Cooling Energy Input Ratio Modifier Function of Low Part-Load Ratio Curve"] =\
-            Curve.cubic(model, -1.246792429, 5.155371753, -6.128396226, 3.217813168,
-                        0.25, 1.0,
+            Curve.cubic(model, -1.246792429, 5.155371753, -6.128396226, 3.217813168, 0.25, 1.0,
                         name="EIRRatioLowPLR_Cooling")
 
         # Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve
         curves["Cooling Energy Input Ratio Modifier Function of High Part-Load Ratio Curve"] =\
-            Curve.cubic(model, -30.6717767898, 86.1535796412, -78.5620113444, 24.0802084930,
-                        1.0, 1.152777778,
+            Curve.cubic(model, -30.6717767898, 86.1535796412, -78.5620113444, 24.0802084930, 1.0, 1.152777778,
                         name="EIRRatioHighPLR_Cooling")
 
         # Cooling Combination Ratio Correction Factor Curve
         curves["Cooling Combination Ratio Correction Factor Curve"] =\
-            Curve.cubic(model, -30.6717767898, 86.1535796412, -78.5620113444, 24.0802084930,
-                        1.0, 1.152777778,
+            Curve.cubic(model, -30.6717767898, 86.1535796412, -78.5620113444, 24.0802084930, 1.0, 1.152777778,
                         name="CombinationRatio_Cooling")
 
         # Cooling Part-Load Fraction Correlation Curve

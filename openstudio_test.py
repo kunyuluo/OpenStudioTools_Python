@@ -85,11 +85,11 @@ SiteLocationTool.set_weather_file(model, epw_path_str)
 # vrf_sys = Template.vrf_system(
 #     model, "Kunyu VRF", performance_curve_set=Curve.vrf_performance_curve_set_1(model), terminals=terminals)
 
-# variable_1 = [5.0,5.56,6.11,6.67,7.22,7.78,8.33,8.89,9.44,10.0]
-# Helper.visualize_curve(
-#     Curve.biquadratic(model,0.258,0.0389,-0.00022,0.0469,-0.00094,-0.00034),
-#     normalize=False, variable_1=variable_1, variable_2=29.44,
-#     reference_curve=Curve.biquadratic(model,1.35608,0.04875,-0.00089,-0.01453,-0.00029,-0.00004))
+variable_1 = [5.0, 5.56, 6.11, 6.67, 7.22, 7.78, 8.33, 8.89, 9.44, 10.0]
+Helper.visualize_curve(
+    Curve.biquadratic(model, 1.01, 0.037, 0.0002332476, -0.003894048, -0.0000652536, -0.0002680452),
+    normalize=False, variable_1=variable_1, variable_2=35.0,
+    y_axis_limits=[0.5, 1.5])
 
 # Helper.visualize_curve_numeric("cubic", Curve.pump_curve_set(0), reference_curve=Curve.pump_curve_set(1))
 
@@ -100,4 +100,4 @@ SiteLocationTool.set_weather_file(model, epw_path_str)
 #     water_use_connections=PlantLoopComponent.water_use_connection(model, InternalLoad.water_use_equipment(model)))
 # ASHRAEBaseline.system_list()
 # **************************************************************************************
-model.save(newPath, True)
+# model.save(newPath, True)

@@ -148,11 +148,11 @@ class Helper:
         Convert people density from ft2/people to people/m2
         """
         if isinstance(values, float):
-            return 1/values/0.0929
+            return 1 / values / 0.0929
         elif isinstance(values, list):
             new_values = []
             for value in values:
-                new_value = 1/value/0.0929
+                new_value = 1 / value / 0.0929
                 new_values.append(new_value)
             return new_values
         else:
@@ -164,11 +164,11 @@ class Helper:
         Convert people density from people/1000ft2 to people/m2
         """
         if isinstance(values, float):
-            return values/0.0929
+            return values / 0.0929
         elif isinstance(values, list):
             new_values = []
             for value in values:
-                new_value = value/0.0929
+                new_value = value / 0.0929
                 new_values.append(new_value)
             return new_values
         else:
@@ -178,12 +178,12 @@ class Helper:
     # *************************************************************************************
     @staticmethod
     def visualize_curve(
-            curve: openstudio.openstudiomodel.Curve,
+            curve,
             variable_1=range(0, 11, 1),
             variable_2=None,
             normalize: bool = True,
             show_reference_curve: bool = True,
-            reference_curve: openstudio.openstudiomodel.Curve = None,
+            reference_curve=None,
             y_axis_limits=None):
 
         """
@@ -300,7 +300,7 @@ class Helper:
                 case "Biquadratic":
                     # Check validity of variable 2:
                     if variable_2 is not None:
-                        if isinstance(variable_2, float):
+                        if isinstance(variable_2, float) or isinstance(variable_2, int):
                             variable_2 = [variable_2] * 11
                         elif isinstance(variable_2, range):
                             pass

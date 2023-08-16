@@ -170,7 +170,16 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
 
     # Plant loops:
     # *****************************************************************************************************
-    heatpump_cooling_1 = PlantLoopComponent.heat_pump_plant_cooling(model, 1, 3200000, cop=7.5)
+    # Performance curve:
+    clg_cap_temp_curve = Curve.biquadratic(model, 1.01, 0.037, 0.0002332476, -0.003894048, -0.0000652536, -0.0002680452)
+    clg_eir_temp_curve = Curve.biquadratic(model, 0.70176857, -0.00452016, 0.00067311, -0.005495208, 0.000544579, -0.000729032)
+    clg_eir_plr_curve = Curve.quadratic(model, 0.063691189, 0.58488832, 0.35280274)
+
+    heatpump_cooling_1 = PlantLoopComponent.heat_pump_plant_cooling(
+        model, 1, 3200000, cop=3.6,
+        capacity_temperature_curve=clg_cap_temp_curve,
+        cop_temperature_curve=clg_eir_temp_curve,
+        cop_plr_curve=clg_eir_plr_curve)
     heatpump_heating_1 = PlantLoopComponent.heat_pump_plant_heating(model, 1, 2800000, cop=4.5)
 
     heatpump_cooling_1.setCompanionHeatingHeatPump(heatpump_heating_1)
