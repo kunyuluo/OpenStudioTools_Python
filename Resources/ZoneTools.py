@@ -709,33 +709,41 @@ class ZoneTool:
             east_ratio: float = None,
             west_ratio: float = None,
             north_ratio: float = None,
-            south_ratio: float = None):
+            south_ratio: float = None,
+            construction: Construction = None):
 
         """
         sorted_surfaces: A dictionary of surfaces. Use output from "geometry_from_json" here.
         """
+        sub_srfs = []
         for key in sorted_surfaces.keys():
             match key:
                 case "east":
                     if east_ratio is not None and len(sorted_surfaces[key]) != 0:
                         for srf in sorted_surfaces[key]:
                             ratio = east_ratio if by_orientation else glz_ratio
-                            srf.setWindowToWallRatio(ratio)
+                            win = srf.setWindowToWallRatio(ratio)
+                            sub_srfs.append(win.get())
                 case "west":
                     if west_ratio is not None and len(sorted_surfaces[key]) != 0:
                         for srf in sorted_surfaces[key]:
                             ratio = west_ratio if by_orientation else glz_ratio
-                            srf.setWindowToWallRatio(ratio)
+                            win = srf.setWindowToWallRatio(ratio)
+                            sub_srfs.append(win.get())
                 case "north":
                     if north_ratio is not None and len(sorted_surfaces[key]) != 0:
                         for srf in sorted_surfaces[key]:
                             ratio = north_ratio if by_orientation else glz_ratio
-                            srf.setWindowToWallRatio(ratio)
+                            win = srf.setWindowToWallRatio(ratio)
+                            sub_srfs.append(win.get())
                 case "south" | _:
                     if south_ratio is not None and len(sorted_surfaces[key]) != 0:
                         for srf in sorted_surfaces[key]:
                             ratio = south_ratio if by_orientation else glz_ratio
-                            srf.setWindowToWallRatio(ratio)
+                            win = srf.setWindowToWallRatio(ratio)
+                            sub_srfs.append(win.get())
+
+        return sub_srfs
 
     @staticmethod
     def adiabatic_by_type(

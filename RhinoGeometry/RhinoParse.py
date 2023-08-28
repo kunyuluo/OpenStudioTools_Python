@@ -564,6 +564,7 @@ def building_dict(room_geos=None, solid_names=None, fenestration_geos=None, shad
 
 def write_to_json(json_out=None, project_name: str = None):
     dir_path = os.path.dirname(__file__).replace("RhinoGeometry", "Projects")
+
     try:
         building = json.loads(json_out)
         file_name = building["building_name"]
