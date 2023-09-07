@@ -696,52 +696,48 @@ class ZoneTool:
             raise TypeError("Invalid input type of thermal zone")
 
     @staticmethod
-    def check_surface_type(
-            space: openstudio.openstudiomodel.Space,
-            surface: openstudio.openstudiomodel.Surface):
-        surfaces = space.surfaces()
-
-    @staticmethod
     def add_window_by_ratio(
             sorted_surfaces: dict,
-            glz_ratio: float,
-            by_orientation: bool = False,
-            east_ratio: float = None,
-            west_ratio: float = None,
-            north_ratio: float = None,
-            south_ratio: float = None,
-            construction: Construction = None):
+            glz_ratio,
+            surface_type: int = 1,
+            construction=None,
+            height_offset: float = 0.1,
+            offset_from_floor: bool = True):
 
         """
-        sorted_surfaces: A dictionary of surfaces. Use output from "geometry_from_json" here.
+        - sorted_surfaces: A dictionary of surfaces. Use output from "geometry_from_json" here. \n
+        - glz_ratio: A float number to be applied to all surfaces or a dictionary of numbers for each orientation. \n
+        - construction: A single construction to be applied to all surfaces object or a dictionary of construction for each orientation
+        - Surface_type: 1.FixedWindow 2.OperableWindow 3.GlassDoor 4.Door 5.OverheadDoor 6.Skylight 7.TubularDaylightDome 8.TubularDaylightDiffuser
         """
+
+        types = {1: "FixedWindow", 2: "OperableWindow", 3: "GlassDoor", 4: "Door", 5: "OverheadDoor", 6: "Skylight",
+                 7: "TubularDaylightDome", 8: "TubularDaylightDiffuser"}
+
         sub_srfs = []
         for key in sorted_surfaces.keys():
-            match key:
-                case "east":
-                    if east_ratio is not None and len(sorted_surfaces[key]) != 0:
-                        for srf in sorted_surfaces[key]:
-                            ratio = east_ratio if by_orientation else glz_ratio
-                            win = srf.setWindowToWallRatio(ratio)
-                            sub_srfs.append(win.get())
-                case "west":
-                    if west_ratio is not None and len(sorted_surfaces[key]) != 0:
-                        for srf in sorted_surfaces[key]:
-                            ratio = west_ratio if by_orientation else glz_ratio
-                            win = srf.setWindowToWallRatio(ratio)
-                            sub_srfs.append(win.get())
-                case "north":
-                    if north_ratio is not None and len(sorted_surfaces[key]) != 0:
-                        for srf in sorted_surfaces[key]:
-                            ratio = north_ratio if by_orientation else glz_ratio
-                            win = srf.setWindowToWallRatio(ratio)
-                            sub_srfs.append(win.get())
-                case "south" | _:
-                    if south_ratio is not None and len(sorted_surfaces[key]) != 0:
-                        for srf in sorted_surfaces[key]:
-                            ratio = south_ratio if by_orientation else glz_ratio
-                            win = srf.setWindowToWallRatio(ratio)
-                            sub_srfs.append(win.get())
+            if len(sorted_surfaces[key]) != 0:
+                if isinstance(glz_ratio, dict):
+                    ratio = glz_ratio[key]
+                elif isinstance(glz_ratio, float):
+                    ratio = glz_ratio
+                else:
+                    raise TypeError("Invalid type of glz_ratio.")
+
+                for srf in sorted_surfaces[key]:
+                    win = srf.setWindowToWallRatio(ratio, height_offset, offset_from_floor).get()
+                    win.setSubSurfaceType(types[surface_type])
+
+                    if construction is not None:
+                        if isinstance(construction, dict):
+                            cons = construction[key]
+                        elif isinstance(construction, Construction):
+                            cons = construction
+                        else:
+                            raise TypeError("Invalid type of construction.")
+                        win.setConstruction(cons)
+
+                    sub_srfs.append(win)
 
         return sub_srfs
 

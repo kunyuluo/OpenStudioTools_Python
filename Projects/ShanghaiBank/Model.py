@@ -11,12 +11,12 @@ from Projects.ShanghaiBank.Schedule import add_schedules
 # **************************************************************************************
 project_name = "ShanghaiBank"
 building_name = "ShanghaiBank"
-rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ShanghaiBank_Energy.3dm"
+rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\ShanghaiBank_Energy_2.3dm"
 
 # Weather file:
 # **************************************************************************************
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
-path_str = "D:\\Projects\\OpenStudioDev\\SHBankTower_BC.osm"
+path_str = "D:\\Projects\\OpenStudioDev\\SHBankTower.osm"
 #
 # # Create a new openstudio model
 # # **************************************************************************************
@@ -69,9 +69,12 @@ for zone in thermal_zones:
 
 # Get all fenestration surfaces for construction assignment:
 # **************************************************************************************
-windows = geometries[2]
-ZoneTool.construction_by_orientation(
-    windows, glazing_east_b, glazing_west_b, glazing_north_b, glazing_south_b)
+# windows = geometries[2]
+ratio = {"east": 0.65, "west": 0.3, "north": 0.15, "south": 0.7}
+windows = ZoneTool.add_window_by_ratio(geometries[1], ratio, 2)
+
+# ZoneTool.construction_by_orientation(
+#     windows, glazing_east_b, glazing_west_b, glazing_north_b, glazing_south_b)
 
 # Simulation settings:
 # **************************************************************************************

@@ -771,10 +771,11 @@ class GeometryTool:
         return orientation
 
     @staticmethod
-    def adiabatic_by_type(surfaces: list, surface_type: int = 0):
+    def adiabatic_by_type(thermal_zone, surfaces: list, surface_type: int = 0):
         """
         Surface_type: \n
-
+        1.Wall 2.Interior Wall 3.Air Wall 4.Window 5.Interior Window 6.Roof 7.Ceiling 8.Floor 9.Exposed Floor
+        10.Ground Floor 11.Underground Wall 12.Underground Slab 13.Underground Ceiling
         """
         surface_types = {0: "None", 1: "walls", 2: "interiorWalls", 3: "airWalls", 4: "windows", 5: "interiorWindows",
                          6: "roofs", 7: "ceilings", 8: "floors", 9: "exposedFloors", 10: "groundFloors",
@@ -783,15 +784,21 @@ class GeometryTool:
         for surface in surfaces:
             srf_type = surface.surfaceType()
             boundary_type = surface.outsideBoundaryCondition()
+            sun_expo = surface.sunExposure()
+            wind_expo = surface.windExposure()
 
             match surface_type:
-                case 0:
-                    pass
                 case 1:
                     if srf_type == "Wall" and boundary_type == "Outdoors":
                         surface.setOutsideBoundaryCondition("Adiabatic")
                 case 2 | 3:
                     if srf_type == "Wall" and boundary_type == "Surface":
                         surface.setOutsideBoundaryCondition("Adiabatic")
-                case _:
+                case 4:
+                    if srf_type == "FixedWindow" or srf_type == "OperableWindow" and boundary_type == "Outdoors":
+                        surface.setOutsideBoundaryCondition("Adiabatic")
+                case 5:
+                    if srf_type == "FixedWindow" or srf_type == "OperableWindow" and boundary_type == "Surface":
+                        surface.setOutsideBoundaryCondition("Adiabatic")
+                case 0 | _:
                     pass
