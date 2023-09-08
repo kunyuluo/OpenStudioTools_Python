@@ -273,7 +273,7 @@ class ScheduleTool:
 
     # Schedule Ruleset
     @staticmethod
-    def schedule_ruleset(model, unit_type: int, value=-9999, name=None):
+    def schedule_ruleset(model, unit_type: int, value=-9999.0, name=None):
 
         """
         -Unit_type: \n
@@ -835,7 +835,7 @@ class ScheduleSets:
             activity = schedule
         else:
             if activity_value is not None:
-                activity = ScheduleTool.schedule_ruleset(self._model, 7, 200, self._name + "_Activity")
+                activity = ScheduleTool.schedule_ruleset(self._model, 7, activity_value, self._name + "_Activity")
             else:
                 raise ValueError("Weekly schedule values cannot be empty.")
 

@@ -23,18 +23,18 @@ class ConstructionSet:
         exterior_wall_mat_vec = openstudio.openstudiomodel.MaterialVector()
 
         exterior_wall_mat1 = ConstructionTool.opaque_standard_material(self._model, "M01 100mm brick", 0.1016, 0.89,
-                                                                       1920, 790, "MediumRough")
+                                                                       1920, 790, 3)
         exterior_wall_mat_vec.append(exterior_wall_mat1)
         exterior_wall_mat2 = ConstructionTool.opaque_standard_material(self._model, "M15 200mm heavyweight concrete",
-                                                                       0.2032, 1.95, 2240, 900, "MediumRough")
+                                                                       0.2032, 1.95, 2240, 900, 3)
         exterior_wall_mat_vec.append(exterior_wall_mat2)
         exterior_wall_mat3 = ConstructionTool.opaque_standard_material(self._model, "I02 50mm insulation board",
-                                                                       0.0508, 0.03, 43, 1210, "MediumRough")
+                                                                       0.0508, 0.03, 43, 1210, 3)
         exterior_wall_mat_vec.append(exterior_wall_mat3)
         exterior_wall_mat4 = ConstructionTool.air_gap(self._model, "Air Gap", 0.15)
         exterior_wall_mat_vec.append(exterior_wall_mat4)
         exterior_wall_mat5 = ConstructionTool.opaque_standard_material(self._model, "G01a 19mm gypsum board", 0.019,
-                                                                       0.16, 800, 1090, "MediumRough")
+                                                                       0.16, 800, 1090, 3)
         exterior_wall_mat_vec.append(exterior_wall_mat5)
 
         exterior_wall_cons.setLayers(exterior_wall_mat_vec)
@@ -46,12 +46,11 @@ class ConstructionSet:
         exterior_roof_mat_vec = openstudio.openstudiomodel.MaterialVector()
 
         exterior_roof_mat1 = ConstructionTool.opaque_standard_material(self._model, "M11 100mm lightweight concrete",
-                                                                       0.1016, 0.53, 1280, 840, "MediumRough", 0.9, 0.5,
-                                                                       0.5)
+                                                                       0.1016, 0.53, 1280, 840, 3, 0.9, 0.5, 0.5)
         exterior_roof_mat_vec.append(exterior_roof_mat1)
         exterior_roof_mat_vec.append(exterior_wall_mat4)
         exterior_roof_mat2 = ConstructionTool.opaque_standard_material(self._model, "F16 Acoustic tile", 0.0191,
-                                                                       0.06, 368, 590, "MediumSmooth", 0.9, 0.3, 0.3)
+                                                                       0.06, 368, 590, 3, 0.9, 0.3, 0.3)
         exterior_roof_mat_vec.append(exterior_roof_mat2)
 
         exterior_roof_cons.setLayers(exterior_roof_mat_vec)
@@ -63,7 +62,7 @@ class ConstructionSet:
         exterior_floor_mat_vec = openstudio.openstudiomodel.MaterialVector()
 
         exterior_floor_mat1 = ConstructionTool.opaque_standard_material(self._model, "MAT-CC05 4 HW CONCRETE", 0.1016,
-                                                                        1.311, 2240, 836.8, "Rough", 0.9, 0.85, 0.85)
+                                                                        1.311, 2240, 836.8, 2, 0.9, 0.85, 0.85)
         exterior_floor_mat_vec.append(exterior_floor_mat1)
         exterior_floor_mat2 = ConstructionTool.opaque_no_mass_material(self._model, "CP02 CARPET PAD", 0.1, "Smooth",
                                                                        0.9, 0.8, 0.8)

@@ -232,12 +232,17 @@ class ConstructionTool:
             exterior_floor: openstudio.openstudiomodel.Construction = None,
             exterior_fixed_window: openstudio.openstudiomodel.Construction = None,
             exterior_operable_window: openstudio.openstudiomodel.Construction = None,
+            exterior_door: openstudio.openstudiomodel.Construction = None,
+            exterior_glass_door: openstudio.openstudiomodel.Construction = None,
             interior_wall: openstudio.openstudiomodel.Construction = None,
             interior_roof: openstudio.openstudiomodel.Construction = None,
             interior_floor: openstudio.openstudiomodel.Construction = None,
             underground_wall: openstudio.openstudiomodel.Construction = None,
             underground_roof: openstudio.openstudiomodel.Construction = None,
             underground_floor: openstudio.openstudiomodel.Construction = None,
+            space_shade: openstudio.openstudiomodel.Construction = None,
+            building_shade: openstudio.openstudiomodel.Construction = None,
+            site_shade: openstudio.openstudiomodel.Construction = None,
             name: str = None):
 
         sets = openstudio.openstudiomodel.DefaultConstructionSet(model)
@@ -285,6 +290,12 @@ class ConstructionTool:
         if exterior_operable_window is not None:
             exterior_subsurfaces.setOperableWindowConstruction(exterior_operable_window)
 
+        if exterior_door is not None:
+            exterior_subsurfaces.setDoorConstruction(exterior_door)
+
+        if exterior_glass_door is not None:
+            exterior_subsurfaces.setGlassDoorConstruction(exterior_glass_door)
+
         sets.setDefaultExteriorSubSurfaceConstructions(exterior_subsurfaces)
 
         # Underground Surfaces:
@@ -301,6 +312,17 @@ class ConstructionTool:
             underground_surfaces.setFloorConstruction(underground_floor)
 
         sets.setDefaultInteriorSurfaceConstructions(underground_surfaces)
+
+        # Other Surfaces:
+        # *******************************************************************************************************
+        if space_shade is not None:
+            sets.setSpaceShadingConstruction(space_shade)
+
+        if building_shade is not None:
+            sets.setBuildingShadingConstruction(building_shade)
+
+        if site_shade is not None:
+            sets.setSiteShadingConstruction(site_shade)
 
         return sets
 
@@ -319,7 +341,9 @@ class ConstructionTool:
             int_floor_r_value=10,
             ground_wall_r_value=10,
             ground_roof_r_value=10,
-            ground_floor_r_value=10):
+            ground_floor_r_value=10,
+            door_r_value=5.0,
+            shade_r_value=10):
 
         """
         Unit_r_or_u:
@@ -418,6 +442,22 @@ class ConstructionTool:
             model, "Skylight", win_u_value, win_shgc, win_transmittance)
         exterior_subsurfaces.setSkylightConstruction(skylight_cons)
 
+        # Door:
+        # ***************************************************************************************
+        if unit_r_or_u:
+            door_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Door".format(round(door_r_value, 1)), door_r_value)
+        else:
+            door_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Door".format(round(1 / door_r_value, 1)), 1 / door_r_value)
+        exterior_subsurfaces.setDoorConstruction(door_cons)
+
+        # Glass Door:
+        # ***************************************************************************************
+        glass_door_cons = ConstructionTool.simple_glazing_cons(
+            model, "Glass_Door", win_u_value, win_shgc, win_transmittance)
+        exterior_subsurfaces.setGlassDoorConstruction(glass_door_cons)
+
         sets.setDefaultExteriorSubSurfaceConstructions(exterior_subsurfaces)
 
         # Ground Surfaces:
@@ -454,6 +494,16 @@ class ConstructionTool:
         ground_surfaces.setFloorConstruction(ground_floor_cons)
 
         sets.setDefaultGroundContactSurfaceConstructions(ground_surfaces)
+
+        # Other Surfaces:
+        # *******************************************************************************************************
+        if unit_r_or_u:
+            shade_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Shade".format(round(shade_r_value, 1)), shade_r_value)
+        else:
+            shade_cons = ConstructionTool.opaque_no_mass_cons(
+                model, "R-{} Shade".format(round(1 / shade_r_value, 1)), 1 / shade_r_value)
+        sets.setBuildingShadingConstruction(shade_cons)
 
         # Output:
         # *******************************************************************************************************

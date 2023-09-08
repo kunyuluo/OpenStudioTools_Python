@@ -43,7 +43,7 @@ def sort_geometry_from_rhino(rhino_file_path: str, get_object: bool = False, con
             if get_object:
                 if "window" in layer.lower():
                     fenestration.append(obj)
-                elif "shade" in layer.lower():
+                elif "shade" in layer.lower() or 'shading' in layer.lower():
                     shades.append(obj)
                 else:
                     rooms.append(obj)
@@ -57,7 +57,7 @@ def sort_geometry_from_rhino(rhino_file_path: str, get_object: bool = False, con
                             fenestration.append(geometry.ToBrep())
                     else:
                         fenestration.append(geometry)
-                elif "shade" in layer.lower():
+                elif "shade" in layer.lower() or 'shading' in layer.lower():
                     if convert_to_brep:
                         if isinstance(geometry, Rhino.Geometry.Brep):
                             shades.append(geometry)
@@ -382,6 +382,32 @@ def find_child_surface(surface, sub_surfaces):
         raise TypeError("Invalid input type of sub-surfaces. It should be a list")
 
 
+def check_existence(target, item_list):
+    exist = False
+    for item in item_list:
+        if abs(target - item) < 0.015:
+            exist = True
+
+    return exist
+
+
+def check_fenestration_type(vertices, valid_stories):
+    """
+    Return 0 for window, 1 for door
+    """
+    if isinstance(vertices, list):
+        z_coord = []
+        for vertex in vertices:
+            z_coord.append(vertex[2])
+        bottom_pos = min(z_coord)
+
+        if isinstance(valid_stories, list):
+            bottom = check_existence(bottom_pos, valid_stories)
+            return 1 if bottom else 0
+    else:
+        raise TypeError("Invalid input type of vertices.")
+
+
 def shades_dict(geometries):
     shades = []
     if len(geometries) != 0:
@@ -404,7 +430,7 @@ def shades_dict(geometries):
     return shades
 
 
-def rooms_dict(solids=None, solid_names=None, apertures=None, story_multipliers=None, default_space_type="Office"):
+def rooms_dict(solids=None, solid_names=None, apertures=None, default_space_type="Office"):
     """
     Story_multipliers: a single integer to be applied to all stories or a list of integers to be applied to each story.
     """
@@ -502,9 +528,11 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, story_multipliers=
                     fenestrations = []
                     try:
                         children = find_child_surface(face, apertures)
+                        window_index = 0
+                        door_index = 0
                         if len(children) != 0:
                             for k, child in enumerate(children, 1):
-                                fenestration = {"name": None, "normal": None, "vertices": None}
+                                fenestration = {"name": None, "type": None, "normal": None, "vertices": None}
 
                                 srf_vertices = get_brep_face_vertex(child.Faces[0])
 
@@ -522,7 +550,18 @@ def rooms_dict(solids=None, solid_names=None, apertures=None, story_multipliers=
                                     point = [vertice.X, vertice.Y, vertice.Z]
                                     points.append(point)
                                 fenestration["vertices"] = points
-                                fenestration["name"] = "surface_{}_window_{}".format(j, k)
+
+                                if check_fenestration_type(points, valid_stories) == 0:
+                                    window_index += 1
+                                    name = "surface_{}_window_{}".format(j, window_index)
+                                    fen_type = "window"
+                                else:
+                                    door_index += 1
+                                    name = "surface_{}_door_{}".format(j, door_index)
+                                    fen_type = "door"
+
+                                fenestration["name"] = name
+                                fenestration["type"] = fen_type
                                 fenestrations.append(fenestration)
 
                     except ValueError:
@@ -583,6 +622,8 @@ def write_to_json(json_out=None, project_name: str = None):
     try:
         with open(file_path, "w") as outfile:
             outfile.write(json_out)
+        # file = open(file_path, "w")
+        # file.write(json_out)
         return file_path
     except ValueError:
         print("Cannot write to json file")

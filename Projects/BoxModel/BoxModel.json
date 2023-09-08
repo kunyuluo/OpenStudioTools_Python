@@ -3,7 +3,7 @@
     "number_of_stories": 1,
     "rooms": [
         {
-            "identifier": "d8222f88-56c4-400f-aeb3-a6172e00fb30",
+            "identifier": "79ce48dd-674e-4f82-9429-5864ad388dfb",
             "multiplier": null,
             "name": "OpenOffice",
             "space_type": "OpenOffice",
@@ -352,7 +352,7 @@
             ]
         },
         {
-            "identifier": "646700d1-3fab-49f6-92b1-54cab2826c4f",
+            "identifier": "4f1a42b1-5a26-4632-9b92-eea2e323085f",
             "multiplier": null,
             "name": "Conference",
             "space_type": "Conference",

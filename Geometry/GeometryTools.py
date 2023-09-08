@@ -218,6 +218,7 @@ class GeometryTool:
     # Create a shading surface:
     @staticmethod
     def make_shading(model, vertices, construction=None, transmittance_schedule=None, name: str = None):
+
         if len(vertices) != 0 and len(vertices) > 2:
             pt_vec = Point3dVector()
             for i in range(len(vertices)):
@@ -590,8 +591,12 @@ class GeometryTool:
 
                     if len(srf["fenestrations"]) != 0:
                         for fenestration in srf["fenestrations"]:
-                            fen_srf = GeometryTool.make_fenestration(
-                                model, fenestration["vertices"], surface=surface, name=fenestration["name"])
+                            if fenestration["type"] == "window":
+                                fen_srf = GeometryTool.make_fenestration(
+                                    model, fenestration["vertices"], surface=surface, name=fenestration["name"])
+                            else:
+                                fen_srf = GeometryTool.make_fenestration(
+                                    model, fenestration["vertices"], 4, surface=surface, name=fenestration["name"])
                             all_subsurfaces.append(fen_srf)
 
                             win_normal = fenestration["normal"]
@@ -634,11 +639,15 @@ class GeometryTool:
             # Shading Objects:
             shades = json_object["shades"]
             all_shades = []
+            group = openstudio.openstudiomodelgeometry.ShadingSurfaceGroup(model)
+            group.setShadingSurfaceType("Building")
             if len(shades) != 0:
                 for shade in shades:
-                    shade_srf = GeometryTool.make_shading(model, shade["vertices"], name=shade["name"])
+                    shade_cons = cons_set.buildingShadingConstruction().get()
+                    shade_srf = GeometryTool.make_shading(model, shade["vertices"], shade_cons, name=shade["name"])
+                    shade_srf.setShadingSurfaceGroup(group)
                     all_shades.append(shade_srf)
-                print("Shading Objects created.")
+                # print("Shading Objects created.")
 
             print("Step 4-5: Geometries All Done!")
 
