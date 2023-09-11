@@ -4,7 +4,7 @@ from Resources.InternalLoad import InternalLoad
 from RhinoGeometry.RhinoParse import load_rhino_model
 from Geometry.GeometryTools import GeometryTool
 from Resources.ZoneTools import ZoneTool
-from Resources.Helpers import Helper
+from HVACSystem.HVACTools import HVACTool
 from SimulationSettings.SimulationSettings import SimulationSettingTool
 from Projects.TongjiLab.Schedule import add_schedules
 from OutputData.OutputData import output_variables
@@ -54,6 +54,7 @@ thermal_zones = geometries[0]
 
 # Build HVAC system:
 # **************************************************************************************
+HVACTool.ideal_air_load(ZoneTool.thermal_zone_by_conditioned(thermal_zones)[0])
 # hvac_system(model, thermal_zones)
 
 # Simulation settings:
@@ -63,9 +64,10 @@ SimulationSettingTool.heat_balance_algorithm(model, 500)
 
 # Set output variables if any:
 # **************************************************************************************
-# output_variables(model, ["Heating Coil Heating Energy"])
+output_variables(model, ["Zone Ideal Loads Supply Air Total Cooling Energy", "Zone Ideal Loads Supply Air Total Heating Energy"])
 
 # Save the model to the pre-defined path:
 # **************************************************************************************
 model.save(path, True)
 print("Model is Ready!")
+

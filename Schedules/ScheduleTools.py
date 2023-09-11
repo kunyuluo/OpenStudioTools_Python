@@ -195,7 +195,8 @@ class ScheduleTool:
             sunday_value=None,
             summer_design_day_value=None,
             winter_design_day_value=None,
-            name: str = "Default"):
+            name: str = "Default",
+            multiplier: float=None):
 
         """
         -Unit_type: \n
@@ -215,6 +216,17 @@ class ScheduleTool:
         14.Mode
         15.MassFlowRate
         """
+
+        if multiplier is not None:
+            weekday_value = [i*multiplier for i in weekday_value]
+            if saturday_value is not None:
+                saturday_value = [i*multiplier for i in saturday_value]
+            if sunday_value is not None:
+                sunday_value = [i*multiplier for i in sunday_value]
+            if summer_design_day_value is not None:
+                summer_design_day_value = [i*multiplier for i in summer_design_day_value]
+            if winter_design_day_value is not None:
+                winter_design_day_value = [i*multiplier for i in winter_design_day_value]
 
         match unit_type:
             case 1 | 4 | 6 | 11:
@@ -835,7 +847,8 @@ class ScheduleSets:
             activity = schedule
         else:
             if activity_value is not None:
-                activity = ScheduleTool.schedule_ruleset(self._model, 7, activity_value, self._name + "_Activity")
+                name = self._name if self._name is not None else "Default"
+                activity = ScheduleTool.schedule_ruleset(self._model, 7, activity_value, name + "_Activity")
             else:
                 raise ValueError("Weekly schedule values cannot be empty.")
 

@@ -427,3 +427,29 @@ class HVACTool:
         results = (loop, cooling_water_coils, heat_water_coils, beam_cool_coils, beam_heat_coils)
 
         return results
+
+    @staticmethod
+    def ideal_air_load(thermal_zone):
+        if isinstance(thermal_zone, openstudio.openstudiomodel.ThermalZone):
+            thermal_zone.setUseIdealAirLoads(True)
+        elif isinstance(thermal_zone, list):
+            if len(thermal_zone) != 0:
+                for zone in thermal_zone:
+                    if isinstance(zone, openstudio.openstudiomodel.ThermalZone):
+                        zone.setUseIdealAirLoads(True)
+                    elif isinstance(zone, dict):
+                        try:
+                            zone = zone["zone"]
+                            zone.setUseIdealAirLoads(True)
+                        except KeyError:
+                            pass
+                    else:
+                        pass
+        elif isinstance(thermal_zone, dict):
+            try:
+                zone = thermal_zone["zone"]
+                zone.setUseIdealAirLoads(True)
+            except KeyError:
+                pass
+        else:
+            raise TypeError("Invalid input type of thermal zone.")

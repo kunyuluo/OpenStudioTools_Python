@@ -420,13 +420,13 @@ class GeometryTool:
                 match people_cal_method:
                     case "People":
                         people = InternalLoad.people_definition(
-                            model, 1, load_of_space["people_density"], name=space + "_People_Definition")
+                            model, 1, load_of_space["people_density"], sensible_heat_fraction=0.32, name=space + "_People_Definition")
                     case "Area/Person":
                         people = InternalLoad.people_definition(
-                            model, 2, load_of_space["people_density"], name=space + "_People_Definition")
+                            model, 2, load_of_space["people_density"], sensible_heat_fraction=0.32, name=space + "_People_Definition")
                     case "Person/Area" | _:
                         people = InternalLoad.people_definition(
-                            model, 3, load_of_space["people_density"], name=space + "_People_Definition")
+                            model, 3, load_of_space["people_density"], sensible_heat_fraction=0.32, name=space + "_People_Definition")
                 load_dict["people"] = people
 
                 # Gas Equipment Definition:

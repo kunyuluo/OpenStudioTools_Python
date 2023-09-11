@@ -11,26 +11,26 @@ def add_schedules(model: openstudio.openstudiomodel.Model, space_types: list):
 
     # Office:
     # *****************************************************************************************************
-    schedule_office = ScheduleSets(model)
+    schedule_office = ScheduleSets(model, "Lab")
 
     occupancy_office = ScheduleTool.custom_annual_schedule(
         model, 1,
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        name="Office_Occupancy")
+        name="Lab_Occupancy")
     schedule_office.set_occupancy(schedule=occupancy_office)
 
     activity_office = ScheduleTool.custom_annual_schedule(
-        model, 1,
+        model, 7,
         [0.07, 0.06, 0.05, 0.04, 0.04, 0.03, 0.03, 0.03, 0.49, 0.68, 0.74, 0.79, 0.82, 0.85, 0.87, 0.89, 0.44, 0.26,
          0.21, 0.17, 0.14, 0.12, 0.1, 0.08],
         [0.07, 0.06, 0.05, 0.04, 0.04, 0.03, 0.03, 0.03, 0.49, 0.68, 0.74, 0.79, 0.82, 0.85, 0.87, 0.89, 0.44, 0.26,
          0.21, 0.17, 0.14, 0.12, 0.1, 0.08],
         [0.07, 0.06, 0.05, 0.04, 0.04, 0.03, 0.03, 0.03, 0.49, 0.68, 0.74, 0.79, 0.82, 0.85, 0.87, 0.89, 0.44, 0.26,
          0.21, 0.17, 0.14, 0.12, 0.1, 0.08],
-        name="Office_Activity")
-    schedule_office.set_activity_level(123)
+        name="Lab_Activity", multiplier=181.0)
+    schedule_office.set_activity_level(schedule=activity_office)
 
     lighting_office = ScheduleTool.custom_annual_schedule(
         model, 1,
@@ -40,7 +40,7 @@ def add_schedules(model: openstudio.openstudiomodel.Model, space_types: list):
          0.27, 0.22, 0.18, 0.15, 0.13, 0.11],
         [0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.04, 0.03, 0.38, 0.59, 0.67, 0.73, 0.77, 0.81, 0.84, 0.86, 0.54, 0.34,
          0.27, 0.22, 0.18, 0.15, 0.13, 0.11],
-        name="Office_Lighting")
+        name="Lab_Lighting")
     schedule_office.set_lighting(schedule=lighting_office)
 
     equipment_office = ScheduleTool.custom_annual_schedule(
@@ -51,17 +51,17 @@ def add_schedules(model: openstudio.openstudiomodel.Model, space_types: list):
          0.08, 0.07, 0.06, 0.05, 0.04, 0.04],
         [0.03, 0.03, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.77, 0.87, 0.89, 0.91, 0.93, 0.94, 0.95, 0.95, 0.2, 0.1,
          0.08, 0.07, 0.06, 0.05, 0.04, 0.04],
-        name="Office_Equipment")
+        name="Lab_Equipment")
     schedule_office.set_electric_equipment(schedule=equipment_office)
 
     # clg_setpt_office = ScheduleTool.schedule_ruleset(model, 2, 24, "Open_Office_CoolingSetPoint")
     clg_setpt_office = ScheduleTool.custom_annual_schedule(
-        model, 2, [26] * 24, [26] * 24, [26] * 24, name="Office_CoolingSetPoint")
+        model, 2, [26] * 24, [26] * 24, [26] * 24, name="Lab_CoolingSetPoint")
     schedule_office.set_cooling_setpoint(schedule=clg_setpt_office)
 
     # htg_setpt_office = ScheduleTool.schedule_ruleset(model, 2, 20, "Open_Office_HeatingSetPoint")
     htg_setpt_office = ScheduleTool.custom_annual_schedule(
-        model, 2, [18] * 24, [18] * 24, [18] * 24, name="Office_HeatingSetPoint")
+        model, 2, [18] * 24, [18] * 24, [18] * 24, name="Lab_HeatingSetPoint")
     schedule_office.set_heating_setpoint(schedule=htg_setpt_office)
 
     schedule_office.set_infiltration(schedule=schedule_template["infiltration"])
