@@ -1951,3 +1951,34 @@ class AirLoopComponent:
             controller.setSystemOutdoorAirMethod(oa_methods[system_outdoor_air_method])
 
         return controller
+
+    @staticmethod
+    def humidifier_electric(
+            model: openstudio.openstudiomodel.Model,
+            name: str = None,
+            capacity: float = None,
+            power: float = None,
+            fan_power: float = 0.0,
+            standby_power: float = 0.0):
+
+        humidifier = openstudio.openstudiomodel.HumidifierSteamElectric(model)
+
+        if name is not None:
+            humidifier.setName(name)
+
+        if capacity is not None:
+            humidifier.setRatedCapacity(capacity)
+        else:
+            humidifier.autosizeRatedCapacity()
+
+        if power is not None:
+            humidifier.setRatedPower(power)
+        else:
+            humidifier.autosizeRatedPower()
+
+        humidifier.setRatedFanPower(fan_power)
+        humidifier.setStandbyPower(standby_power)
+
+        return humidifier
+
+

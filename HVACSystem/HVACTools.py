@@ -196,10 +196,13 @@ class HVACTool:
             supply_components: list = [],
             air_terminal_type: int = 1,
             air_terminal_reheat_type: int = 3,
+            air_terminal_for_doas: bool = False,
+            air_terminal_for_dcv: bool = False,
             thermal_zones: list = None,
             availability: openstudio.openstudiomodel.ScheduleRuleset = None,
             night_cycle_control: int = 1,
-            terminal_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
+            terminal_schedule: openstudio.openstudiomodel.ScheduleRuleset = None,
+            min_air_fraction_schedule: openstudio.openstudiomodel.ScheduleRuleset = None):
 
         """
         -Economizer Control Type: \n
@@ -328,7 +331,16 @@ class HVACTool:
                         terminal = AirTerminal.single_duct_constant_volume_reheat(
                             model, terminal_schedule, coil=reheat_coil)
                     case 3:  # SingleDuctVAVNoReheat
-                        terminal = AirTerminal.single_duct_vav_no_reheat(model, terminal_schedule)
+                        if air_terminal_for_doas:
+                            if air_terminal_for_dcv:
+                                terminal = AirTerminal.single_duct_vav_no_reheat(
+                                    model, terminal_schedule, min_air_flow_input_method=3, control_for_outdoor_air=True,
+                                    min_air_flow_fraction_schedule=min_air_fraction_schedule)
+                            else:
+                                terminal = AirTerminal.single_duct_vav_no_reheat(
+                                    model, terminal_schedule, control_for_outdoor_air=True)
+                        else:
+                            terminal = AirTerminal.single_duct_vav_no_reheat(model, terminal_schedule)
 
                     case 4:  # SingleDuctVAVReheat
                         match air_terminal_reheat_type:

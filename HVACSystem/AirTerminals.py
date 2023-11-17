@@ -105,7 +105,7 @@ class AirTerminal:
             schedule: openstudio.openstudiomodel.ScheduleRuleset,
             name: str = None,
             max_air_flow_rate=None,
-            min_air_flow_input_method: str = None,
+            min_air_flow_input_method: int = 1,
             constant_min_air_flow_fraction=None,
             fixed_min_air_flow_rate=None,
             min_air_flow_fraction_schedule=None,
@@ -118,6 +118,8 @@ class AirTerminal:
         2.FixedFlowRate \n
         3.Scheduled
         """
+
+        methods = {1: "Constant", 2: "FixedFlowRate", 3: "Scheduled"}
 
         if model is not None:
 
@@ -132,7 +134,7 @@ class AirTerminal:
                 terminal.autosizeMaximumAirFlowRate()
 
             if min_air_flow_input_method is not None:
-                terminal.setZoneMinimumAirFlowInputMethod(min_air_flow_input_method)
+                terminal.setZoneMinimumAirFlowInputMethod(methods[min_air_flow_input_method])
             if constant_min_air_flow_fraction is not None:
                 terminal.setConstantMinimumAirFlowFraction(constant_min_air_flow_fraction)
             if fixed_min_air_flow_rate is not None:
