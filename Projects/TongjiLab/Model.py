@@ -60,6 +60,7 @@ hvac_system(model, thermal_zones)
 
 # Simulation settings:
 # **************************************************************************************
+SimulationSettingTool.set_run_period(model, 1, 1, 12, 31)
 SimulationSettingTool.set_timestep(model, 1)
 SimulationSettingTool.heat_balance_algorithm(model, 500)
 

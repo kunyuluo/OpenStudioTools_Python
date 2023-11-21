@@ -85,9 +85,9 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
     heating_coil = AirLoopComponent.coil_heating_water(
         model, inlet_water_temp=supply_htg_water_temp, outlet_water_temp=return_htg_water_temp)
 
-    reheat_coil = AirLoopComponent.coil_heating_electric(model)
+    reheat_coil = AirLoopComponent.coil_heating_electric(model, capacity=2230)
 
-    humidifier = AirLoopComponent.humidifier_electric(model, power=2300)
+    humidifier = AirLoopComponent.humidifier_electric(model, power=5700)
 
     supply_fan = AirLoopComponent.fan_variable_speed(
         model, fan_total_efficiency=0.72, pressure_rise=440, max_flow_rate=design_flow_rate / 3600, fan_curve_coeff=fan_curve)
@@ -155,7 +155,7 @@ def hvac_system(model: openstudio.openstudiomodel.Model, thermal_zones):
         cooling_coil = AirLoopComponent.coil_cooling_water(model, design_inlet_water_temp=7)
         heating_coil = AirLoopComponent.coil_heating_water(model, inlet_water_temp=45, outlet_water_temp=40)
         fan = AirLoopComponent.fan_variable_speed(
-            model, fan_total_efficiency=0.72, pressure_rise=50, fan_curve_coeff=fan_curve)
+            model, fan_total_efficiency=0.72, pressure_rise=0, fan_curve_coeff=fan_curve)
 
         ZoneEquipment.fan_coil_unit_detailed(
             model,
