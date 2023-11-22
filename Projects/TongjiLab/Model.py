@@ -9,6 +9,7 @@ from SimulationSettings.SimulationSettings import SimulationSettingTool
 from Projects.TongjiLab.Schedule import add_schedules
 from OutputData.OutputData import output_variables
 from Projects.TongjiLab.Systems import hvac_system
+import json
 
 # Project Info:
 # **************************************************************************************
@@ -36,9 +37,76 @@ internal_mass_cons = ConstructionTool.opaque_cons(model, "Std Wood 6inch", 0.15,
 
 # Internal Load:
 # **************************************************************************************
-load_and_space = InternalLoad.internal_load_from_file("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "Tongji_Lab")
-load = load_and_space[0]
-space_list = load_and_space[1]
+# load_and_space = InternalLoad.internal_load_from_file("D:\\Projects\\OpenStudioDev\\LoadInputs.xlsx", "Tongji_Lab")
+# load = load_and_space[0]
+# space_list = load_and_space[1]
+lab_area = 31.9548
+number_of_equipment = 1
+unit_equipment_power = 200
+number_of_light = 1
+unit_light_power = 200
+number_of_people = 4
+outdoor_air_per_person = 30  # m3/h
+people_latent_heat = 69  # w
+people_sensible_heat = 112  # w
+
+load = {
+    "Office": {
+        "conditioned": False,
+        "lighting": 8,
+        "equipment": 3.09,
+        "people_density": 15.82,
+        "people_density_method": "Area/Person",
+        "people_activity_level": 181,
+        "outdoor_air_per_area": 0,
+        "outdoor_air_per_person": 0.00833333333333333,
+        "gas_power": None,
+        "internal_mass_area": 3,
+        "internal_mass_method": "SurfaceArea/Area"
+    },
+    "Lab": {
+        "conditioned": True,
+        "lighting": unit_light_power * number_of_light / lab_area,
+        "equipment": unit_equipment_power * number_of_equipment / lab_area,
+        "people_density": number_of_people,
+        "people_density_method": "People",
+        "people_activity_level": people_sensible_heat + people_latent_heat,
+        "outdoor_air_per_area": 0,
+        "outdoor_air_per_person": outdoor_air_per_person / 3600,
+        "gas_power": None,
+        "internal_mass_area": 3,
+        "internal_mass_method": "SurfaceArea/Area"
+    },
+    "Mech": {
+        "conditioned": False,
+        "lighting": 8,
+        "equipment": 3.09,
+        "people_density": 15.82,
+        "people_density_method": "Area/Person",
+        "people_activity_level": 181,
+        "outdoor_air_per_area": 0,
+        "outdoor_air_per_person": 0.00333333333333333,
+        "gas_power": None,
+        "internal_mass_area": 3,
+        "internal_mass_method": "SurfaceArea/Area"
+    },
+    "Others": {
+        "conditioned": False,
+        "lighting": 0,
+        "equipment": 0.0,
+        "people_density": 1000.0,
+        "people_density_method": "Area/Person",
+        "people_activity_level": 181,
+        "outdoor_air_per_area": 0,
+        "outdoor_air_per_person": 0.0,
+        "gas_power": None,
+        "internal_mass_area": 3,
+        "internal_mass_method": "SurfaceArea/Area"
+    }
+}
+space_list = ['Office', 'Lab', 'Mech', 'Others']
+load = json.dumps(load, indent=4)
+print(load)
 
 # Schedules:
 # **************************************************************************************

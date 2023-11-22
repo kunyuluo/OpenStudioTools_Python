@@ -3,7 +3,7 @@
     "number_of_stories": 4,
     "rooms": [
         {
-            "identifier": "19c17ce4-5848-49cb-ae75-5525be4cb3aa",
+            "identifier": "2f1d140c-a6b1-4cb6-b1e3-d35516d7d5a1",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -537,7 +537,7 @@
             ]
         },
         {
-            "identifier": "e31637b3-60d6-46ed-b5cc-5bdbad2a4e47",
+            "identifier": "1513096f-2b43-4065-b777-771cba7be116",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -1071,7 +1071,7 @@
             ]
         },
         {
-            "identifier": "de6cebc6-80d1-4d32-9c45-085f6cf30344",
+            "identifier": "237752d9-499e-4d1f-a975-4d2517eddb0a",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -1543,7 +1543,7 @@
             ]
         },
         {
-            "identifier": "15976454-7369-4831-b878-fb35d6281d30",
+            "identifier": "e1026e5f-9d6d-457e-892c-a43edead4c70",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -2210,7 +2210,7 @@
             ]
         },
         {
-            "identifier": "e86312ce-6b18-4808-b2cf-cb1d7caabef7",
+            "identifier": "6aa3ce7f-c488-4e86-accd-7c5c1799d9f4",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -2939,7 +2939,7 @@
             ]
         },
         {
-            "identifier": "bf2d8540-986e-42a9-8749-fa6c29c267f1",
+            "identifier": "52e70ef0-ec7c-408f-9565-4e07a095672a",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -3668,7 +3668,7 @@
             ]
         },
         {
-            "identifier": "dfdf835d-931e-4b97-91e9-b5a565766e5b",
+            "identifier": "59e120e5-4018-45ad-89fd-5d98c9fa04da",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -3863,7 +3863,7 @@
             ]
         },
         {
-            "identifier": "fa698b15-5319-488d-a51d-47f057140737",
+            "identifier": "e2180470-727a-41e8-ba34-873233225b8c",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -4222,7 +4222,7 @@
             ]
         },
         {
-            "identifier": "526f1d7e-1bf4-4d57-b564-1d1480afaaa0",
+            "identifier": "2461eab7-621f-4e27-bfc6-460abf0f7b40",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -4581,7 +4581,7 @@
             ]
         },
         {
-            "identifier": "76881481-b1ed-4ebc-b975-172c2c832a50",
+            "identifier": "749b2bfb-d55b-49c9-8d45-37744224d449",
             "multiplier": null,
             "name": "Office",
             "space_type": "Office",
@@ -5046,7 +5046,7 @@
             ]
         },
         {
-            "identifier": "3ad43df2-9d86-46c2-85e0-06eac7f69e2f",
+            "identifier": "9eeb783b-b570-437d-8581-40fbaed2eceb",
             "multiplier": null,
             "name": "Mech",
             "space_type": "Mech",
@@ -5481,7 +5481,7 @@
             ]
         },
         {
-            "identifier": "ac4c93d0-7984-4e43-b1d1-d6256e9de6af",
+            "identifier": "2d3fcd8b-bea4-4ea6-9d4c-6fc1fda0e9a4",
             "multiplier": null,
             "name": "Office",
             "space_type": "Office",
@@ -6122,7 +6122,7 @@
             ]
         },
         {
-            "identifier": "d2775b4f-1db9-4c21-a019-e50de2f32d02",
+            "identifier": "fccd0c7e-420a-4dff-ad3c-87dacfde4a91",
             "multiplier": null,
             "name": "Office",
             "space_type": "Office",
@@ -6794,7 +6794,7 @@
             ]
         },
         {
-            "identifier": "54806783-3ead-4c2d-9a3d-15c9bd0cefe0",
+            "identifier": "0da74d25-bf24-4457-906e-6ab7421cca57",
             "multiplier": null,
             "name": "Lab",
             "space_type": "Lab",
@@ -7166,7 +7166,7 @@
             ]
         },
         {
-            "identifier": "3f956d93-ba7b-4fec-93ca-3c662ea33f82",
+            "identifier": "c36c25b5-3cd7-4776-8c10-60547ae1e6e7",
             "multiplier": null,
             "name": "Office",
             "space_type": "Office",
@@ -7569,7 +7569,7 @@
             ]
         },
         {
-            "identifier": "d7a17dfa-3bd7-40d2-a74a-2d715b9b8c14",
+            "identifier": "9926323b-b917-4d27-b664-f551d796aaab",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -7764,7 +7764,7 @@
             ]
         },
         {
-            "identifier": "f169e879-047b-403c-9488-d30e778c5200",
+            "identifier": "73b73f17-3c20-41ed-aa74-e4a66c356ab8",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -8123,7 +8123,7 @@
             ]
         },
         {
-            "identifier": "928164cf-32e6-46fd-94f2-581943adacfa",
+            "identifier": "42e3f462-201a-43b0-956d-9db157b92773",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -8482,7 +8482,7 @@
             ]
         },
         {
-            "identifier": "f6206898-7590-498f-ba4c-efda634a8513",
+            "identifier": "a746c9af-454b-4a32-b5b8-e349bb64670b",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -8677,7 +8677,7 @@
             ]
         },
         {
-            "identifier": "fc7d4c46-e5a7-4ece-a9f4-e0a121c2a7fc",
+            "identifier": "885c105b-c731-472d-bdf9-747731522ef1",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -9036,7 +9036,7 @@
             ]
         },
         {
-            "identifier": "1b6a8811-4785-48e3-840d-aa0c801b2d24",
+            "identifier": "aeaf7fcc-3879-4102-857e-7ab4ae0f7bca",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -9395,7 +9395,7 @@
             ]
         },
         {
-            "identifier": "f282be23-722e-4684-997c-660151ad9979",
+            "identifier": "71901cdd-94aa-44bc-b4e1-e415a6ad7404",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -9590,7 +9590,7 @@
             ]
         },
         {
-            "identifier": "43ff8b64-6a43-4aba-bdab-b3f999568170",
+            "identifier": "954ab3a7-86da-4411-aa76-d8ab9490d341",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
@@ -9949,7 +9949,7 @@
             ]
         },
         {
-            "identifier": "58331f12-e2b5-4b88-b61b-0e7337457e78",
+            "identifier": "abdb0ee0-b145-437b-a300-d2c00851694a",
             "multiplier": null,
             "name": "Others",
             "space_type": "Others",
