@@ -21,17 +21,28 @@ rhino_model_path = "D:\\Projects\\OpenStudioDev\\RhinoGeometry\\Lab.3dm"
 # **************************************************************************************
 epw_path_str = "D:\\Projects\\OpenStudioDev\\CHN_Shanghai.Shanghai.583670_IWEC.epw"
 path_str = "D:\\Projects\\OpenStudioDev\\Tongji_Lab.osm"
-#
-# # Create a new openstudio model
-# # **************************************************************************************
-model_file = create_model(epw_path_str, path_str, "Tongji_Lab", north_axis=40)
+
+# Create a new openstudio model
+# **************************************************************************************
+wall_orientation = 40
+model_file = create_model(epw_path_str, path_str, "Tongji_Lab", north_axis=wall_orientation)
 model = model_file[0]
 path = model_file[1]
 
 # Construction set:
 # **************************************************************************************
+ext_wall_u_value = 0.72
+ext_roof_u_value = 0.43
+ext_floor_u_value = 0.55
+win_u_value = 3.3
+win_shgc = 0.45
+win_trans = 0.6
+int_wall_u_value = 1.66
+int_floor_u_floor = 0.43
+
 cons_set_1 = ConstructionTool.construction_set_simple(
-    model, "Construction Set", False, 0.72, 0.43, 0.55, 3.3, 0.45, 0.6, 1.66, 0.43, 0.57, 0.43, 0.55)
+    model, "Construction Set", False, ext_wall_u_value, ext_roof_u_value, ext_floor_u_value,
+    win_u_value, win_shgc, win_trans, int_wall_u_value, int_floor_u_floor, 0.57, 0.43, 0.55)
 
 internal_mass_cons = ConstructionTool.opaque_cons(model, "Std Wood 6inch", 0.15, 0.12, 540, 1210, 3)
 
@@ -110,7 +121,7 @@ print(load)
 
 # Schedules:
 # **************************************************************************************
-schedule_sets = add_schedules(model, space_list)
+schedule_sets = add_schedules(model, space_list, people_sensible_heat + people_latent_heat)
 
 # Load geometry from Rhino:
 # **************************************************************************************
@@ -128,7 +139,12 @@ hvac_system(model, thermal_zones)
 
 # Simulation settings:
 # **************************************************************************************
-SimulationSettingTool.set_run_period(model, 1, 1, 12, 31)
+start_month = 1
+start_day = 1
+end_month = 12
+end_day = 31
+
+SimulationSettingTool.set_run_period(model, start_month, start_day, end_month, end_day)
 SimulationSettingTool.set_timestep(model, 1)
 SimulationSettingTool.heat_balance_algorithm(model, 500)
 
@@ -138,6 +154,6 @@ SimulationSettingTool.heat_balance_algorithm(model, 500)
 
 # Save the model to the pre-defined path:
 # **************************************************************************************
-model.save(path, True)
+# model.save(path, True)
 print("Model is Ready!")
 
